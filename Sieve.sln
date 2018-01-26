@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sieve", "Sieve\Sieve.csproj", "{B32B8B33-94B0-40E3-8FE5-D54602222717}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SieveTests", "SieveTests\SieveTests.csproj", "{8043D264-42A0-4275-97A1-46400C02E37E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{B32B8B33-94B0-40E3-8FE5-D54602222717}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B32B8B33-94B0-40E3-8FE5-D54602222717}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B32B8B33-94B0-40E3-8FE5-D54602222717}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8043D264-42A0-4275-97A1-46400C02E37E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8043D264-42A0-4275-97A1-46400C02E37E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8043D264-42A0-4275-97A1-46400C02E37E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8043D264-42A0-4275-97A1-46400C02E37E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
