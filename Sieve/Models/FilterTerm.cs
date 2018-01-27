@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -8,13 +7,40 @@ namespace Sieve.Models
 {
     public class FilterTerm
     {
-        public string Name { get; set; }
+        private string _filter;
 
-        public string Operator { get; set; }
+        public FilterTerm(string filter)
+        {
+            _filter = filter;
+        }
 
-        [BindNever]
+        public string Name
+        {
+            get
+            {
+                return _filter.Split(' ')[0];
+            }
+        }
+
+        public string Operator
+        {
+            get
+            {
+                return _filter.Split(' ')[1];
+            }
+        }
+
+
+        public string Value {
+            get
+            {
+                return _filter.Split(' ')[2];
+            }
+        }
+
         public FilterOperator OperatorParsed {
-            get {
+            get
+            {
                 switch (Operator.Trim().ToLower())
                 {
                     case "equals":
@@ -51,8 +77,5 @@ namespace Sieve.Models
             }
         }
 
-        public string Value { get; set; }
-
-        public bool Descending { get; set; } = false;
     }
 }

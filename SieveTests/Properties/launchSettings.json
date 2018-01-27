@@ -18,12 +18,11 @@
     },
     "SieveTests": {
       "commandName": "Project",
-      "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:65137/"
+      "applicationUrl": "http://localhost:6500/"
     }
   }
 }

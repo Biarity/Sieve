@@ -5,7 +5,7 @@ using System.Text;
 namespace Sieve.Attributes
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    class SieveAttribute : Attribute
+    public class SieveAttribute : Attribute
     {
         /// <summary>
         /// Override name used 

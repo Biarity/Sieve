@@ -7,14 +7,55 @@ namespace Sieve.Models
 {
     public class SieveModel
     {
-        public IEnumerable<FilterTerm> Filter { get; set; }
+        public string Filters { get; set; }
 
-        public IEnumerable<SortTerm> Sort { get; set; }
-
-        [Range(1, Double.MaxValue)]
-        public int Page { get; set; } = 1;
+        public string Sorts { get; set; }
 
         [Range(1, Double.MaxValue)]
-        public int PageSize { get; set; } = 10;
+        public int? Page { get; set; }
+
+        [Range(1, Double.MaxValue)]
+        public int? PageSize { get; set; }
+
+
+        public List<FilterTerm> FilterParsed
+        {
+            get
+            {
+                if (Filters != null)
+                {
+                    var value = new List<FilterTerm>();
+                    foreach (var filter in Filters.Split(','))
+                    {
+                        value.Add(new FilterTerm(filter));
+                    }
+                    return value;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        public List<SortTerm> SortParsed
+        {
+            get
+            {
+                if (Sorts != null)
+                {
+                    var value = new List<SortTerm>();
+                    foreach (var sort in Sorts.Split(','))
+                    {
+                        value.Add(new SortTerm(sort));
+                    }
+                    return value;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
     }
 }

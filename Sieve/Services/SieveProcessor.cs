@@ -5,19 +5,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data.Entity;
 using System.Reflection;
 using Sieve.Attributes;
 using Sieve.Extensions;
+using System.ComponentModel;
+using System.Collections;
+using System.Linq.Expressions;
 
 namespace Sieve.Services
 {
-    public class SieveProcessor<TEntity>
+    //public class SieveProcessor : SieveProcessor<object>, ISieveProcessor
+    //{
+    //    public SieveProcessor(IOptions<SieveOptions> options, ISieveCustomSortMethods<object> customSortMethods, ISieveCustomFilterMethods<object> customFilterMethods) : base(options, customSortMethods, customFilterMethods)
+    //    {
+    //    }
+    //
+    //    public SieveProcessor(IOptions<SieveOptions> options) : base(options)
+    //    {
+    //    }
+    //
+    //}
+
+    public class SieveProcessor<TEntity> : ISieveProcessor<TEntity>
         where TEntity: class
     {
         private IOptions<SieveOptions> _options;
         private ISieveCustomSortMethods<TEntity> _customSortMethods;
         private ISieveCustomFilterMethods<TEntity> _customFilterMethods;
+        
 
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomSortMethods<TEntity> customSortMethods,
@@ -28,15 +43,23 @@ namespace Sieve.Services
             _customFilterMethods = customFilterMethods;
         }
 
-        public IEnumerable<TEntity> ApplyAll(SieveModel model, IQueryable<TEntity> source)
+        public SieveProcessor(IOptions<SieveOptions> options)
         {
-            var result = source.AsNoTracking();
+            _options = options;
+        }
+
+        public IQueryable<TEntity> ApplyAll(SieveModel model, IQueryable<TEntity> source)
+        {
+            var result = source;
+
+            if (model == null)
+                return result;
 
             // Sort
-            result = ApplySort(model, result);
+            result = ApplySorting(model, result);
 
             // Filter
-            result = ApplyFilter(model, result);
+            result = ApplyFiltering(model, result);
 
             // Paginate
             result = ApplyPagination(model, result);
@@ -44,84 +67,95 @@ namespace Sieve.Services
             return result;
         }
 
-        public IQueryable<TEntity> ApplySort(SieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplySorting(SieveModel model, IQueryable<TEntity> result)
         {
-            foreach (var sortTerm in model.Sort)
+            if (model?.SortParsed == null)
+                return result;
+
+            var useThenBy = false;
+            foreach (var sortTerm in model.SortParsed)
             {
                 var property = GetSieveProperty(true, false, sortTerm.Name);
 
                 if (property != null)
                 {
-                    result = result.OrderByWithDirection(
-                        e => property.GetValue(e),
-                        sortTerm.Descending);
+                    result = result.OrderByDynamic(property.Name, sortTerm.Descending, useThenBy);
                 }
                 else
                 {
-                    var customMethod = _customSortMethods.GetType()
-                        .GetMethod(sortTerm.Name);
-
-                    if (customMethod != null)
-                    {
-                        result = result.OrderByWithDirection(
-                            e => customMethod.Invoke(_customSortMethods, new object[] { e }),
-                            sortTerm.Descending);
-                    }
+                    result = ApplyCustomMethod(result, sortTerm.Name, _customSortMethods, 
+                        includeUseThenBy: true,
+                        useThenBy: useThenBy);
                 }
+                useThenBy = true;
             }
 
             return result;
         }
-
-        public IQueryable<TEntity> ApplyFilter(SieveModel model, IQueryable<TEntity> result)
+        
+        public IQueryable<TEntity> ApplyFiltering(SieveModel model, IQueryable<TEntity> result)
         {
-            foreach (var filterTerm in model.Filter)
+            if (model?.FilterParsed == null)
+                return result;
+
+            foreach (var filterTerm in model.FilterParsed)
             {
                 var property = GetSieveProperty(false, true, filterTerm.Name);
 
                 if (property != null)
                 {
-                    var filterValue = Convert.ChangeType(filterTerm.Value, property.GetType());
-                    
+                    var converter = TypeDescriptor.GetConverter(property.PropertyType);
+                    var parameter = Expression.Parameter(typeof(TEntity), "e");
+
+                    var filterValue = Expression.Constant(
+                        converter.CanConvertFrom(typeof(string)) ?
+                        converter.ConvertFrom(filterTerm.Value) :
+                        Convert.ChangeType(filterTerm.Value, property.PropertyType));
+
+                    var propertyValue = Expression.PropertyOrField(parameter, property.Name);
+
+                    Expression comparison;
+
                     switch (filterTerm.OperatorParsed)
                     {
                         case FilterOperator.Equals:
-                            result = result.Where(e => ((IComparable)property.GetValue(e)).Equals(filterValue));
+                            comparison = Expression.Equal(propertyValue, filterValue);
                             break;
                         case FilterOperator.GreaterThan:
-                            result = result.Where(e => ((IComparable)property.GetValue(e)).CompareTo(filterValue) > 0);
+                            comparison = Expression.GreaterThan(propertyValue, filterValue);
                             break;
                         case FilterOperator.LessThan:
-                            result = result.Where(e => ((IComparable)property.GetValue(e)).CompareTo(filterValue) < 0);
+                            comparison = Expression.LessThan(propertyValue, filterValue);
                             break;
                         case FilterOperator.GreaterThanOrEqualTo:
-                            result = result.Where(e => ((IComparable)property.GetValue(e)).CompareTo(filterValue) >= 0);
+                            comparison = Expression.GreaterThanOrEqual(propertyValue, filterValue);
                             break;
                         case FilterOperator.LessThanOrEqualTo:
-                            result = result.Where(e => ((IComparable)property.GetValue(e)).CompareTo(filterValue) <= 0);
+                            comparison = Expression.LessThanOrEqual(propertyValue, filterValue);
                             break;
                         case FilterOperator.Contains:
-                            result = result.Where(e => ((string)property.GetValue(e)).Contains((string)filterValue));
+                            comparison = Expression.Call(propertyValue, 
+                                typeof(string).GetMethods()
+                                .First(m => m.Name == "Contains" && m.GetParameters().Length == 1),
+                                filterValue);
                             break;
                         case FilterOperator.StartsWith:
-                            result = result.Where(e => ((string)property.GetValue(e)).StartsWith((string)filterValue));
-                            break;
+                            comparison = Expression.Call(propertyValue,
+                                typeof(string).GetMethods()
+                                .First(m => m.Name == "StartsWith" && m.GetParameters().Length == 1),
+                                filterValue); break;
                         default:
-                            result = result.Where(e => ((IComparable)property.GetValue(e)).Equals(filterValue));
+                            comparison = Expression.Equal(propertyValue, filterValue);
                             break;
                     }
+
+                    result = result.Where(Expression.Lambda<Func<TEntity, bool>>(
+                                comparison,
+                                parameter));
                 }
                 else
                 {
-                    var customMethod = _customFilterMethods.GetType()
-                        .GetMethod(filterTerm.Name);
-
-                    if (customMethod != null)
-                    {
-                        result = result.Where(
-                            e => (bool)customMethod.Invoke(_customFilterMethods, new object[] { e }));
-                    }
-
+                    result = ApplyCustomMethod(result, filterTerm.Name, _customFilterMethods);
                 }
             }
 
@@ -130,8 +164,11 @@ namespace Sieve.Services
 
         public IQueryable<TEntity> ApplyPagination(SieveModel model, IQueryable<TEntity> result)
         {
-            result = result.Skip((model.Page - 1) * model.PageSize)
-                .Take(model.PageSize);
+            if (model?.Page == null || model?.PageSize == null)
+                return result;
+
+            result = result.Skip((model.Page.Value - 1) * model.PageSize.Value)
+                .Take(model.PageSize.Value);
             return result;
         }
 
@@ -146,6 +183,22 @@ namespace Sieve.Services
                         return true;
                 return false;
             });
+        }
+
+        private IQueryable<TEntity> ApplyCustomMethod(IQueryable<TEntity> result, string name, object parent, 
+            bool includeUseThenBy = false, bool useThenBy = false)
+        {
+            var customMethod = parent?.GetType()
+                .GetMethod(name);
+
+            if (customMethod != null)
+            {
+                var parameters = includeUseThenBy ? new object[] { result, useThenBy } : new object[] { result };
+                result = customMethod.Invoke(parent, parameters)
+                    as IQueryable<TEntity>;
+            }
+
+            return result;
         }
     }
 }
