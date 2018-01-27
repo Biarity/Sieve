@@ -1,5 +1,5 @@
 # 🎛️ Sieve
-Sieve is a simple and extensible framework for .NET Core that adds sorting, filtering, and pagination functionality out of the box. 
+Sieve is a simple and extensible framework for .NET Core that **adds sorting, filtering, and pagination functionality out of the box**. 
 Most common use case would be for serving ASP.NET Core GET queries.
 
 ## Usage for ASP.NET Core
@@ -59,10 +59,48 @@ There are also `ApplySorting`, `ApplyFiltering`, and `ApplyPagination` methods.
 
 #### Add custom sort/filter methods
 
+If you want to add custom sort/filter methods, inject `ISieveCustomSortMethods<TEntity>` or `ISieveCustomFilterMethods<TEntity>` with the implementation being a class that has custom sort/filter methods for `TEntity`.
+
+For instance:
+```
+services.AddScoped<ISieveCustomSortMethods<Post>, SieveCustomSortMethodsOfPosts>();
+services.AddScoped<ISieveCustomFilterMethods<Post>, SieveCustomFilterMethodsOfPosts>();
+```
+Where `SieveCustomSortMethodsOfPosts` for example is:
+```
+public class SieveCustomSortMethodsOfPosts : ISieveCustomSortMethods<Post>
+{
+    public IQueryable<Post> Popularity(IQueryable<Post> source, bool useThenBy, bool desc)
+    {
+        var result = useThenBy ?
+            ((IOrderedQueryable<Post>)source).ThenBy(p => p.LikeCount) :
+            source.OrderBy(p => p.LikeCount)
+            .ThenBy(p => p.CommentCount)
+            .ThenBy(p => p.DateCreated);
+
+        return result;
+    }
+}
+```
+And `SieveCustomFilterMethodsOfPosts`:
+```
+public class SieveCustomFilterMethodsOfPosts : ISieveCustomFilterMethods<Post>
+{
+    public IQueryable<Post> IsNew(IQueryable<Post> source)
+    {
+        var result = source.Where(p => p.LikeCount < 100 &&
+                                        p.CommentCount < 5);
+
+        return result;
+    }
+}
+```
+
 #### Customize Sieve
-
-## Usage for other than ASP.NET Core
-
+Use the [ASP.NET Core options pattern](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options) with `SieveOptions` to tell Sieve where to look for configuration. For example:
+```
+services.Configure<SieveOptions>(Configuration.GetSection("Sieve"));
+```
 
 ## Send a request
 
