@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Sieve</id>
+    <version>1.2</version>
+    <title>Sieve</title>
+    <authors>Biarity</authors>
+    <owners>Biarity</owners>
+    <licenseUrl>https://github.com/Biarity/Sieve/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/Biarity/Sieve</projectUrl>
+    <iconUrl>https://emojipedia-us.s3.amazonaws.com/thumbs/240/emoji-one/104/control-knobs_1f39b.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Sieve is a simple, clean, and extensible framework for .NET Core that adds sorting, filtering, and pagination functionality out of the box. Most common use case would be for serving ASP.NET Core GET queries.</description>
+    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags>aspnetcore filter sort page paginate sieve search</tags>
+    <dependencies>
+      <group targetFramework=".NETCoreApp2.0">
+        <dependency id="Microsoft.Extensions.Options" version="2.0.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

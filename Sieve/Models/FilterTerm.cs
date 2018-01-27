@@ -44,7 +44,8 @@ namespace Sieve.Models
                     }
                 }
 
-                return "";
+                var tokens = _filter.Split(' ');
+                return tokens.Length > 1 ? tokens[1] : "";
             }
         }
 

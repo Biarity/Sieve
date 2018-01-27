@@ -97,10 +97,13 @@ namespace Sieve.Services
                 }
                 else
                 {
-                    result = ApplyCustomMethod(result, sortTerm.Name, _customSortMethods, 
-                        isSorting: true,
-                        useThenBy: useThenBy,
-                        desc: sortTerm.Descending);
+                    result = ApplyCustomMethod(result, sortTerm.Name, _customSortMethods,
+                        new object[]
+                        {
+                            result,
+                            useThenBy,
+                            sortTerm.Descending
+                        });
                 }
                 useThenBy = true;
             }
@@ -170,7 +173,12 @@ namespace Sieve.Services
                 }
                 else
                 {
-                    result = ApplyCustomMethod(result, filterTerm.Name, _customFilterMethods);
+                    result = ApplyCustomMethod(result, filterTerm.Name, _customFilterMethods, 
+                        new object[] {
+                            result,
+                            filterTerm.Operator,
+                            filterTerm.Value
+                        });
                 }
             }
 
@@ -204,15 +212,13 @@ namespace Sieve.Services
             });
         }
 
-        private IQueryable<TEntity> ApplyCustomMethod(IQueryable<TEntity> result, string name, object parent, 
-            bool isSorting = false, bool useThenBy = false, bool desc = false)
+        private IQueryable<TEntity> ApplyCustomMethod(IQueryable<TEntity> result, string name, object parent, object[] parameters)
         {
             var customMethod = parent?.GetType()
                 .GetMethod(name);
 
             if (customMethod != null)
             {
-                var parameters = isSorting ? new object[] { result, useThenBy, desc } : new object[] { result };
                 result = customMethod.Invoke(parent, parameters)
                     as IQueryable<TEntity>;
             }
