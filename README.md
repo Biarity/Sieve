@@ -128,8 +128,8 @@ More formally:
 * `sorts` is a comma-delimited ordered list of property names to sort by. Adding a `-` before the name switches to sorting descendingly.
 * `filters` is a comma-delimited list of `{Name}{Operator}{Value}` where
     * `{Name}` is the name of a property with the Sieve attribute or the name of a custom filter method for TEntity
-    * `{Operator}` is one of the [Operators](#operators) (not used when using a custom method)
-    * `{Value}` is the value to use for filtering (not used when using a custom method)
+    * `{Operator}` is one of the [Operators](#operators) (has to be preceeded by a space when using custom filter methods)
+    * `{Value}` is the value to use for filtering
 * `page` is the number of page to return
 * `pageSize` is the number of items returned per page 
 
