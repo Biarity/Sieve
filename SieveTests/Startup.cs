@@ -33,7 +33,7 @@ namespace SieveTests
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("TestSqlServer")));
 
-            services.Configure<SieveOptions>(Configuration.GetSection("SieveConfig"));
+            services.Configure<SieveOptions>(Configuration.GetSection("Sieve"));
 
 
             //services.AddScoped<ISieveProcessor, SieveProcessor>();
