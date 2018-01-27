@@ -57,33 +57,12 @@ namespace Sieve.Services
             _customFilterMethods = customFilterMethods;
         }
 
-        //public SieveProcessor(ISieveCustomSortMethods<TEntity> customSortMethods,
-        //    ISieveCustomFilterMethods<TEntity> customFilterMethods)
-        //{
-        //    _options = new SieveOptions();
-        //    _customSortMethods = customSortMethods;
-        //    _customFilterMethods = customFilterMethods;
-        //}
-        //
-        //public SieveProcessor(ISieveCustomSortMethods<TEntity> customSortMethods)
-        //{
-        //    _options = options;
-        //    _customSortMethods = customSortMethods;
-        //}
-        //
-        //public SieveProcessor(ISieveCustomFilterMethods<TEntity> customFilterMethods)
-        //{
-        //    _options = options;
-        //    _customFilterMethods = customFilterMethods;
-        //}
-
-
         public SieveProcessor(IOptions<SieveOptions> options)
         {
             _options = options;
         }
 
-        public IQueryable<TEntity> ApplyAll(SieveModel model, IQueryable<TEntity> source)
+        public IQueryable<TEntity> ApplyAll(ISieveModel model, IQueryable<TEntity> source)
         {
             var result = source;
 
@@ -102,7 +81,7 @@ namespace Sieve.Services
             return result;
         }
 
-        public IQueryable<TEntity> ApplySorting(SieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplySorting(ISieveModel model, IQueryable<TEntity> result)
         {
             if (model?.SortParsed == null)
                 return result;
@@ -129,7 +108,7 @@ namespace Sieve.Services
             return result;
         }
         
-        public IQueryable<TEntity> ApplyFiltering(SieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplyFiltering(ISieveModel model, IQueryable<TEntity> result)
         {
             if (model?.FilterParsed == null)
                 return result;
@@ -198,7 +177,7 @@ namespace Sieve.Services
             return result;
         }
 
-        public IQueryable<TEntity> ApplyPagination(SieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplyPagination(ISieveModel model, IQueryable<TEntity> result)
         {
             if (model?.Page == null || model?.PageSize == null)
                 if (_options.Value.DefaultPageSize > 0)
