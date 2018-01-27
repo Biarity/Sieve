@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Sieve.Models
 {
-    public class SieveModel
+    public class SieveModel : ISieveModel
     {
         public string Filters { get; set; }
 

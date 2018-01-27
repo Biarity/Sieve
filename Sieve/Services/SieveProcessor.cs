@@ -57,6 +57,27 @@ namespace Sieve.Services
             _customFilterMethods = customFilterMethods;
         }
 
+        //public SieveProcessor(ISieveCustomSortMethods<TEntity> customSortMethods,
+        //    ISieveCustomFilterMethods<TEntity> customFilterMethods)
+        //{
+        //    _options = new SieveOptions();
+        //    _customSortMethods = customSortMethods;
+        //    _customFilterMethods = customFilterMethods;
+        //}
+        //
+        //public SieveProcessor(ISieveCustomSortMethods<TEntity> customSortMethods)
+        //{
+        //    _options = options;
+        //    _customSortMethods = customSortMethods;
+        //}
+        //
+        //public SieveProcessor(ISieveCustomFilterMethods<TEntity> customFilterMethods)
+        //{
+        //    _options = options;
+        //    _customFilterMethods = customFilterMethods;
+        //}
+
+
         public SieveProcessor(IOptions<SieveOptions> options)
         {
             _options = options;
@@ -180,6 +201,9 @@ namespace Sieve.Services
         public IQueryable<TEntity> ApplyPagination(SieveModel model, IQueryable<TEntity> result)
         {
             if (model?.Page == null || model?.PageSize == null)
+                if (_options.Value.DefaultPageSize > 0)
+                    return result.Take(_options.Value.DefaultPageSize);
+                else
                 return result;
 
             result = result.Skip((model.Page.Value - 1) * model.PageSize.Value)
@@ -194,7 +218,8 @@ namespace Sieve.Services
                 if (p.GetCustomAttribute(typeof(SieveAttribute)) is SieveAttribute sieveAttribute)
                     if ((canSortRequired ? sieveAttribute.CanSort : true) &&
                         (canFilterRequired ? sieveAttribute.CanFilter : true) &&
-                        ((sieveAttribute.Name ?? p.Name) == name))
+                        ((sieveAttribute.Name ?? p.Name).Equals(name, 
+                            _options.Value.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)))
                         return true;
                 return false;
             });

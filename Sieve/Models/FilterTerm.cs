@@ -8,6 +8,15 @@ namespace Sieve.Models
     public class FilterTerm
     {
         private string _filter;
+        private string[] operators = new string[] {
+                    "==",
+                    "!=",
+                    ">",
+                    "<",
+                    ">=",
+                    "<=",
+                    "@=",
+                    "_=" };
 
         public FilterTerm(string filter)
         {
@@ -18,7 +27,8 @@ namespace Sieve.Models
         {
             get
             {
-                return _filter.Split(' ')[0];
+                return _filter.Split(operators, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
+                
             }
         }
 
@@ -26,7 +36,15 @@ namespace Sieve.Models
         {
             get
             {
-                return _filter.Split(' ')[1];
+                foreach (var op in operators)
+                {
+                    if (_filter.IndexOf(op) != -1)
+                    {
+                        return op;
+                    }
+                }
+
+                return "";
             }
         }
 
@@ -34,7 +52,8 @@ namespace Sieve.Models
         public string Value {
             get
             {
-                return _filter.Split(' ')[2];
+                var tokens = _filter.Split(operators, StringSplitOptions.RemoveEmptyEntries);
+                return tokens.Length > 1 ? tokens[1].Trim() : null;
             }
         }
 
@@ -47,6 +66,10 @@ namespace Sieve.Models
                     case "eq":
                     case "==":
                         return FilterOperator.Equals;
+                    case "notequals":
+                    case "nq":
+                    case "!=":
+                        return FilterOperator.NotEquals;
                     case "lessthan":
                     case "lt":
                     case "<":
