@@ -7,7 +7,7 @@ Most common use case would be for serving ASP.NET Core GET queries.
 In this example, consider an app with a `Post` entity. 
 We'll use Sieve to add sorting, filtering, and pagination capabilities when GET-ing all available posts.
 
-#### 1. Add required services (`SieveProcessor<TEntity>`)
+### 1. Add required services (`SieveProcessor<TEntity>`)
 
 Inject the `SieveProcessor<TEntity>` service for each entity you'd like to use Sieve with.
 So to use Sieve with `Post`s, go to `ConfigureServices` in `Startup.cs` and add:
@@ -15,7 +15,7 @@ So to use Sieve with `Post`s, go to `ConfigureServices` in `Startup.cs` and add:
 services.AddScoped<SieveProcessor<Post>>();
 ```
 
-#### 2. Add `Sieve` attributes on properties you'd like to sort/filter in your models
+### 2. Add `Sieve` attributes on properties you'd like to sort/filter in your models
 
 Sieve will only sort/filter properties that have the attribute `[Sieve(CanSort = true, CanFilter = true)]` on them (they don't have to be both true).
 So for our `Post` entity model:
@@ -37,7 +37,7 @@ public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 ```
 There is also the `name` parameter that you can use to have a different name for use by clients.
 
-#### 3. Use `SieveModel` in your controllers
+### 3. Use `SieveModel` in your controllers
 
 In the action handling returning Posts, use the `SieveModel` to get the sort/filter/paginate query. 
 Apply it by to your data by injecting `SieveProcessor<Post>` into the controller and using its `ApplyAll` method.
@@ -53,11 +53,11 @@ public JsonResult GetPosts(SieveModel sieveModel)
 ```
 There are also `ApplySorting`, `ApplyFiltering`, and `ApplyPagination` methods.
 
-#### 4. Send a request
+### 4. Send a request
 
 [Send a request](#Send%20a%20request)
 
-#### Add custom sort/filter methods
+### Add custom sort/filter methods
 
 If you want to add custom sort/filter methods, inject `ISieveCustomSortMethods<TEntity>` or `ISieveCustomFilterMethods<TEntity>` with the implementation being a class that has custom sort/filter methods for `TEntity`.
 
@@ -96,24 +96,58 @@ public class SieveCustomFilterMethodsOfPosts : ISieveCustomFilterMethods<Post>
 }
 ```
 
-#### Customize Sieve
+### Configure Sieve
 Use the [ASP.NET Core options pattern](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options) with `SieveOptions` to tell Sieve where to look for configuration. For example:
 ```
 services.Configure<SieveOptions>(Configuration.GetSection("Sieve"));
 ```
+Then you can add configuration:
+```
+{
+    "Sieve": {
+        "CaseSensitive": `boolean: should property names be case-sensitive? Defaults to false`,
+        "DefaultPageSize": `number: optional number to trim to when no page argument is given`
+    }
+}
+```
 
 ## Send a request
 
-With all the above in place, you can now send a GET request that includes a sort/filter/paginate query:
+With all the above in place, you can now send a GET request that includes a sort/filter/paginate query.
+An example:
 ```
 GET /GetPosts
 
-?sorts=     LikeCount,CommentCount,-created     // 
-&filters=   LikeCount > 10, Title contains 
-&page=      1
-&pageSize=  10
+?sorts=     LikeCount,CommentCount,-created         // sort by likes, then comments, then descendingly by date created 
+&filters=   LikeCount>10, Title@=awesome title,     // filter to posts with more than 10 likes, and a title that contains the phrase "awesome title"
+&page=      1                                       // get the first page...
+&pageSize=  10                                      // ...which contains 10 posts
 
 ```
+More formally:
+* `sorts` is a comma-delimited ordered list of property names to sort by. Adding a `-` before the name switches to sorting descendingly.
+* `filters` is a comma-delimited list of `{Name}{Operator}{Value}` where
+    * `{Name}` is the name of a property with the Sieve attribute or the name of a custom filter method for TEntity
+    * `{Operator}` is one of the [Operators](#operators) (not used when using a custom method)
+    * `{Value}` is the value to use for filtering (not used when using a custom method)
+* `page` is the number of page to return
+* `pageSize` is the number of items returned per page 
 
+Notes:
+* Don't forget to remove commas from any `{Value}` fields
+* You can have spaces anywhere except *within* `{Name}` or `{Operator}` fields
 
+#### Creating your own DSL
+You can replace this DSL with your own (eg. use JSON instead) by implementing an [ISieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/ISieveModel.cs). You can use the default [SieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/SieveModel.cs) for refrence.
 
+### Operators
+| Operator   | Meaning                  |
+|------------|--------------------------|
+| `==`       | Equals                   |
+| `!=`       | Not equals               |
+| `>`        | Greater than             |
+| `<`        | Less than                |
+| `>=`       | Greater than or equal to |
+| `<=`       | Less than or equal to    |
+| `@=`       | Contains                 |
+| `_=`       | Starts with              |
