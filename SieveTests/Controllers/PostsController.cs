@@ -11,12 +11,12 @@ using SieveTests.Entities;
 namespace SieveTests.Controllers
 {
     [Route("api/[controller]/[action]")]
-    public class TestController : Controller
+    public class PostsController : Controller
     {
         private ISieveProcessor<Post> _sieveProcessor;
         private ApplicationDbContext _dbContext;
 
-        public TestController(ISieveProcessor<Post> sieveProcessor,
+        public PostsController(ISieveProcessor<Post> sieveProcessor,
             ApplicationDbContext dbContext)
         {
             _sieveProcessor = sieveProcessor;
