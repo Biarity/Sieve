@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Sieve.Models;
 using Sieve.Services;
 using SieveTests.Entities;
+using SieveTests.Services;
 
 namespace SieveTests
 {
@@ -36,6 +37,8 @@ namespace SieveTests
 
 
             //services.AddScoped<ISieveProcessor, SieveProcessor>();
+            services.AddScoped<ISieveCustomSortMethods<Post>, SieveCustomSortMethodsOfPosts>();
+            services.AddScoped<ISieveCustomFilterMethods<Post>, SieveCustomFilterMethodsOfPosts>();
             services.AddScoped<ISieveProcessor<Post>, SieveProcessor<Post>>();
 
         }
