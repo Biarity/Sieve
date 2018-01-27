@@ -55,7 +55,7 @@ There are also `ApplySorting`, `ApplyFiltering`, and `ApplyPagination` methods.
 
 ### 4. Send a request
 
-[Send a request](#Send%20a%20request)
+[Send a request](#send-a-request)
 
 ### Add custom sort/filter methods
 
