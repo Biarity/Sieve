@@ -139,6 +139,9 @@ namespace Sieve.Services
                         case FilterOperator.Equals:
                             comparison = Expression.Equal(propertyValue, filterValue);
                             break;
+                        case FilterOperator.NotEquals:
+                            comparison = Expression.NotEqual(propertyValue, filterValue);
+                            break;
                         case FilterOperator.GreaterThan:
                             comparison = Expression.GreaterThan(propertyValue, filterValue);
                             break;
