@@ -141,7 +141,7 @@ Notes:
 * Don't forget to remove commas from any `{Value}` fields
 * You can have spaces anywhere except *within* `{Name}` or `{Operator}` fields
 
-#### Creating your own DSL
+### Creating your own DSL
 You can replace this DSL with your own (eg. use JSON instead) by implementing an [ISieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/ISieveModel.cs). You can use the default [SieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/SieveModel.cs) for refrence.
 
 ### Operators
@@ -155,3 +155,9 @@ You can replace this DSL with your own (eg. use JSON instead) by implementing an
 | `<=`       | Less than or equal to    |
 | `@=`       | Contains                 |
 | `_=`       | Starts with              |
+
+### Example project
+You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
+
+## License & Contributing
+Sieve is licensed under Apache 2.0. Any contributions highly appreciated!
