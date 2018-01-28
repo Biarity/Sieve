@@ -3,7 +3,8 @@ Sieve is a simple, clean, and extensible framework for .NET Core that **adds sor
 Most common use case would be for serving ASP.NET Core GET queries.
 
 [![NuGet Pre Release](https://img.shields.io/nuget/v/Sieve.svg?style=flat-square)](https://www.nuget.org/packages/Sieve)
-[Get Sieve on nuget](https://www.nuget.org/packages/Sieve/).
+
+[Get Sieve on nuget](https://www.nuget.org/packages/Sieve/)
 
 ## Usage for ASP.NET Core
 
