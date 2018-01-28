@@ -9,6 +9,7 @@ For some reason `dotnet pack` chooses to ignore my Sieve.nuspec.
 So unpack the Sieve.1.2.0.nupkg, and replace the nuspec in there with the local one.
 Don't forget that if you add new dependencies, you'll need to declare them in the nuspec.
 Also don't forget updating the version number in nuspec.
+Also don't forget updaing `releaseNotes` in nuspec.
 
 ### 3. Publish:
 ```
