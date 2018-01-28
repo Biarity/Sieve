@@ -2,12 +2,14 @@
 ```
 dotnet pack Sieve.csproj -c Release -o . /p:PackageVersion=1.2.0
 ```
-Don't forget to change version since nuget packages are immutable.
+Don't forget to change version since nuget packages are immutable (add one to the nuget current).
 
 ### 2. Manually add nuspec:
 For some reason `dotnet pack` chooses to ignore my Sieve.nuspec.
 So unpack the Sieve.1.2.0.nupkg, and replace the nuspec in there with the local one.
 Don't forget that if you add new dependencies, you'll need to declare them in the nuspec.
+Also don't forget updating the version number in nuspec.
+Also don't forget updaing `releaseNotes` in nuspec.
 
 ### 3. Publish:
 ```

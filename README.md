@@ -3,16 +3,15 @@ Sieve is a simple, clean, and extensible framework for .NET Core that **adds sor
 Most common use case would be for serving ASP.NET Core GET queries.
 
 [![NuGet Pre Release](https://img.shields.io/nuget/v/Sieve.svg?style=flat-square)](https://www.nuget.org/packages/Sieve)
-[![AppVeyor](https://img.shields.io/appveyor/ci/Biarity/sieve.svg?style=flat-square)](https://ci.appveyor.com/project/Biarity/sieve)
 
-[Get Sieve on nuget](https://www.nuget.org/packages/Sieve/).
+[Get Sieve on nuget](https://www.nuget.org/packages/Sieve/)
 
 ## Usage for ASP.NET Core
 
 In this example, consider an app with a `Post` entity. 
 We'll use Sieve to add sorting, filtering, and pagination capabilities when GET-ing all available posts.
 
-### 1. Add required services (`SieveProcessor<TEntity>`)
+### 1. Add required services
 
 Inject the `SieveProcessor<TEntity>` service for each entity you'd like to use Sieve with.
 So to use Sieve with `Post`s, in `ConfigureServices` in `Startup.cs` add:
@@ -20,7 +19,7 @@ So to use Sieve with `Post`s, in `ConfigureServices` in `Startup.cs` add:
 services.AddScoped<SieveProcessor<Post>>();
 ```
 
-### 2. Add `Sieve` attributes on properties you'd like to sort/filter in your models
+### 2. Tell Sieve which properties you'd like to sort/filter in your models
 
 Sieve will only sort/filter properties that have the attribute `[Sieve(CanSort = true, CanFilter = true)]` on them (they don't have to be both true).
 So for our `Post` entity model example:
@@ -42,9 +41,9 @@ public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 ```
 There is also the `name` parameter that you can use to have a different name for use by clients.
 
-### 3. Use `SieveModel` in your controllers
+### 3. Get sort/filter/page queries by using the Sieve model in your controllers
 
-In the action handling returning Posts, use `SieveModel` to get the sort/filter/paginate query. 
+In the action that handles returning Posts, use `SieveModel` to get the sort/filter/page query. 
 Apply it to your data by injecting `SieveProcessor<Post>` into the controller and using its `ApplyAll` method.
 For instance: 
 ```
@@ -52,7 +51,7 @@ For instance:
 public JsonResult GetPosts(SieveModel sieveModel) 
 {
     var result = _dbContext.Posts.AsNoTracking(); // Makes read-only queries faster
-    result = _sieveProcessor.ApplyAll(sieveModel, result); // Returns `result` after applying the sort/filter/paginate query in `SieveModel` to it
+    result = _sieveProcessor.ApplyAll(sieveModel, result); // Returns `result` after applying the sort/filter/page query in `SieveModel` to it
     return Json(result.ToList());
 }
 ```
@@ -78,7 +77,7 @@ public class SieveCustomSortMethodsOfPosts : ISieveCustomSortMethods<Post>
     public IQueryable<Post> Popularity(IQueryable<Post> source, bool useThenBy, bool desc) // The method is given an indicator of weather to use ThenBy(), and if the query is descending 
     {
         var result = useThenBy ?
-            ((IOrderedQueryable<Post>)source).ThenBy(p => p.LikeCount) :
+            ((IOrderedQueryable<Post>)source).ThenBy(p => p.LikeCount) : // ThenBy only works on IOrderedQueryable<TEntity>
             source.OrderBy(p => p.LikeCount)
             .ThenBy(p => p.CommentCount)
             .ThenBy(p => p.DateCreated);
@@ -118,7 +117,7 @@ Then you can add the configuration:
 
 ## Send a request
 
-With all the above in place, you can now send a GET request that includes a sort/filter/paginate query.
+With all the above in place, you can now send a GET request that includes a sort/filter/page query.
 An example:
 ```
 GET /GetPosts
@@ -142,8 +141,8 @@ Notes:
 * Don't forget to remove commas from any `{Value}` fields
 * You can have spaces anywhere except *within* `{Name}` or `{Operator}` fields
 
-#### Creating your own DSL
-You can replace this DSL with your own (eg. use JSON instead) by implementing an [ISieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/ISieveModel.cs). You can use the default [SieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/SieveModel.cs) for refrence.
+### Creating your own DSL
+You can replace this DSL with your own (eg. use JSON instead) by implementing an [ISieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/ISieveModel.cs). You can use the default [SieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/SieveModel.cs) for reference.
 
 ### Operators
 | Operator   | Meaning                  |
@@ -156,3 +155,9 @@ You can replace this DSL with your own (eg. use JSON instead) by implementing an
 | `<=`       | Less than or equal to    |
 | `@=`       | Contains                 |
 | `_=`       | Starts with              |
+
+### Example project
+You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
+
+## License & Contributing
+Sieve is licensed under Apache 2.0. Any contributions highly appreciated!
