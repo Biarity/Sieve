@@ -83,11 +83,11 @@ namespace Sieve.Services
 
         public IQueryable<TEntity> ApplySorting(ISieveModel model, IQueryable<TEntity> result)
         {
-            if (model?.SortParsed == null)
+            if (model?.SortsParsed == null)
                 return result;
 
             var useThenBy = false;
-            foreach (var sortTerm in model.SortParsed)
+            foreach (var sortTerm in model.SortsParsed)
             {
                 var property = GetSieveProperty(true, false, sortTerm.Name);
 
@@ -113,10 +113,10 @@ namespace Sieve.Services
         
         public IQueryable<TEntity> ApplyFiltering(ISieveModel model, IQueryable<TEntity> result)
         {
-            if (model?.FilterParsed == null)
+            if (model?.FiltersParsed == null)
                 return result;
 
-            foreach (var filterTerm in model.FilterParsed)
+            foreach (var filterTerm in model.FiltersParsed)
             {
                 var property = GetSieveProperty(false, true, filterTerm.Name);
 

@@ -18,7 +18,7 @@ namespace Sieve.Models
         public int? PageSize { get; set; }
 
 
-        public List<FilterTerm> FilterParsed
+        public List<FilterTerm> FiltersParsed
         {
             get
             {
@@ -38,7 +38,7 @@ namespace Sieve.Models
             }
         }
 
-        public List<SortTerm> SortParsed
+        public List<SortTerm> SortsParsed
         {
             get
             {
