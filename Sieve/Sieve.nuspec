@@ -8,7 +8,7 @@
     <owners>Biarity</owners>
     <licenseUrl>https://github.com/Biarity/Sieve/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/Biarity/Sieve</projectUrl>
-    <iconUrl>https://emojipedia-us.s3.amazonaws.com/thumbs/240/emoji-one/104/control-knobs_1f39b.png</iconUrl>
+    <iconUrl>https://emojipedia-us.s3.amazonaws.com/thumbs/240/twitter/120/alembic_2697.png</iconUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>
       Sieve is a simple, clean, and extensible framework for .NET Core that adds sorting, filtering, and pagination functionality out of the box. Most common use case would be for serving ASP.NET Core GET queries. Documentation available on GitHub: https://github.com/Biarity/Sieve/
