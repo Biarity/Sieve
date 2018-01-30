@@ -1,6 +1,6 @@
 ### 1. Pack:
 ```
-dotnet pack Sieve.csproj -c Release -o . /p:PackageVersion=1.2.0
+dotnet pack Sieve.csproj -c Release -o . /p:PackageVersion=1.3.4
 ```
 Don't forget to change version since nuget packages are immutable (add one to the nuget current).
 

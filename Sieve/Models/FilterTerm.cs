@@ -27,7 +27,8 @@ namespace Sieve.Models
         {
             get
             {
-                return _filter.Split(operators, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
+                var tokens = _filter.Split(operators, StringSplitOptions.RemoveEmptyEntries);
+                return tokens.Length > 0 ? tokens[0].Trim() : "";
                 
             }
         }
@@ -44,8 +45,9 @@ namespace Sieve.Models
                     }
                 }
 
+                // Custom operator
                 var tokens = _filter.Split(' ');
-                return tokens.Length > 1 ? tokens[1] : "";
+                return tokens.Length > 0 ? tokens[1] : "";
             }
         }
 
@@ -54,7 +56,7 @@ namespace Sieve.Models
             get
             {
                 var tokens = _filter.Split(operators, StringSplitOptions.RemoveEmptyEntries);
-                return tokens.Length > 1 ? tokens[1].Trim() : null;
+                return tokens.Length > 0 ? tokens[1].Trim() : null;
             }
         }
 
