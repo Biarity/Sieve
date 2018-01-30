@@ -2,7 +2,7 @@
 ⚗️ Sieve is a simple, clean, and extensible framework for .NET Core that **adds sorting, filtering, and pagination functionality out of the box**. 
 Most common use case would be for serving ASP.NET Core GET queries.
 
-[![NuGet Pre Release](https://img.shields.io/nuget/v/Sieve.svg?style=flat-square)](https://www.nuget.org/packages/Sieve)
+[![NuGet Release](https://img.shields.io/nuget/v/Sieve.svg?style=flat-square)](https://www.nuget.org/packages/Sieve)
 
 [Get Sieve on nuget](https://www.nuget.org/packages/Sieve/)
 
@@ -16,7 +16,7 @@ We'll use Sieve to add sorting, filtering, and pagination capabilities when GET-
 Inject the `SieveProcessor<TEntity>` service for each entity you'd like to use Sieve with.
 So to use Sieve with `Post`s, in `ConfigureServices` in `Startup.cs` add:
 ```
-services.AddScoped<SieveProcessor<Post>>();
+services.AddScoped<ISieveProcessor<Post>, SieveProcessor<Post>>();
 ```
 
 ### 2. Tell Sieve which properties you'd like to sort/filter in your models
