@@ -16,7 +16,7 @@ We'll use Sieve to add sorting, filtering, and pagination capabilities when GET-
 Inject the `SieveProcessor<TEntity>` service for each entity you'd like to use Sieve with.
 So to use Sieve with `Post`s, in `ConfigureServices` in `Startup.cs` add:
 ```
-services.AddScoped<SieveProcessor<Post>>();
+services.AddScoped<ISieveProcessor<Post>, SieveProcessor<Post>>();
 ```
 
 ### 2. Tell Sieve which properties you'd like to sort/filter in your models
