@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SieveTests.Services
 {
-    public class SieveCustomFilterMethodsOfPosts : ISieveCustomFilterMethods<Post>
+    public class SieveCustomFilterMethods : ISieveCustomFilterMethods
     {
         public IQueryable<Post> IsNew(IQueryable<Post> source, string op, string value)
         {

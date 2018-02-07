@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SieveTests.Services
 {
-    public class SieveCustomSortMethodsOfPosts : ISieveCustomSortMethods<Post>
+    public class SieveCustomSortMethods : ISieveCustomSortMethods
     {
         public IQueryable<Post> Popularity(IQueryable<Post> source, bool useThenBy, bool desc)
         {

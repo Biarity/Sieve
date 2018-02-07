@@ -13,10 +13,10 @@ namespace SieveTests.Controllers
     [Route("api/[controller]/[action]")]
     public class PostsController : Controller
     {
-        private ISieveProcessor<Post> _sieveProcessor;
+        private ISieveProcessor _sieveProcessor;
         private ApplicationDbContext _dbContext;
 
-        public PostsController(ISieveProcessor<Post> sieveProcessor,
+        public PostsController(ISieveProcessor sieveProcessor,
             ApplicationDbContext dbContext)
         {
             _sieveProcessor = sieveProcessor;
