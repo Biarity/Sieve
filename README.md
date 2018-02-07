@@ -65,8 +65,8 @@ If you want to add custom sort/filter methods, inject `ISieveCustomSortMethods` 
 
 For instance:
 ```
-services.AddScoped<SieveCustomSortMethods>();
-services.AddScoped<SieveCustomFilterMethods>();
+services.AddScoped<ISieveCustomSortMethods, SieveCustomSortMethods>();
+services.AddScoped<ISieveCustomFilterMethods, SieveCustomFilterMethods>();
 ```
 Where `SieveCustomSortMethodsOfPosts` for example is:
 ```
