@@ -14,29 +14,16 @@ using System.Linq.Expressions;
 
 namespace Sieve.Services
 {
-    //public class SieveProcessor : SieveProcessor<object>, ISieveProcessor
-    //{
-    //    public SieveProcessor(IOptions<SieveOptions> options, ISieveCustomSortMethods<object> customSortMethods, ISieveCustomFilterMethods<object> customFilterMethods) : base(options, customSortMethods, customFilterMethods)
-    //    {
-    //    }
-    //
-    //    public SieveProcessor(IOptions<SieveOptions> options) : base(options)
-    //    {
-    //    }
-    //
-    //}
-
-    public class SieveProcessor<TEntity> : ISieveProcessor<TEntity>
-        where TEntity: class
+    public class SieveProcessor : ISieveProcessor
     {
         private IOptions<SieveOptions> _options;
-        private ISieveCustomSortMethods<TEntity> _customSortMethods;
-        private ISieveCustomFilterMethods<TEntity> _customFilterMethods;
+        private ISieveCustomSortMethods _customSortMethods;
+        private ISieveCustomFilterMethods _customFilterMethods;
         
 
         public SieveProcessor(IOptions<SieveOptions> options,
-            ISieveCustomSortMethods<TEntity> customSortMethods,
-            ISieveCustomFilterMethods<TEntity> customFilterMethods)
+            ISieveCustomSortMethods customSortMethods,
+            ISieveCustomFilterMethods customFilterMethods)
         {
             _options = options;
             _customSortMethods = customSortMethods;
@@ -44,14 +31,14 @@ namespace Sieve.Services
         }
 
         public SieveProcessor(IOptions<SieveOptions> options,
-            ISieveCustomSortMethods<TEntity> customSortMethods)
+            ISieveCustomSortMethods customSortMethods)
         {
             _options = options;
             _customSortMethods = customSortMethods;
         }
 
         public SieveProcessor(IOptions<SieveOptions> options,
-            ISieveCustomFilterMethods<TEntity> customFilterMethods)
+            ISieveCustomFilterMethods customFilterMethods)
         {
             _options = options;
             _customFilterMethods = customFilterMethods;
@@ -62,7 +49,7 @@ namespace Sieve.Services
             _options = options;
         }
 
-        public IQueryable<TEntity> ApplyAll(ISieveModel model, IQueryable<TEntity> source)
+        public IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel model, IQueryable<TEntity> source)
         {
             var result = source;
 
@@ -81,7 +68,7 @@ namespace Sieve.Services
             return result;
         }
 
-        public IQueryable<TEntity> ApplySorting(ISieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel model, IQueryable<TEntity> result)
         {
             if (model?.SortsParsed == null)
                 return result;
@@ -89,7 +76,7 @@ namespace Sieve.Services
             var useThenBy = false;
             foreach (var sortTerm in model.SortsParsed)
             {
-                var property = GetSieveProperty(true, false, sortTerm.Name);
+                var property = GetSieveProperty<TEntity>(true, false, sortTerm.Name);
 
                 if (property != null)
                 {
@@ -111,14 +98,14 @@ namespace Sieve.Services
             return result;
         }
         
-        public IQueryable<TEntity> ApplyFiltering(ISieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel model, IQueryable<TEntity> result)
         {
             if (model?.FiltersParsed == null)
                 return result;
 
             foreach (var filterTerm in model.FiltersParsed)
             {
-                var property = GetSieveProperty(false, true, filterTerm.Name);
+                var property = GetSieveProperty<TEntity>(false, true, filterTerm.Name);
 
                 if (property != null)
                 {
@@ -188,20 +175,20 @@ namespace Sieve.Services
             return result;
         }
 
-        public IQueryable<TEntity> ApplyPagination(ISieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplyPagination<TEntity>(ISieveModel model, IQueryable<TEntity> result)
         {
-            if (model?.Page == null || model?.PageSize == null)
-                if (_options.Value.DefaultPageSize > 0)
-                    return result.Take(_options.Value.DefaultPageSize);
-                else
-                return result;
+            var page = model?.Page ?? 1;
+            var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;
 
-            result = result.Skip((model.Page.Value - 1) * model.PageSize.Value)
-                .Take(model.PageSize.Value);
+            result = result.Skip((page - 1) * pageSize);
+
+            if (pageSize > 0)
+                result = result.Take(pageSize);
+
             return result;
         }
 
-        private  PropertyInfo GetSieveProperty(bool canSortRequired, bool canFilterRequired, string name)
+        private  PropertyInfo GetSieveProperty<TEntity>(bool canSortRequired, bool canFilterRequired, string name)
         {
             return typeof(TEntity).GetProperties().FirstOrDefault(p =>
             {
@@ -215,7 +202,7 @@ namespace Sieve.Services
             });
         }
 
-        private IQueryable<TEntity> ApplyCustomMethod(IQueryable<TEntity> result, string name, object parent, object[] parameters)
+        private IQueryable<TEntity> ApplyCustomMethod<TEntity>(IQueryable<TEntity> result, string name, object parent, object[] parameters)
         {
             var customMethod = parent?.GetType()
                 .GetMethod(name);

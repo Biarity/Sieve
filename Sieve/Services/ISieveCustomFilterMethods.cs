@@ -4,12 +4,7 @@ using System.Text;
 
 namespace Sieve.Services
 {
-    //public interface ISieveCustomFilterMethods
-    //{
-    //}
-
-    public interface ISieveCustomFilterMethods<TEntity>
-    where TEntity : class
+    public interface ISieveCustomFilterMethods
     {
     }
 }
