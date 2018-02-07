@@ -15,7 +15,7 @@ We'll use Sieve to add sorting, filtering, and pagination capabilities when GET-
 
 Inject the `SieveProcessor` service. So in `Startup.cs` add:
 ```
-services.AddScoped<ISieveProcessor, SieveProcessor>();
+services.AddScoped<SieveProcessor>();
 ```
 
 ### 2. Tell Sieve which properties you'd like to sort/filter in your models
@@ -65,8 +65,8 @@ If you want to add custom sort/filter methods, inject `ISieveCustomSortMethods` 
 
 For instance:
 ```
-services.AddScoped<ISieveCustomSortMethods, SieveCustomSortMethods>();
-services.AddScoped<ISieveCustomFilterMethods, SieveCustomFilterMethods>();
+services.AddScoped<SieveCustomSortMethods>();
+services.AddScoped<SieveCustomFilterMethods>();
 ```
 Where `SieveCustomSortMethodsOfPosts` for example is:
 ```
