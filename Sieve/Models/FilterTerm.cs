@@ -45,9 +45,10 @@ namespace Sieve.Models
                     }
                 }
 
-                // Custom operator
-                var tokens = _filter.Split(' ');
-                return tokens.Length > 1 ? tokens[1] : "";
+                // Custom operators not supported
+                // var tokens = _filter.Split(' ');
+                // return tokens.Length > 2 ? tokens[1] : "";
+                return "";
             }
         }
 
@@ -65,36 +66,20 @@ namespace Sieve.Models
             {
                 switch (Operator.Trim().ToLower())
                 {
-                    case "equals":
-                    case "eq":
                     case "==":
                         return FilterOperator.Equals;
-                    case "notequals":
-                    case "nq":
                     case "!=":
                         return FilterOperator.NotEquals;
-                    case "lessthan":
-                    case "lt":
                     case "<":
                         return FilterOperator.LessThan;
-                    case "greaterthan":
-                    case "gt":
                     case ">":
                         return FilterOperator.GreaterThan;
-                    case "greaterthanorequalto":
-                    case "gte":
                     case ">=":
                         return FilterOperator.GreaterThanOrEqualTo;
-                    case "lessthanorequalto":
-                    case "lte":
                     case "<=":
                         return FilterOperator.LessThanOrEqualTo;
-                    case "contains":
-                    case "co":
                     case "@=":
                         return FilterOperator.Contains;
-                    case "startswith":
-                    case "sw":
                     case "_=":
                         return FilterOperator.StartsWith;
                     default:
