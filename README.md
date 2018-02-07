@@ -13,10 +13,9 @@ We'll use Sieve to add sorting, filtering, and pagination capabilities when GET-
 
 ### 1. Add required services
 
-Inject the `SieveProcessor<TEntity>` service for each entity you'd like to use Sieve with.
-So to use Sieve with `Post`s, in `ConfigureServices` in `Startup.cs` add:
+Inject the `SieveProcessor` service. So in `Startup.cs` add:
 ```
-services.AddScoped<ISieveProcessor<Post>, SieveProcessor<Post>>();
+services.AddScoped<SieveProcessor>();
 ```
 
 ### 2. Tell Sieve which properties you'd like to sort/filter in your models
@@ -44,8 +43,7 @@ There is also the `name` parameter that you can use to have a different name for
 ### 3. Get sort/filter/page queries by using the Sieve model in your controllers
 
 In the action that handles returning Posts, use `SieveModel` to get the sort/filter/page query. 
-Apply it to your data by injecting `SieveProcessor<Post>` into the controller and using its `ApplyAll` method.
-For instance: 
+Apply it to your data by injecting `SieveProcessor` into the controller and using its `ApplyAll<TEntity>` method. So for instance:
 ```
 [HttpGet]
 public JsonResult GetPosts(SieveModel sieveModel) 
@@ -63,16 +61,16 @@ There are also `ApplySorting`, `ApplyFiltering`, and `ApplyPagination` methods.
 
 ### Add custom sort/filter methods
 
-If you want to add custom sort/filter methods, inject `ISieveCustomSortMethods<TEntity>` or `ISieveCustomFilterMethods<TEntity>` with the implementation being a class that has custom sort/filter methods for `TEntity`.
+If you want to add custom sort/filter methods, inject `ISieveCustomSortMethods` or `ISieveCustomFilterMethods` with the implementation being a class that has custom sort/filter methods that Sieve will through.
 
 For instance:
 ```
-services.AddScoped<ISieveCustomSortMethods<Post>, SieveCustomSortMethodsOfPosts>();
-services.AddScoped<ISieveCustomFilterMethods<Post>, SieveCustomFilterMethodsOfPosts>();
+services.AddScoped<ISieveCustomSortMethods, SieveCustomSortMethods>();
+services.AddScoped<ISieveCustomFilterMethods, SieveCustomFilterMethods>();
 ```
 Where `SieveCustomSortMethodsOfPosts` for example is:
 ```
-public class SieveCustomSortMethodsOfPosts : ISieveCustomSortMethods<Post>
+public class SieveCustomSortMethods : ISieveCustomSortMethods
 {
     public IQueryable<Post> Popularity(IQueryable<Post> source, bool useThenBy, bool desc) // The method is given an indicator of weather to use ThenBy(), and if the query is descending 
     {
@@ -86,9 +84,9 @@ public class SieveCustomSortMethodsOfPosts : ISieveCustomSortMethods<Post>
     }
 }
 ```
-And `SieveCustomFilterMethodsOfPosts`:
+And `SieveCustomFilterMethods`:
 ```
-public class SieveCustomFilterMethodsOfPosts : ISieveCustomFilterMethods<Post>
+public class SieveCustomFilterMethods : ISieveCustomFilterMethods
 {
     public IQueryable<Post> IsNew(IQueryable<Post> source, string op, string value) // The method is given the {Operator} & {Value}
     {
