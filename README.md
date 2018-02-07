@@ -130,7 +130,7 @@ More formally:
 * `sorts` is a comma-delimited ordered list of property names to sort by. Adding a `-` before the name switches to sorting descendingly.
 * `filters` is a comma-delimited list of `{Name}{Operator}{Value}` where
     * `{Name}` is the name of a property with the Sieve attribute or the name of a custom filter method for TEntity
-    * `{Operator}` is one of the [Operators](#operators) (has to be preceeded by a space when using custom filter methods)
+    * `{Operator}` is one of the [Operators](#operators)
     * `{Value}` is the value to use for filtering
 * `page` is the number of page to return
 * `pageSize` is the number of items returned per page 
@@ -138,6 +138,7 @@ More formally:
 Notes:
 * Don't forget to remove commas from any `{Value}` fields
 * You can have spaces anywhere except *within* `{Name}` or `{Operator}` fields
+* Here's a [good example on how to work with arrays](https://github.com/Biarity/Sieve/issues/2)
 
 ### Creating your own DSL
 You can replace this DSL with your own (eg. use JSON instead) by implementing an [ISieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/ISieveModel.cs). You can use the default [SieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/SieveModel.cs) for reference.
