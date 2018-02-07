@@ -6,9 +6,9 @@ namespace Sieve.Services
 {
     public interface ISieveProcessor
     {
-        IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel model, IQueryable<TEntity> source);
-        IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel model, IQueryable<TEntity> result);
-        IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel model, IQueryable<TEntity> result);
+        IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel model, IQueryable<TEntity> source, object[] dataForCustomMethods = null);
+        IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null);
+        IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null);
         IQueryable<TEntity> ApplyPagination<TEntity>(ISieveModel model, IQueryable<TEntity> result);
     }
 }

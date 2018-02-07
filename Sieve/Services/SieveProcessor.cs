@@ -49,7 +49,7 @@ namespace Sieve.Services
             _options = options;
         }
 
-        public IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel model, IQueryable<TEntity> source)
+        public IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel model, IQueryable<TEntity> source, object[] dataForCustomMethods = null)
         {
             var result = source;
 
@@ -57,10 +57,10 @@ namespace Sieve.Services
                 return result;
 
             // Sort
-            result = ApplySorting(model, result);
+            result = ApplySorting(model, result, dataForCustomMethods);
 
             // Filter
-            result = ApplyFiltering(model, result);
+            result = ApplyFiltering(model, result, dataForCustomMethods);
 
             // Paginate
             result = ApplyPagination(model, result);
@@ -68,7 +68,7 @@ namespace Sieve.Services
             return result;
         }
 
-        public IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
         {
             if (model?.SortsParsed == null)
                 return result;
@@ -90,7 +90,7 @@ namespace Sieve.Services
                             result,
                             useThenBy,
                             sortTerm.Descending
-                        });
+                        }, dataForCustomMethods);
                 }
                 useThenBy = true;
             }
@@ -98,7 +98,7 @@ namespace Sieve.Services
             return result;
         }
         
-        public IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
         {
             if (model?.FiltersParsed == null)
                 return result;
@@ -168,7 +168,7 @@ namespace Sieve.Services
                             result,
                             filterTerm.Operator,
                             filterTerm.Value
-                        });
+                        }, dataForCustomMethods);
                 }
             }
 
@@ -202,15 +202,30 @@ namespace Sieve.Services
             });
         }
 
-        private IQueryable<TEntity> ApplyCustomMethod<TEntity>(IQueryable<TEntity> result, string name, object parent, object[] parameters)
+        private IQueryable<TEntity> ApplyCustomMethod<TEntity>(IQueryable<TEntity> result, string name, object parent, object[] parameters, object[] optionalParameters = null)
         {
             var customMethod = parent?.GetType()
                 .GetMethod(name);
 
             if (customMethod != null)
             {
-                result = customMethod.Invoke(parent, parameters)
-                    as IQueryable<TEntity>;
+                try
+                {
+                    result = customMethod.Invoke(parent, parameters)
+                        as IQueryable<TEntity>;
+                }
+                catch (TargetParameterCountException)
+                {
+                    if (optionalParameters != null)
+                    {
+                        result = customMethod.Invoke(parent, parameters.Concat(optionalParameters).ToArray())
+                            as IQueryable<TEntity>;
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
 
             return result;
