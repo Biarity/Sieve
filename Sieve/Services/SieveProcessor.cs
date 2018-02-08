@@ -56,11 +56,11 @@ namespace Sieve.Services
             if (model == null)
                 return result;
 
-            // Sort
-            result = ApplySorting(model, result, dataForCustomMethods);
-
             // Filter
             result = ApplyFiltering(model, result, dataForCustomMethods);
+
+            // Sort
+            result = ApplySorting(model, result, dataForCustomMethods);
 
             // Paginate
             result = ApplyPagination(model, result);
