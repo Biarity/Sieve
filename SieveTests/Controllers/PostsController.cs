@@ -34,6 +34,24 @@ namespace SieveTests.Controllers
         }
 
         [HttpGet]
+        public JsonResult GetAllWithSieveAndPropertyMapping(SieveModel sieveModel)
+        {
+            var result = _dbContext.Posts.AsNoTracking();
+
+            var sieveProperties = new[]
+            {
+                SieveProperty<Post>.For(_ => _.Title, Allow.Filter, "name"), 
+                SieveProperty<Post>.For(_ => _.CommentCount, Allow.SortAndFilter), 
+                SieveProperty<Post>.For(_ => _.LikeCount, Allow.Sort), 
+                SieveProperty<Post>.For(_ => _.DateCreated, Allow.SortAndFilter), 
+            };
+
+            result = _sieveProcessor.ApplyAll(sieveModel, result, sieveProperties);
+
+            return Json(result.ToList());
+        }
+
+        [HttpGet]
         public JsonResult Create(int number = 10)
         {
             for (int i = 0; i < number; i++)
