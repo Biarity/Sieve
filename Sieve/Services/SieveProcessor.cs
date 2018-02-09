@@ -19,7 +19,6 @@ namespace Sieve.Services
         private IOptions<SieveOptions> _options;
         private ISieveCustomSortMethods _customSortMethods;
         private ISieveCustomFilterMethods _customFilterMethods;
-        
 
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomSortMethods customSortMethods,
@@ -49,7 +48,11 @@ namespace Sieve.Services
             _options = options;
         }
 
-        public IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel model, IQueryable<TEntity> source, object[] dataForCustomMethods = null)
+        public IQueryable<TEntity> ApplyAll<TEntity>(
+            ISieveModel model,
+            IQueryable<TEntity> source,
+            SieveProperty<TEntity>[] sieveProperties = null,
+            object[] dataForCustomMethods = null)
         {
             var result = source;
 
@@ -57,10 +60,10 @@ namespace Sieve.Services
                 return result;
 
             // Filter
-            result = ApplyFiltering(model, result, dataForCustomMethods);
+            result = ApplyFiltering(model, result, sieveProperties, dataForCustomMethods);
 
             // Sort
-            result = ApplySorting(model, result, dataForCustomMethods);
+            result = ApplySorting(model, result, sieveProperties, dataForCustomMethods);
 
             // Paginate
             result = ApplyPagination(model, result);
@@ -68,7 +71,11 @@ namespace Sieve.Services
             return result;
         }
 
-        public IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
+        public IQueryable<TEntity> ApplySorting<TEntity>(
+            ISieveModel model,
+            IQueryable<TEntity> result,
+            SieveProperty<TEntity>[] sieveProperties = null,
+            object[] dataForCustomMethods = null)
         {
             if (model?.SortsParsed == null)
                 return result;
@@ -76,7 +83,8 @@ namespace Sieve.Services
             var useThenBy = false;
             foreach (var sortTerm in model.SortsParsed)
             {
-                var property = GetSieveProperty<TEntity>(true, false, sortTerm.Name);
+                var property = sieveProperties?.FirstOrDefault(_ => _.NameInQuery == sortTerm.Name && _.CanSort)?.PropertyInfo 
+                               ?? GetSievePropertyViaAttribute<TEntity>(true, false, sortTerm.Name);
 
                 if (property != null)
                 {
@@ -97,15 +105,20 @@ namespace Sieve.Services
 
             return result;
         }
-        
-        public IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
+
+        public IQueryable<TEntity> ApplyFiltering<TEntity>(
+            ISieveModel model,
+            IQueryable<TEntity> result,
+            SieveProperty<TEntity>[] sieveProperties = null,
+            object[] dataForCustomMethods = null)
         {
             if (model?.FiltersParsed == null)
                 return result;
 
             foreach (var filterTerm in model.FiltersParsed)
             {
-                var property = GetSieveProperty<TEntity>(false, true, filterTerm.Name);
+                var property = sieveProperties?.FirstOrDefault(_ => _.NameInQuery == filterTerm.Name && _.CanFilter)?.PropertyInfo 
+                               ?? GetSievePropertyViaAttribute<TEntity>(false, true, filterTerm.Name);
 
                 if (property != null)
                 {
@@ -188,7 +201,7 @@ namespace Sieve.Services
             return result;
         }
 
-        private  PropertyInfo GetSieveProperty<TEntity>(bool canSortRequired, bool canFilterRequired, string name)
+        private  PropertyInfo GetSievePropertyViaAttribute<TEntity>(bool canSortRequired, bool canFilterRequired, string name)
         {
             return typeof(TEntity).GetProperties().FirstOrDefault(p =>
             {
