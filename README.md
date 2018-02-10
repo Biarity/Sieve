@@ -34,11 +34,11 @@ public int LikeCount { get; set; }
 [Sieve(CanFilter = true, CanSort = true)]
 public int CommentCount { get; set; }
 
-[Sieve(CanFilter = true, CanSort = true, name = "created")]
+[Sieve(CanFilter = true, CanSort = true, Name = "created")]
 public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 
 ```
-There is also the `name` parameter that you can use to have a different name for use by clients.
+There is also the `Name` parameter that you can use to have a different name for use by clients.
 
 ### 3. Get sort/filter/page queries by using the Sieve model in your controllers
 
