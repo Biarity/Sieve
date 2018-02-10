@@ -154,6 +154,9 @@ You can replace this DSL with your own (eg. use JSON instead) by implementing an
 | `<=`       | Less than or equal to    |
 | `@=`       | Contains                 |
 | `_=`       | Starts with              |
+| `@=*`      | Case-insensitive string Contains |
+| `_=*`      | Case-insensitive string Starts with |
+| `==*`      | Case-insensitive string Equals |
 
 ### Example project
 You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
