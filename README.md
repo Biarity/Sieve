@@ -40,6 +40,8 @@ public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 ```
 There is also the `Name` parameter that you can use to have a different name for use by clients.
 
+Alternatively, you can use Fluent API to do the same. This is especially useful if you don't want to use attributes or have multiple APIs. [More on Sieve's Fluent API here](https://github.com/Biarity/Sieve/issues/4#issuecomment-364629048).
+
 ### 3. Get sort/filter/page queries by using the Sieve model in your controllers
 
 In the action that handles returning Posts, use `SieveModel` to get the sort/filter/page query. 
