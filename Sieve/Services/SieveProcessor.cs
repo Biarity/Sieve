@@ -49,6 +49,14 @@ namespace Sieve.Services
             _options = options;
         }
 
+        /// <summary>
+        /// Apply filtering, sorting, and pagination parameters found in `model` to `source`
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="model">An instance of ISieveModel</param>
+        /// <param name="source">Data source</param>
+        /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
+        /// <returns>Returns a transformed version of `source`</returns>
         public IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel model, IQueryable<TEntity> source, object[] dataForCustomMethods = null)
         {
             var result = source;
@@ -67,7 +75,112 @@ namespace Sieve.Services
 
             return result;
         }
+        
+        /// <summary>
+        /// Apply filtering parameters found in `model` to `source`
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="model">An instance of ISieveModel</param>
+        /// <param name="source">Data source</param>
+        /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
+        /// <returns>Returns a transformed version of `source`</returns>
+        public IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
+        {
+            if (model?.FiltersParsed == null)
+                return result;
 
+            foreach (var filterTerm in model.FiltersParsed)
+            {
+                var property = GetSieveProperty<TEntity>(false, true, filterTerm.Name);
+
+                if (property != null)
+                {
+                    var converter = TypeDescriptor.GetConverter(property.PropertyType);
+                    var parameter = Expression.Parameter(typeof(TEntity), "e");
+
+                    dynamic filterValue = Expression.Constant(
+                        converter.CanConvertFrom(typeof(string)) ?
+                        converter.ConvertFrom(filterTerm.Value) :
+                        Convert.ChangeType(filterTerm.Value, property.PropertyType));
+
+
+                    dynamic propertyValue = Expression.PropertyOrField(parameter, property.Name);
+                    
+                    if (filterTerm.Operator.Contains("*"))
+                    {
+                        propertyValue = Expression.Call(propertyValue,
+                            typeof(string).GetMethods()
+                            .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
+
+                        filterValue = Expression.Call(filterValue,
+                            typeof(string).GetMethods()
+                            .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
+                    }
+
+                    Expression comparison;
+
+                    switch (filterTerm.OperatorParsed)
+                    {
+                        case FilterOperator.Equals:
+                            comparison = Expression.Equal(propertyValue, filterValue);
+                            break;
+                        case FilterOperator.NotEquals:
+                            comparison = Expression.NotEqual(propertyValue, filterValue);
+                            break;
+                        case FilterOperator.GreaterThan:
+                            comparison = Expression.GreaterThan(propertyValue, filterValue);
+                            break;
+                        case FilterOperator.LessThan:
+                            comparison = Expression.LessThan(propertyValue, filterValue);
+                            break;
+                        case FilterOperator.GreaterThanOrEqualTo:
+                            comparison = Expression.GreaterThanOrEqual(propertyValue, filterValue);
+                            break;
+                        case FilterOperator.LessThanOrEqualTo:
+                            comparison = Expression.LessThanOrEqual(propertyValue, filterValue);
+                            break;
+                        case FilterOperator.Contains:
+                            comparison = Expression.Call(propertyValue,
+                                typeof(string).GetMethods()
+                                .First(m => m.Name == "Contains" && m.GetParameters().Length == 1),
+                                filterValue);
+                            break;
+                        case FilterOperator.StartsWith:
+                            comparison = Expression.Call(propertyValue,
+                                typeof(string).GetMethods()
+                                .First(m => m.Name == "StartsWith" && m.GetParameters().Length == 1),
+                                filterValue); break;
+                        default:
+                            comparison = Expression.Equal(propertyValue, filterValue);
+                            break;
+                    }
+
+                    result = result.Where(Expression.Lambda<Func<TEntity, bool>>(
+                                comparison,
+                                parameter));
+                }
+                else
+                {
+                    result = ApplyCustomMethod(result, filterTerm.Name, _customFilterMethods,
+                        new object[] {
+                            result,
+                            filterTerm.Operator,
+                            filterTerm.Value
+                        }, dataForCustomMethods);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Apply sorting parameters found in `model` to `source`
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="model">An instance of ISieveModel</param>
+        /// <param name="source">Data source</param>
+        /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
+        /// <returns>Returns a transformed version of `source`</returns>
         public IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
         {
             if (model?.SortsParsed == null)
@@ -97,84 +210,15 @@ namespace Sieve.Services
 
             return result;
         }
-        
-        public IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
-        {
-            if (model?.FiltersParsed == null)
-                return result;
 
-            foreach (var filterTerm in model.FiltersParsed)
-            {
-                var property = GetSieveProperty<TEntity>(false, true, filterTerm.Name);
-
-                if (property != null)
-                {
-                    var converter = TypeDescriptor.GetConverter(property.PropertyType);
-                    var parameter = Expression.Parameter(typeof(TEntity), "e");
-
-                    var filterValue = Expression.Constant(
-                        converter.CanConvertFrom(typeof(string)) ?
-                        converter.ConvertFrom(filterTerm.Value) :
-                        Convert.ChangeType(filterTerm.Value, property.PropertyType));
-
-                    var propertyValue = Expression.PropertyOrField(parameter, property.Name);
-
-                    Expression comparison;
-
-                    switch (filterTerm.OperatorParsed)
-                    {
-                        case FilterOperator.Equals:
-                            comparison = Expression.Equal(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.NotEquals:
-                            comparison = Expression.NotEqual(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.GreaterThan:
-                            comparison = Expression.GreaterThan(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.LessThan:
-                            comparison = Expression.LessThan(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.GreaterThanOrEqualTo:
-                            comparison = Expression.GreaterThanOrEqual(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.LessThanOrEqualTo:
-                            comparison = Expression.LessThanOrEqual(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.Contains:
-                            comparison = Expression.Call(propertyValue, 
-                                typeof(string).GetMethods()
-                                .First(m => m.Name == "Contains" && m.GetParameters().Length == 1),
-                                filterValue);
-                            break;
-                        case FilterOperator.StartsWith:
-                            comparison = Expression.Call(propertyValue,
-                                typeof(string).GetMethods()
-                                .First(m => m.Name == "StartsWith" && m.GetParameters().Length == 1),
-                                filterValue); break;
-                        default:
-                            comparison = Expression.Equal(propertyValue, filterValue);
-                            break;
-                    }
-
-                    result = result.Where(Expression.Lambda<Func<TEntity, bool>>(
-                                comparison,
-                                parameter));
-                }
-                else
-                {
-                    result = ApplyCustomMethod(result, filterTerm.Name, _customFilterMethods, 
-                        new object[] {
-                            result,
-                            filterTerm.Operator,
-                            filterTerm.Value
-                        }, dataForCustomMethods);
-                }
-            }
-
-            return result;
-        }
-
+        /// <summary>
+        /// Apply pagination parameters found in `model` to `source`
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="model">An instance of ISieveModel</param>
+        /// <param name="source">Data source</param>
+        /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
+        /// <returns>Returns a transformed version of `source`</returns>
         public IQueryable<TEntity> ApplyPagination<TEntity>(ISieveModel model, IQueryable<TEntity> result)
         {
             var page = model?.Page ?? 1;
@@ -188,7 +232,7 @@ namespace Sieve.Services
             return result;
         }
 
-        private  PropertyInfo GetSieveProperty<TEntity>(bool canSortRequired, bool canFilterRequired, string name)
+        private PropertyInfo GetSieveProperty<TEntity>(bool canSortRequired, bool canFilterRequired, string name)
         {
             return typeof(TEntity).GetProperties().FirstOrDefault(p =>
             {

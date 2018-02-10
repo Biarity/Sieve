@@ -9,6 +9,9 @@ namespace Sieve.Models
     {
         private string _filter;
         private string[] operators = new string[] {
+                    "==*",
+                    "@=*",
+                    "_=*",
                     "==",
                     "!=",
                     ">",
@@ -16,7 +19,8 @@ namespace Sieve.Models
                     ">=",
                     "<=",
                     "@=",
-                    "_=" };
+                    "_="
+        };
 
         public FilterTerm(string filter)
         {
@@ -67,6 +71,7 @@ namespace Sieve.Models
                 switch (Operator.Trim().ToLower())
                 {
                     case "==":
+                    case "==*":
                         return FilterOperator.Equals;
                     case "!=":
                         return FilterOperator.NotEquals;
@@ -79,8 +84,10 @@ namespace Sieve.Models
                     case "<=":
                         return FilterOperator.LessThanOrEqualTo;
                     case "@=":
+                    case "@=*":
                         return FilterOperator.Contains;
                     case "_=":
+                    case "_=*":
                         return FilterOperator.StartsWith;
                     default:
                         return FilterOperator.Equals;

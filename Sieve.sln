@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sieve", "Sieve\Sieve.csproj", "{B32B8B33-94B0-40E3-8FE5-D54602222717}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sieve", "Sieve\Sieve.csproj", "{B32B8B33-94B0-40E3-8FE5-D54602222717}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SieveTests", "SieveTests\SieveTests.csproj", "{8043D264-42A0-4275-97A1-46400C02E37E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SieveTests", "SieveTests\SieveTests.csproj", "{8043D264-42A0-4275-97A1-46400C02E37E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SieveUnitTests", "SieveUnitTests\SieveUnitTests.csproj", "{21C3082D-F40E-457F-BE2E-AA099E19E199}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{8043D264-42A0-4275-97A1-46400C02E37E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8043D264-42A0-4275-97A1-46400C02E37E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8043D264-42A0-4275-97A1-46400C02E37E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21C3082D-F40E-457F-BE2E-AA099E19E199}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21C3082D-F40E-457F-BE2E-AA099E19E199}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21C3082D-F40E-457F-BE2E-AA099E19E199}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21C3082D-F40E-457F-BE2E-AA099E19E199}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

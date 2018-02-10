@@ -13,6 +13,6 @@ namespace Sieve.Models
         GreaterThanOrEqualTo,
         LessThanOrEqualTo,
         Contains,
-        StartsWith
+        StartsWith,
     }
 }
