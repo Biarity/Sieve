@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Sieve.Models
 {
-    public class SortTerm
+    public class SortTerm : ISortTerm
     {
         private string _sort;
 

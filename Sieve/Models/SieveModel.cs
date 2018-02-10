@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Sieve.Models
 {
-    public class SieveModel : ISieveModel
+    public class SieveModel: ISieveModel<IFilterTerm, ISortTerm>
     {
         public string Filters { get; set; }
 
@@ -18,13 +18,13 @@ namespace Sieve.Models
         public int? PageSize { get; set; }
 
 
-        public List<FilterTerm> FiltersParsed
+        public List<IFilterTerm> FiltersParsed
         {
             get
             {
                 if (Filters != null)
                 {
-                    var value = new List<FilterTerm>();
+                    var value = new List<IFilterTerm>();
                     foreach (var filter in Filters.Split(','))
                     {
                         value.Add(new FilterTerm(filter));
@@ -38,13 +38,13 @@ namespace Sieve.Models
             }
         }
 
-        public List<SortTerm> SortsParsed
+        public List<ISortTerm> SortsParsed
         {
             get
             {
                 if (Sorts != null)
                 {
-                    var value = new List<SortTerm>();
+                    var value = new List<ISortTerm>();
                     foreach (var sort in Sorts.Split(','))
                     {
                         value.Add(new SortTerm(sort));

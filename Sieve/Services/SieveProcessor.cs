@@ -57,7 +57,7 @@ namespace Sieve.Services
         /// <param name="source">Data source</param>
         /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
         /// <returns>Returns a transformed version of `source`</returns>
-        public IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel model, IQueryable<TEntity> source, object[] dataForCustomMethods = null)
+        public IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel<IFilterTerm, ISortTerm> model, IQueryable<TEntity> source, object[] dataForCustomMethods = null)
         {
             var result = source;
 
@@ -84,7 +84,7 @@ namespace Sieve.Services
         /// <param name="source">Data source</param>
         /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
         /// <returns>Returns a transformed version of `source`</returns>
-        public IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
+        public IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel<IFilterTerm, ISortTerm> model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
         {
             if (model?.FiltersParsed == null)
                 return result;
@@ -106,7 +106,7 @@ namespace Sieve.Services
 
                     dynamic propertyValue = Expression.PropertyOrField(parameter, property.Name);
                     
-                    if (filterTerm.Operator.Contains("*"))
+                    if (filterTerm.OperatorIsCaseInsensitive)
                     {
                         propertyValue = Expression.Call(propertyValue,
                             typeof(string).GetMethods()
@@ -181,7 +181,7 @@ namespace Sieve.Services
         /// <param name="source">Data source</param>
         /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
         /// <returns>Returns a transformed version of `source`</returns>
-        public IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
+        public IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel<IFilterTerm, ISortTerm> model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
         {
             if (model?.SortsParsed == null)
                 return result;
@@ -219,7 +219,7 @@ namespace Sieve.Services
         /// <param name="source">Data source</param>
         /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
         /// <returns>Returns a transformed version of `source`</returns>
-        public IQueryable<TEntity> ApplyPagination<TEntity>(ISieveModel model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplyPagination<TEntity>(ISieveModel<IFilterTerm, ISortTerm> model, IQueryable<TEntity> result)
         {
             var page = model?.Page ?? 1;
             var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;

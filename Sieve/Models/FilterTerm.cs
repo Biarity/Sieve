@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Sieve.Models
 {
-    public class FilterTerm
+    public class FilterTerm : IFilterTerm
     {
         private string _filter;
         private string[] operators = new string[] {
@@ -56,7 +56,6 @@ namespace Sieve.Models
             }
         }
 
-
         public string Value {
             get
             {
@@ -95,5 +94,12 @@ namespace Sieve.Models
             }
         }
 
+        public bool OperatorIsCaseInsensitive
+        {
+            get
+            {
+                return Operator.Contains("*");
+            }
+        }
     }
 }

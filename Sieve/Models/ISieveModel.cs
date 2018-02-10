@@ -5,7 +5,9 @@ using System.Text;
 
 namespace Sieve.Models
 {
-    public interface ISieveModel
+    public interface ISieveModel<TFilterTerm, TSortTerm> 
+        where TFilterTerm : IFilterTerm
+        where TSortTerm : ISortTerm
     {
         string Filters { get; set; }
 
@@ -15,8 +17,8 @@ namespace Sieve.Models
         
         int? PageSize { get; set; }
 
-        List<FilterTerm> FiltersParsed { get; }
+        List<TFilterTerm> FiltersParsed { get; }
 
-        List<SortTerm> SortsParsed { get; }
+        List<TSortTerm> SortsParsed { get; }
     }
 }
