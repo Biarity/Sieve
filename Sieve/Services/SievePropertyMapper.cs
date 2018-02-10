@@ -88,13 +88,11 @@ namespace Sieve.Services
         {
             try
             {
-                var me = _map[typeof(TEntity)]
-                    .FirstOrDefault(kv => 
+                return _map[typeof(TEntity)]
+                    .FirstOrDefault(kv =>
                     kv.Value.Name.Equals(name, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase) &&
                     (canSortRequired ? kv.Value.CanSort : true) &&
-                    (canFilterRequired ? kv.Value.CanFilter : true));
-
-                return me.Key;
+                    (canFilterRequired ? kv.Value.CanFilter : true)).Key;
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentNullException)
             {

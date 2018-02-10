@@ -11,7 +11,11 @@ namespace SieveUnitTests.Services
 {
     public class ApplicationSieveProcessor : SieveProcessor
     {
-        public ApplicationSieveProcessor(IOptions<SieveOptions> options, ISieveCustomSortMethods customSortMethods, ISieveCustomFilterMethods customFilterMethods) : base(options, customSortMethods, customFilterMethods)
+        public ApplicationSieveProcessor(
+            IOptions<SieveOptions> options, 
+            ISieveCustomSortMethods customSortMethods, 
+            ISieveCustomFilterMethods customFilterMethods) 
+            : base(options, customSortMethods, customFilterMethods)
         {
         }
 
