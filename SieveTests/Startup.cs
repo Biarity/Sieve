@@ -37,7 +37,7 @@ namespace SieveTests
 
             services.AddScoped<ISieveCustomSortMethods, SieveCustomSortMethods>();
             services.AddScoped<ISieveCustomFilterMethods, SieveCustomFilterMethods>();
-            services.AddScoped<ISieveProcessor, SieveProcessor>();
+            services.AddScoped<ISieveProcessor, ApplicationSieveProcessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

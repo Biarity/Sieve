@@ -19,12 +19,14 @@ namespace Sieve.Services
         private IOptions<SieveOptions> _options;
         private ISieveCustomSortMethods _customSortMethods;
         private ISieveCustomFilterMethods _customFilterMethods;
+        private SievePropertyMapper mapper = new SievePropertyMapper();
         
 
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomSortMethods customSortMethods,
             ISieveCustomFilterMethods customFilterMethods)
         {
+            mapper = MapProperties(mapper);
             _options = options;
             _customSortMethods = customSortMethods;
             _customFilterMethods = customFilterMethods;
@@ -33,6 +35,7 @@ namespace Sieve.Services
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomSortMethods customSortMethods)
         {
+            mapper = MapProperties(mapper);
             _options = options;
             _customSortMethods = customSortMethods;
         }
@@ -40,12 +43,14 @@ namespace Sieve.Services
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomFilterMethods customFilterMethods)
         {
+            mapper = MapProperties(mapper);
             _options = options;
             _customFilterMethods = customFilterMethods;
         }
 
         public SieveProcessor(IOptions<SieveOptions> options)
         {
+            mapper = MapProperties(mapper);
             _options = options;
         }
 
@@ -57,7 +62,10 @@ namespace Sieve.Services
         /// <param name="source">Data source</param>
         /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
         /// <returns>Returns a transformed version of `source`</returns>
-        public IQueryable<TEntity> ApplyAll<TEntity>(ISieveModel<IFilterTerm, ISortTerm> model, IQueryable<TEntity> source, object[] dataForCustomMethods = null)
+        public IQueryable<TEntity> ApplyAll<TEntity>(
+            ISieveModel<IFilterTerm, ISortTerm> model, 
+            IQueryable<TEntity> source, 
+            object[] dataForCustomMethods = null)
         {
             var result = source;
 
@@ -84,7 +92,10 @@ namespace Sieve.Services
         /// <param name="source">Data source</param>
         /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
         /// <returns>Returns a transformed version of `source`</returns>
-        public IQueryable<TEntity> ApplyFiltering<TEntity>(ISieveModel<IFilterTerm, ISortTerm> model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
+        public IQueryable<TEntity> ApplyFiltering<TEntity>(
+            ISieveModel<IFilterTerm, ISortTerm> model, 
+            IQueryable<TEntity> result, 
+            object[] dataForCustomMethods = null)
         {
             if (model?.FiltersParsed == null)
                 return result;
@@ -181,7 +192,10 @@ namespace Sieve.Services
         /// <param name="source">Data source</param>
         /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
         /// <returns>Returns a transformed version of `source`</returns>
-        public IQueryable<TEntity> ApplySorting<TEntity>(ISieveModel<IFilterTerm, ISortTerm> model, IQueryable<TEntity> result, object[] dataForCustomMethods = null)
+        public IQueryable<TEntity> ApplySorting<TEntity>(
+            ISieveModel<IFilterTerm, ISortTerm> model, 
+            IQueryable<TEntity> result,
+            object[] dataForCustomMethods = null)
         {
             if (model?.SortsParsed == null)
                 return result;
@@ -219,7 +233,9 @@ namespace Sieve.Services
         /// <param name="source">Data source</param>
         /// <param name="dataForCustomMethods">Additional data that will be passed down to custom methods</param>
         /// <returns>Returns a transformed version of `source`</returns>
-        public IQueryable<TEntity> ApplyPagination<TEntity>(ISieveModel<IFilterTerm, ISortTerm> model, IQueryable<TEntity> result)
+        public IQueryable<TEntity> ApplyPagination<TEntity>(
+            ISieveModel<IFilterTerm, ISortTerm> model, 
+            IQueryable<TEntity> result)
         {
             var page = model?.Page ?? 1;
             var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;
@@ -232,15 +248,34 @@ namespace Sieve.Services
             return result;
         }
 
-        private PropertyInfo GetSieveProperty<TEntity>(bool canSortRequired, bool canFilterRequired, string name)
+
+        protected virtual SievePropertyMapper MapProperties(SievePropertyMapper mapper)
+        {
+            return mapper;
+        }
+
+        private PropertyInfo GetSieveProperty<TEntity>(
+            bool canSortRequired, 
+            bool canFilterRequired, 
+            string name)
+        {
+            return mapper.FindProperty<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive)
+                ?? FindPropertyBySieveAttribute<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
+        }
+
+        private PropertyInfo FindPropertyBySieveAttribute<TEntity>(
+            bool canSortRequired, 
+            bool canFilterRequired, 
+            string name,
+            bool isCaseSensitive)
         {
             return typeof(TEntity).GetProperties().FirstOrDefault(p =>
             {
                 if (p.GetCustomAttribute(typeof(SieveAttribute)) is SieveAttribute sieveAttribute)
                     if ((canSortRequired ? sieveAttribute.CanSort : true) &&
                         (canFilterRequired ? sieveAttribute.CanFilter : true) &&
-                        ((sieveAttribute.Name ?? p.Name).Equals(name, 
-                            _options.Value.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)))
+                        ((sieveAttribute.Name ?? p.Name).Equals(name,
+                            isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)))
                         return true;
                 return false;
             });

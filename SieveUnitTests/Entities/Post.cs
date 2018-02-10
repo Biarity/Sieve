@@ -21,5 +21,11 @@ namespace SieveUnitTests.Entities
 
         [Sieve(CanFilter = true, CanSort = true)]
         public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
+
+        public string ThisHasNoAttribute { get; set; }
+
+        public string ThisHasNoAttributeButIsAccessible { get; set; }
+
+        public int OnlySortableViaFluentApi { get; set; }
     }
 }
