@@ -87,6 +87,20 @@ namespace SieveUnitTests
             Assert.AreEqual(result.First().Id, 1);
             Assert.IsTrue(result.Count() == 1);
         }
+
+        [TestMethod]
+        public void CustomFiltersWork()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Isnew",
+            };
+
+            var result = _processor.ApplyFiltering(model, _posts);
+
+            Assert.IsFalse(result.Any(p => p.Id == 0));
+            Assert.IsTrue(result.Count() == 2);
+        }
     }
 }
 

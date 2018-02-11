@@ -11,8 +11,7 @@ namespace SieveUnitTests.Services
     {
         public IQueryable<Post> IsNew(IQueryable<Post> source, string op, string value)
         {
-            var result = source.Where(p => p.LikeCount < 100 &&
-                                           p.CommentCount < 5);
+            var result = source.Where(p => p.LikeCount < 100);
 
             return result;
         }

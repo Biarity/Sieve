@@ -284,7 +284,8 @@ namespace Sieve.Services
         private IQueryable<TEntity> ApplyCustomMethod<TEntity>(IQueryable<TEntity> result, string name, object parent, object[] parameters, object[] optionalParameters = null)
         {
             var customMethod = parent?.GetType()
-                .GetMethod(name);
+                .GetMethod(name, 
+                _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
             if (customMethod != null)
             {
