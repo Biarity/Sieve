@@ -294,6 +294,7 @@ namespace Sieve.Services
                     result = customMethod.Invoke(parent, parameters)
                         as IQueryable<TEntity>;
                 }
+                catch (ArgumentException) { } // name matched with custom emthod for a differnt type
                 catch (TargetParameterCountException)
                 {
                     if (optionalParameters != null)
