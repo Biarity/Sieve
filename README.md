@@ -100,15 +100,6 @@ public class SieveCustomFilterMethods : ISieveCustomFilterMethods
 }
 ```
 
-## Handle Sieve's exceptions
-
-Sieve can throw 2 kinds of custom exceptions:
-
-* `SieveMethodNotFoundException` with a `MethodName`
-* `SieveIncompatibleMethodException` with a `MethodName`, an `ExpectedType` and an `ActualType`
-
-It is recommended that you write exception-handling middleware to globally handle Sieve's exceptions when using it with ASP.NET Core.
-
 ## Configure Sieve
 Use the [ASP.NET Core options pattern](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options) with `SieveOptions` to tell Sieve where to look for configuration. For example:
 ```
@@ -119,10 +110,20 @@ Then you can add the configuration:
 {
     "Sieve": {
         "CaseSensitive": `boolean: should property names be case-sensitive? Defaults to false`,
-        "DefaultPageSize": `number: optional number to fallback to when no page argument is given`
+        "DefaultPageSize": `number: optional number to fallback to when no page argument is given. Set <=0 to disable paging if no pageSize is specified (default).`,
+        "ThrowExceptions": `boolean: should Sieve throw exceptions instead of silently failing? Defaults to false`
     }
 }
 ```
+
+## Handle Sieve's exceptions
+
+Sieve will silently fail unless `ThrowExceptions` in the configuration is set to true. 2 kinds of custom exceptions can be thrown:
+
+* `SieveMethodNotFoundException` with a `MethodName`
+* `SieveIncompatibleMethodException` with a `MethodName`, an `ExpectedType` and an `ActualType`
+
+It is recommended that you write exception-handling middleware to globally handle Sieve's exceptions when using it with ASP.NET Core.
 
 ## Send a request
 
