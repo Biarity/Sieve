@@ -11,6 +11,7 @@ using Sieve.Extensions;
 using System.ComponentModel;
 using System.Collections;
 using System.Linq.Expressions;
+using Sieve.Exceptions;
 
 namespace Sieve.Services
 {
@@ -294,7 +295,6 @@ namespace Sieve.Services
                     result = customMethod.Invoke(parent, parameters)
                         as IQueryable<TEntity>;
                 }
-                catch (ArgumentException) { } // name matched with custom emthod for a differnt type
                 catch (TargetParameterCountException)
                 {
                     if (optionalParameters != null)
@@ -307,6 +307,18 @@ namespace Sieve.Services
                         throw;
                     }
                 }
+                catch (ArgumentException) // name matched with custom method for a differnt type
+                {
+                    var expected = typeof(TEntity);
+                    var actual = ((IQueryable)customMethod.ReturnParameter).ElementType;
+                    throw new SieveIncompatibleMethodException(name, expected, actual,
+                        $"{name} failed. Expected a custom method for type {expected} but only found for type {actual}");
+                }
+            }
+            else
+            {
+                throw new SieveMethodNotFoundException(name, 
+                    $"{name} not found.");
             }
 
             return result;
