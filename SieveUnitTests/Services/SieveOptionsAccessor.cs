@@ -20,7 +20,10 @@ namespace SieveUnitTests
 
         public SieveOptionsAccessor()
         {
-            _value = new SieveOptions();
+            _value = new SieveOptions()
+            {
+                ThrowExceptions = true
+            };
         }
     }
 }
