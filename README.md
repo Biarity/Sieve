@@ -100,7 +100,16 @@ public class SieveCustomFilterMethods : ISieveCustomFilterMethods
 }
 ```
 
-### Configure Sieve
+## Handle Sieve's exceptions
+
+Sieve can throw 2 kinds of custom exceptions:
+
+* `SieveMethodNotFoundException` with a `MethodName`
+* `SieveIncompatibleMethodException` with a `MethodName`, an `ExpectedType` and an `ActualType`
+
+It is recommended that you write exception-handling middleware to globally handle Sieve's exceptions when using it with ASP.NET Core.
+
+## Configure Sieve
 Use the [ASP.NET Core options pattern](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options) with `SieveOptions` to tell Sieve where to look for configuration. For example:
 ```
 services.Configure<SieveOptions>(Configuration.GetSection("Sieve"));
