@@ -63,7 +63,7 @@ There are also `ApplySorting`, `ApplyFiltering`, and `ApplyPagination` methods.
 
 ### Add custom sort/filter methods
 
-If you want to add custom sort/filter methods, inject `ISieveCustomSortMethods` or `ISieveCustomFilterMethods` with the implementation being a class that has custom sort/filter methods that Sieve will through.
+If you want to add custom sort/filter methods, inject `ISieveCustomSortMethods` or `ISieveCustomFilterMethods` with the implementation being a class that has custom sort/filter methods that Sieve will search through.
 
 For instance:
 ```
