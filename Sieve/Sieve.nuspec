@@ -13,7 +13,7 @@
     <description>
       Sieve is a simple, clean, and extensible framework for .NET Core that adds sorting, filtering, and pagination functionality out of the box. Most common use case would be for serving ASP.NET Core GET queries. Documentation available on GitHub: https://github.com/Biarity/Sieve/
     </description>
-    <releaseNotes>Custom method case-insensitivity</releaseNotes>
+    <releaseNotes>Custom method case-insensitivity, new custom exceptions</releaseNotes>
     <copyright>Copyright 2018</copyright>
     <tags>aspnetcore filter sort page paginate sieve search</tags>
     <dependencies>

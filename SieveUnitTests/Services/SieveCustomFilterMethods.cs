@@ -15,5 +15,10 @@ namespace SieveUnitTests.Services
 
             return result;
         }
+
+        public IQueryable<Comment> TestComment(IQueryable<Comment> source, string op, string value)
+        {
+            return source;
+        }
     }
 }

@@ -6,6 +6,7 @@ using SieveUnitTests.Services;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Sieve.Exceptions;
 
 namespace SieveUnitTests
 {
@@ -68,7 +69,9 @@ namespace SieveUnitTests
                 Sorts = "OnlySortableViaFluentApi"
             };
 
-            var result = _processor.ApplyAll(model, _posts);
+            var result = _processor.ApplySorting(model, _posts);
+
+            Assert.ThrowsException<SieveMethodNotFoundException>(() => _processor.ApplyAll(model, _posts));
 
             Assert.AreEqual(result.First().Id, 3);
 

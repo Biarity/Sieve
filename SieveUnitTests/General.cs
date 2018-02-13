@@ -6,6 +6,7 @@ using SieveUnitTests.Services;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Sieve.Exceptions;
 
 namespace SieveUnitTests
 {
@@ -100,6 +101,28 @@ namespace SieveUnitTests
 
             Assert.IsFalse(result.Any(p => p.Id == 0));
             Assert.IsTrue(result.Count() == 2);
+        }
+
+        [TestMethod]
+        public void MethodNotFoundExceptionWork()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "does not exist",
+            };
+
+            Assert.ThrowsException<SieveMethodNotFoundException>(() => _processor.ApplyFiltering(model, _posts));
+        }
+
+        [TestMethod]
+        public void IncompatibleMethodExceptionsWork()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "TestComment",
+            };
+
+            Assert.ThrowsException<SieveIncompatibleMethodException>(() => _processor.ApplyFiltering(model, _posts));
         }
     }
 }

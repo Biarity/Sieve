@@ -309,8 +309,8 @@ namespace Sieve.Services
                 }
                 catch (ArgumentException) // name matched with custom method for a differnt type
                 {
-                    var expected = typeof(TEntity);
-                    var actual = ((IQueryable)customMethod.ReturnParameter).ElementType;
+                    var expected = typeof(IQueryable<TEntity>);
+                    var actual = customMethod.ReturnType;
                     throw new SieveIncompatibleMethodException(name, expected, actual,
                         $"{name} failed. Expected a custom method for type {expected} but only found for type {actual}");
                 }
