@@ -150,7 +150,8 @@ More formally:
 Notes:
 * Don't forget to remove commas from any `{Value}` fields
 * You can have spaces anywhere except *within* `{Name}` or `{Operator}` fields
-* Here's a [good example on how to work with arrays](https://github.com/Biarity/Sieve/issues/2)
+* Here's a [good example on how to work with enumerables](https://github.com/Biarity/Sieve/issues/2)
+* Another example on [how to do OR logic](https://github.com/Biarity/Sieve/issues/8)
 
 ### Creating your own DSL
 You can replace this DSL with your own (eg. use JSON instead) by implementing an [ISieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/ISieveModel.cs). You can use the default [SieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/SieveModel.cs) for reference.
