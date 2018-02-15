@@ -187,9 +187,16 @@ namespace Sieve.Services
             }
             catch (Exception ex)
             {
-                if (ex is SieveException)
-                    throw;
-                throw new SieveException(ex.Message, ex);
+                if (_options.Value.ThrowExceptions)
+                {
+                    if (ex is SieveException)
+                        throw;
+                    throw new SieveException(ex.Message, ex);
+                }
+                else
+                {
+                    return result;
+                }
             }
         }
 
@@ -237,9 +244,16 @@ namespace Sieve.Services
             }
             catch (Exception ex)
             {
-                if (ex is SieveException)
-                    throw;
-                throw new SieveException(ex.Message, ex);
+                if (_options.Value.ThrowExceptions)
+                {
+                    if (ex is SieveException)
+                        throw;
+                    throw new SieveException(ex.Message, ex);
+                }
+                else
+                {
+                    return result;
+                }
             }
         }
 
@@ -270,9 +284,16 @@ namespace Sieve.Services
             }
             catch (Exception ex)
             {
-                if (ex is SieveException)
-                    throw;
-                throw new SieveException(ex.Message, ex);
+                if (_options.Value.ThrowExceptions)
+                {
+                    if (ex is SieveException)
+                        throw;
+                    throw new SieveException(ex.Message, ex);
+                }
+                else
+                {
+                    return result;
+                }
             }
         }
 
