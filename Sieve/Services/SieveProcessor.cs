@@ -115,7 +115,6 @@ namespace Sieve.Services
                         converter.ConvertFrom(filterTerm.Value) :
                         Convert.ChangeType(filterTerm.Value, property.PropertyType));
 
-
                     dynamic propertyValue = Expression.PropertyOrField(parameter, property.Name);
                     
                     if (filterTerm.OperatorIsCaseInsensitive)

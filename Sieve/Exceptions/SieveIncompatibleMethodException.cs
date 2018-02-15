@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sieve.Exceptions
 {
-    public class SieveIncompatibleMethodException : Exception
+    public class SieveIncompatibleMethodException : SieveException
     {
         public string MethodName { get; protected set; }
         public Type ExpectedType { get; protected set; }

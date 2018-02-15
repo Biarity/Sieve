@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sieve.Exceptions
 {
-    public class SieveMethodNotFoundException : Exception
+    public class SieveMethodNotFoundException : SieveException
     {
         public string MethodName { get; protected set; }
 
