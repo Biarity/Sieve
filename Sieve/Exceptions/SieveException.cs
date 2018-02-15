@@ -6,5 +6,12 @@ namespace Sieve.Exceptions
 {
     public class SieveException : Exception
     {
+        public SieveException(string message) : base(message)
+        {
+        }
+
+        public SieveException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

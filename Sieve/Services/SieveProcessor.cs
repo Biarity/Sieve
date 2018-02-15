@@ -98,90 +98,99 @@ namespace Sieve.Services
             IQueryable<TEntity> result, 
             object[] dataForCustomMethods = null)
         {
-            if (model?.FiltersParsed == null)
-                return result;
-
-            foreach (var filterTerm in model.FiltersParsed)
+            try
             {
-                var property = GetSieveProperty<TEntity>(false, true, filterTerm.Name);
+                if (model?.FiltersParsed == null)
+                    return result;
 
-                if (property != null)
+                foreach (var filterTerm in model.FiltersParsed)
                 {
-                    var converter = TypeDescriptor.GetConverter(property.PropertyType);
-                    var parameter = Expression.Parameter(typeof(TEntity), "e");
+                    var property = GetSieveProperty<TEntity>(false, true, filterTerm.Name);
 
-                    dynamic filterValue = Expression.Constant(
-                        converter.CanConvertFrom(typeof(string)) ?
-                        converter.ConvertFrom(filterTerm.Value) :
-                        Convert.ChangeType(filterTerm.Value, property.PropertyType));
-
-                    dynamic propertyValue = Expression.PropertyOrField(parameter, property.Name);
-                    
-                    if (filterTerm.OperatorIsCaseInsensitive)
+                    if (property != null)
                     {
-                        propertyValue = Expression.Call(propertyValue,
-                            typeof(string).GetMethods()
-                            .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
+                        var converter = TypeDescriptor.GetConverter(property.PropertyType);
+                        var parameter = Expression.Parameter(typeof(TEntity), "e");
 
-                        filterValue = Expression.Call(filterValue,
-                            typeof(string).GetMethods()
-                            .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
+                        dynamic filterValue = Expression.Constant(
+                            converter.CanConvertFrom(typeof(string)) ?
+                            converter.ConvertFrom(filterTerm.Value) :
+                            Convert.ChangeType(filterTerm.Value, property.PropertyType));
+
+                        dynamic propertyValue = Expression.PropertyOrField(parameter, property.Name);
+
+                        if (filterTerm.OperatorIsCaseInsensitive)
+                        {
+                            propertyValue = Expression.Call(propertyValue,
+                                typeof(string).GetMethods()
+                                .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
+
+                            filterValue = Expression.Call(filterValue,
+                                typeof(string).GetMethods()
+                                .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
+                        }
+
+                        Expression comparison;
+
+                        switch (filterTerm.OperatorParsed)
+                        {
+                            case FilterOperator.Equals:
+                                comparison = Expression.Equal(propertyValue, filterValue);
+                                break;
+                            case FilterOperator.NotEquals:
+                                comparison = Expression.NotEqual(propertyValue, filterValue);
+                                break;
+                            case FilterOperator.GreaterThan:
+                                comparison = Expression.GreaterThan(propertyValue, filterValue);
+                                break;
+                            case FilterOperator.LessThan:
+                                comparison = Expression.LessThan(propertyValue, filterValue);
+                                break;
+                            case FilterOperator.GreaterThanOrEqualTo:
+                                comparison = Expression.GreaterThanOrEqual(propertyValue, filterValue);
+                                break;
+                            case FilterOperator.LessThanOrEqualTo:
+                                comparison = Expression.LessThanOrEqual(propertyValue, filterValue);
+                                break;
+                            case FilterOperator.Contains:
+                                comparison = Expression.Call(propertyValue,
+                                    typeof(string).GetMethods()
+                                    .First(m => m.Name == "Contains" && m.GetParameters().Length == 1),
+                                    filterValue);
+                                break;
+                            case FilterOperator.StartsWith:
+                                comparison = Expression.Call(propertyValue,
+                                    typeof(string).GetMethods()
+                                    .First(m => m.Name == "StartsWith" && m.GetParameters().Length == 1),
+                                    filterValue); break;
+                            default:
+                                comparison = Expression.Equal(propertyValue, filterValue);
+                                break;
+                        }
+
+                        result = result.Where(Expression.Lambda<Func<TEntity, bool>>(
+                                    comparison,
+                                    parameter));
                     }
-
-                    Expression comparison;
-
-                    switch (filterTerm.OperatorParsed)
+                    else
                     {
-                        case FilterOperator.Equals:
-                            comparison = Expression.Equal(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.NotEquals:
-                            comparison = Expression.NotEqual(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.GreaterThan:
-                            comparison = Expression.GreaterThan(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.LessThan:
-                            comparison = Expression.LessThan(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.GreaterThanOrEqualTo:
-                            comparison = Expression.GreaterThanOrEqual(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.LessThanOrEqualTo:
-                            comparison = Expression.LessThanOrEqual(propertyValue, filterValue);
-                            break;
-                        case FilterOperator.Contains:
-                            comparison = Expression.Call(propertyValue,
-                                typeof(string).GetMethods()
-                                .First(m => m.Name == "Contains" && m.GetParameters().Length == 1),
-                                filterValue);
-                            break;
-                        case FilterOperator.StartsWith:
-                            comparison = Expression.Call(propertyValue,
-                                typeof(string).GetMethods()
-                                .First(m => m.Name == "StartsWith" && m.GetParameters().Length == 1),
-                                filterValue); break;
-                        default:
-                            comparison = Expression.Equal(propertyValue, filterValue);
-                            break;
-                    }
-
-                    result = result.Where(Expression.Lambda<Func<TEntity, bool>>(
-                                comparison,
-                                parameter));
-                }
-                else
-                {
-                    result = ApplyCustomMethod(result, filterTerm.Name, _customFilterMethods,
-                        new object[] {
+                        result = ApplyCustomMethod(result, filterTerm.Name, _customFilterMethods,
+                            new object[] {
                             result,
                             filterTerm.Operator,
                             filterTerm.Value
-                        }, dataForCustomMethods);
+                            }, dataForCustomMethods);
+                    }
                 }
-            }
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (ex is SieveException)
+                    throw;
+                throw new SieveException(ex.Message, ex);
+            }
         }
 
         /// <summary>
@@ -197,32 +206,41 @@ namespace Sieve.Services
             IQueryable<TEntity> result,
             object[] dataForCustomMethods = null)
         {
-            if (model?.SortsParsed == null)
-                return result;
-
-            var useThenBy = false;
-            foreach (var sortTerm in model.SortsParsed)
+            try
             {
-                var property = GetSieveProperty<TEntity>(true, false, sortTerm.Name);
+                if (model?.SortsParsed == null)
+                    return result;
 
-                if (property != null)
+                var useThenBy = false;
+                foreach (var sortTerm in model.SortsParsed)
                 {
-                    result = result.OrderByDynamic(property.Name, sortTerm.Descending, useThenBy);
-                }
-                else
-                {
-                    result = ApplyCustomMethod(result, sortTerm.Name, _customSortMethods,
-                        new object[]
-                        {
+                    var property = GetSieveProperty<TEntity>(true, false, sortTerm.Name);
+
+                    if (property != null)
+                    {
+                        result = result.OrderByDynamic(property.Name, sortTerm.Descending, useThenBy);
+                    }
+                    else
+                    {
+                        result = ApplyCustomMethod(result, sortTerm.Name, _customSortMethods,
+                            new object[]
+                            {
                             result,
                             useThenBy,
                             sortTerm.Descending
-                        }, dataForCustomMethods);
+                            }, dataForCustomMethods);
+                    }
+                    useThenBy = true;
                 }
-                useThenBy = true;
-            }
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (ex is SieveException)
+                    throw;
+                throw new SieveException(ex.Message, ex);
+            }
         }
 
         /// <summary>
@@ -237,16 +255,25 @@ namespace Sieve.Services
             ISieveModel<IFilterTerm, ISortTerm> model, 
             IQueryable<TEntity> result)
         {
-            var page = model?.Page ?? 1;
-            var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;
-            var maxPageSize = _options.Value.MaxPageSize > 0 ? _options.Value.MaxPageSize : pageSize;
+            try
+            {
+                var page = model?.Page ?? 1;
+                var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;
+                var maxPageSize = _options.Value.MaxPageSize > 0 ? _options.Value.MaxPageSize : pageSize;
 
-            result = result.Skip((page - 1) * pageSize);
+                result = result.Skip((page - 1) * pageSize);
 
-            if (pageSize > 0)
-                result = result.Take(Math.Min(pageSize, maxPageSize));
+                if (pageSize > 0)
+                    result = result.Take(Math.Min(pageSize, maxPageSize));
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                if (ex is SieveException)
+                    throw;
+                throw new SieveException(ex.Message, ex);
+            }
         }
 
 
