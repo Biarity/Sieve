@@ -116,15 +116,6 @@ Then you can add the configuration:
 }
 ```
 
-## Handle Sieve's exceptions
-
-Sieve will silently fail unless `ThrowExceptions` in the configuration is set to true. 2 kinds of custom exceptions can be thrown:
-
-* `SieveMethodNotFoundException` with a `MethodName`
-* `SieveIncompatibleMethodException` with a `MethodName`, an `ExpectedType` and an `ActualType`
-
-It is recommended that you write exception-handling middleware to globally handle Sieve's exceptions when using it with ASP.NET Core.
-
 ## Send a request
 
 With all the above in place, you can now send a GET request that includes a sort/filter/page query.
@@ -170,6 +161,18 @@ You can replace this DSL with your own (eg. use JSON instead) by implementing an
 | `@=*`      | Case-insensitive string Contains |
 | `_=*`      | Case-insensitive string Starts with |
 | `==*`      | Case-insensitive string Equals |
+
+
+### Handle Sieve's exceptions
+
+Sieve will silently fail unless `ThrowExceptions` in the configuration is set to true. 3 kinds of custom exceptions can be thrown:
+
+* `SieveMethodNotFoundException` with a `MethodName`
+* `SieveIncompatibleMethodException` with a `MethodName`, an `ExpectedType` and an `ActualType`
+* `SieveException` which encapsulates any other exception types in its `InnerException`
+
+It is recommended that you write exception-handling middleware to globally handle Sieve's exceptions when using it with ASP.NET Core.
+
 
 ### Example project
 You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
