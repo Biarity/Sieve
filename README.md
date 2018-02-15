@@ -111,7 +111,7 @@ Then you can add the configuration:
     "Sieve": {
         "CaseSensitive": `boolean: should property names be case-sensitive? Defaults to false`,
         "DefaultPageSize": `int number: optional number to fallback to when no page argument is given. Set <=0 to disable paging if no pageSize is specified (default).`,
-        "MaxPageSize": `int number: maximum allowed page size. Set <0 to make infinite (default)`,
+        "MaxPageSize": `int number: maximum allowed page size. Set <=0 to make infinite (default)`,
         "ThrowExceptions": `boolean: should Sieve throw exceptions instead of silently failing? Defaults to false`
     }
 }
