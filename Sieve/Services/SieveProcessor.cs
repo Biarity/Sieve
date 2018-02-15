@@ -239,11 +239,12 @@ namespace Sieve.Services
         {
             var page = model?.Page ?? 1;
             var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;
+            var maxPageSize = _options.Value.MaxPageSize > 0 ? _options.Value.MaxPageSize : pageSize;
 
             result = result.Skip((page - 1) * pageSize);
 
             if (pageSize > 0)
-                result = result.Take(pageSize);
+                result = result.Take(Math.Min(pageSize, maxPageSize));
 
             return result;
         }
