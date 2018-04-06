@@ -110,20 +110,12 @@ Then you can add the configuration:
 {
     "Sieve": {
         "CaseSensitive": `boolean: should property names be case-sensitive? Defaults to false`,
-        "DefaultPageSize": `number: optional number to fallback to when no page argument is given. Set <=0 to disable paging if no pageSize is specified (default).`,
+        "DefaultPageSize": `int number: optional number to fallback to when no page argument is given. Set <=0 to disable paging if no pageSize is specified (default).`,
+        "MaxPageSize": `int number: maximum allowed page size. Set <=0 to make infinite (default)`,
         "ThrowExceptions": `boolean: should Sieve throw exceptions instead of silently failing? Defaults to false`
     }
 }
 ```
-
-## Handle Sieve's exceptions
-
-Sieve will silently fail unless `ThrowExceptions` in the configuration is set to true. 2 kinds of custom exceptions can be thrown:
-
-* `SieveMethodNotFoundException` with a `MethodName`
-* `SieveIncompatibleMethodException` with a `MethodName`, an `ExpectedType` and an `ActualType`
-
-It is recommended that you write exception-handling middleware to globally handle Sieve's exceptions when using it with ASP.NET Core.
 
 ## Send a request
 
@@ -170,6 +162,18 @@ You can replace this DSL with your own (eg. use JSON instead) by implementing an
 | `@=*`      | Case-insensitive string Contains |
 | `_=*`      | Case-insensitive string Starts with |
 | `==*`      | Case-insensitive string Equals |
+
+
+### Handle Sieve's exceptions
+
+Sieve will silently fail unless `ThrowExceptions` in the configuration is set to true. 3 kinds of custom exceptions can be thrown:
+
+* `SieveMethodNotFoundException` with a `MethodName`
+* `SieveIncompatibleMethodException` with a `MethodName`, an `ExpectedType` and an `ActualType`
+* `SieveException` which encapsulates any other exception types in its `InnerException`
+
+It is recommended that you write exception-handling middleware to globally handle Sieve's exceptions when using it with ASP.NET Core.
+
 
 ### Example project
 You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
