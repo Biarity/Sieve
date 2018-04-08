@@ -27,12 +27,14 @@ namespace SieveUnitTests
                 new Post() {
                     Id = 0,
                     Title = "A",
-                    LikeCount = 100
+                    LikeCount = 100,
+                    IsDraft = true
                 },
                 new Post() {
                     Id = 1,
                     Title = "B",
-                    LikeCount = 50
+                    LikeCount = 50,
+                    IsDraft = false
                 },
                 new Post() {
                     Id = 2,
@@ -67,6 +69,33 @@ namespace SieveUnitTests
             var result = _processor.ApplyFiltering(model, _posts);
 
             Assert.IsTrue(result.Count() == 0);
+        }
+
+        [TestMethod]
+        public void CanFilterBools()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "IsDraft==false"
+            };
+
+            var result = _processor.ApplyAll(model, _posts);
+            
+            Assert.IsTrue(result.Count() == 2);
+        }
+
+
+        [TestMethod]
+        public void CanSortBools()
+        {
+            var model = new SieveModel()
+            {
+                Sorts = "-IsDraft"
+            };
+
+            var result = _processor.ApplyAll(model, _posts);
+
+            Assert.AreEqual(result.First().Id, 0);
         }
 
         [TestMethod]
