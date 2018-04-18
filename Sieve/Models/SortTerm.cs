@@ -18,7 +18,7 @@ namespace Sieve.Models
         {
             get
             {
-                if (_sort.StartsWith('-'))
+                if (_sort.StartsWith("-"))
                 {
                     return _sort.Substring(1);
                 }
@@ -33,7 +33,7 @@ namespace Sieve.Models
         {
             get
             {
-                if (_sort.StartsWith('-'))
+                if (_sort.StartsWith("-"))
                 {
                     return true;
                 }

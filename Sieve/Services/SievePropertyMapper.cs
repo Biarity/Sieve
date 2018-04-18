@@ -15,7 +15,9 @@ namespace Sieve.Services
 
         public PropertyFluentApi<TEntity> Property<TEntity>(Expression<Func<TEntity, object>> expression)
         {
-            _map.TryAdd(typeof(TEntity), new Dictionary<PropertyInfo, ISievePropertyMetadata>());
+            if(!_map.ContainsKey(typeof(TEntity)))
+                _map.Add(typeof(TEntity), new Dictionary<PropertyInfo, ISievePropertyMetadata>());
+
             return new PropertyFluentApi<TEntity>(this, expression);
         }
 
