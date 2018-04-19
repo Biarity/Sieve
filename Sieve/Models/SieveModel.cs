@@ -27,7 +27,19 @@ namespace Sieve.Models
                     var value = new List<IFilterTerm>();
                     foreach (var filter in Filters.Split(','))
                     {
-                        value.Add(new FilterTerm(filter));
+                        if (filter.StartsWith("("))
+                        {
+                            var filterOpAndVal = filter.Substring(filter.LastIndexOf(")") + 1);
+                            filter = filter.Replace(subfilterOpAndVal, "").Replace("(", "").Replace(")","");
+                            foreach (var subfilter in filter.Split("|"))
+                            {
+                                value.Add(new FilterTerm(subfilter + filterOpAndVal))
+                            }
+                        }
+                        else 
+                        {
+                            value.Add(new FilterTerm(filter));
+                        }
                     }
                     return value;
                 }
