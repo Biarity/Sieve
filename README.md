@@ -134,13 +134,14 @@ More formally:
 * `sorts` is a comma-delimited ordered list of property names to sort by. Adding a `-` before the name switches to sorting descendingly.
 * `filters` is a comma-delimited list of `{Name}{Operator}{Value}` where
     * `{Name}` is the name of a property with the Sieve attribute or the name of a custom filter method for TEntity
+        * You can also have multiple names (for OR logic) by enclosing them in brackets and using a pipe delimiter, eg. `(LikeCount|CommentCount)>10` asks if `LikeCount` or `CommentCount` is `>10`
     * `{Operator}` is one of the [Operators](#operators)
     * `{Value}` is the value to use for filtering
 * `page` is the number of page to return
 * `pageSize` is the number of items returned per page 
 
 Notes:
-* Don't forget to remove commas from any `{Value}` fields
+* Don't forget to **remove commas (`,`), brackets (`(`, `)`), and pipes (`|`) from any `{Value}` fields**
 * You can have spaces anywhere except *within* `{Name}` or `{Operator}` fields
 * Here's a [good example on how to work with enumerables](https://github.com/Biarity/Sieve/issues/2)
 * Another example on [how to do OR logic](https://github.com/Biarity/Sieve/issues/8)
