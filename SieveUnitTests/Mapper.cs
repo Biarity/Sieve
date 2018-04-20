@@ -53,7 +53,7 @@ namespace SieveUnitTests
                 Filters = "shortname@=A",
             };
 
-            var result = _processor.ApplyAll(model, _posts);
+            var result = _processor.Apply(model, _posts);
 
             Assert.AreEqual(result.First().ThisHasNoAttributeButIsAccessible, "A");
 
@@ -69,9 +69,9 @@ namespace SieveUnitTests
                 Sorts = "OnlySortableViaFluentApi"
             };
 
-            var result = _processor.ApplySorting(model, _posts);
+            var result = _processor.Apply(model, _posts, applyFiltering: false, applyPagination: false);
 
-            Assert.ThrowsException<SieveMethodNotFoundException>(() => _processor.ApplyAll(model, _posts));
+            Assert.ThrowsException<SieveMethodNotFoundException>(() => _processor.Apply(model, _posts));
 
             Assert.AreEqual(result.First().Id, 3);
 

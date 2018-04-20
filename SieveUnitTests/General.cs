@@ -58,7 +58,7 @@ namespace SieveUnitTests
                 Filters = "Title@=*a"
             };
 
-            var result = _processor.ApplyFiltering(model, _posts);
+            var result = _processor.Apply(model, _posts);
 
             Assert.AreEqual(result.First().Id, 0);
             Assert.IsTrue(result.Count() == 1);
@@ -72,7 +72,7 @@ namespace SieveUnitTests
                 Filters = "Title@=a",
             };
 
-            var result = _processor.ApplyFiltering(model, _posts);
+            var result = _processor.Apply(model, _posts);
 
             Assert.IsTrue(result.Count() == 0);
         }
@@ -85,7 +85,7 @@ namespace SieveUnitTests
                 Filters = "IsDraft==false"
             };
 
-            var result = _processor.ApplyAll(model, _posts);
+            var result = _processor.Apply(model, _posts);
             
             Assert.IsTrue(result.Count() == 2);
         }
@@ -99,7 +99,7 @@ namespace SieveUnitTests
                 Sorts = "-IsDraft"
             };
 
-            var result = _processor.ApplyAll(model, _posts);
+            var result = _processor.Apply(model, _posts);
 
             Assert.AreEqual(result.First().Id, 0);
         }
@@ -116,7 +116,7 @@ namespace SieveUnitTests
             Console.WriteLine(model.FiltersParsed.First().Operator);
             Console.WriteLine(model.FiltersParsed.First().OperatorParsed);
 
-            var result = _processor.ApplyFiltering(model, _posts);
+            var result = _processor.Apply(model, _posts);
 
 
 
@@ -132,7 +132,7 @@ namespace SieveUnitTests
                 Filters = "Isnew",
             };
 
-            var result = _processor.ApplyFiltering(model, _posts);
+            var result = _processor.Apply(model, _posts);
 
             Assert.IsFalse(result.Any(p => p.Id == 0));
             Assert.IsTrue(result.Count() == 3);
@@ -146,7 +146,7 @@ namespace SieveUnitTests
                 Filters = "does not exist",
             };
 
-            Assert.ThrowsException<SieveMethodNotFoundException>(() => _processor.ApplyFiltering(model, _posts));
+            Assert.ThrowsException<SieveMethodNotFoundException>(() => _processor.Apply(model, _posts));
         }
 
         [TestMethod]
@@ -157,7 +157,7 @@ namespace SieveUnitTests
                 Filters = "TestComment",
             };
 
-            Assert.ThrowsException<SieveIncompatibleMethodException>(() => _processor.ApplyFiltering(model, _posts));
+            Assert.ThrowsException<SieveIncompatibleMethodException>(() => _processor.Apply(model, _posts));
         }
 
         [TestMethod]
@@ -168,7 +168,7 @@ namespace SieveUnitTests
                 Filters = "(Title|LikeCount)==3",
             };
 
-            var result = _processor.ApplyFiltering(model, _posts);
+            var result = _processor.Apply(model, _posts);
 
             Assert.AreEqual(result.First().Id, 3);
             Assert.IsTrue(result.Count() == 1);

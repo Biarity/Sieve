@@ -28,7 +28,7 @@ namespace SieveTests.Controllers
         {
             var result = _dbContext.Posts.AsNoTracking();
 
-            result = _sieveProcessor.ApplyAll(sieveModel, result);
+            result = _sieveProcessor.Apply(sieveModel, result);
 
             return Json(result.ToList());
         }
