@@ -45,17 +45,17 @@ Alternatively, you can use Fluent API to do the same. This is especially useful 
 ### 3. Get sort/filter/page queries by using the Sieve model in your controllers
 
 In the action that handles returning Posts, use `SieveModel` to get the sort/filter/page query. 
-Apply it to your data by injecting `SieveProcessor` into the controller and using its `ApplyAll<TEntity>` method. So for instance:
+Apply it to your data by injecting `SieveProcessor` into the controller and using its `Apply<TEntity>` method. So for instance:
 ```
 [HttpGet]
 public JsonResult GetPosts(SieveModel sieveModel) 
 {
     var result = _dbContext.Posts.AsNoTracking(); // Makes read-only queries faster
-    result = _sieveProcessor.ApplyAll(sieveModel, result); // Returns `result` after applying the sort/filter/page query in `SieveModel` to it
+    result = _sieveProcessor.Apply(sieveModel, result); // Returns `result` after applying the sort/filter/page query in `SieveModel` to it
     return Json(result.ToList());
 }
 ```
-There are also `ApplySorting`, `ApplyFiltering`, and `ApplyPagination` methods.
+You can also explicitly specify if only filtering, sorting, and/or pagination should be applied via optional arguments.
 
 ### 4. Send a request
 
@@ -185,9 +185,6 @@ You can find an example project incorporating most Sieve concepts in [SieveTests
     * `ApplyAll` is now `Apply`
     * `ApplyFiltering`, `ApplySorting`, and `ApplyPagination` are now depricated - instead you can use optional arguments on `Apply` to achieve the same
 * Instead of just removing commas from `{Value}`s, [you'll also need to remove brackets and pipes](#send-a-request)
-
-
-
 
 
 ## License & Contributing
