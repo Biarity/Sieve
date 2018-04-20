@@ -179,5 +179,16 @@ It is recommended that you write exception-handling middleware to globally handl
 ### Example project
 You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
 
+## Upgrading from v1.* to v2.*
+
+* Changes to the `SieveProcessor` API:
+    * `ApplyAll` is now `Apply`
+    * `ApplyFiltering`, `ApplySorting`, and `ApplyPagination` are now depricated - instead you can use optional arguments on `Apply` to achieve the same
+* Instead of just removing commas from `{Value}`s, [you'll also need to remove brackets and pipes](#send-a-request)
+
+
+
+
+
 ## License & Contributing
 Sieve is licensed under Apache 2.0. Any contributions highly appreciated!
