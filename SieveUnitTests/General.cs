@@ -41,6 +41,12 @@ namespace SieveUnitTests
                     Title = "C",
                     LikeCount = 0
                 },
+                new Post() {
+                    Id = 3,
+                    Title = "3",
+                    LikeCount = 3,
+                    IsDraft = true
+                },
             }.AsQueryable();
         }
 
@@ -129,7 +135,7 @@ namespace SieveUnitTests
             var result = _processor.ApplyFiltering(model, _posts);
 
             Assert.IsFalse(result.Any(p => p.Id == 0));
-            Assert.IsTrue(result.Count() == 2);
+            Assert.IsTrue(result.Count() == 3);
         }
 
         [TestMethod]
@@ -152,6 +158,20 @@ namespace SieveUnitTests
             };
 
             Assert.ThrowsException<SieveIncompatibleMethodException>(() => _processor.ApplyFiltering(model, _posts));
+        }
+
+        [TestMethod]
+        public void OrFilteringWorks()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "(Title|LikeCount)==3",
+            };
+
+            var result = _processor.ApplyFiltering(model, _posts);
+
+            Assert.AreEqual(result.First().Id, 3);
+            Assert.IsTrue(result.Count() == 1);
         }
     }
 }

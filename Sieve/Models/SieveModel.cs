@@ -30,10 +30,10 @@ namespace Sieve.Models
                         if (filter.StartsWith("("))
                         {
                             var filterOpAndVal = filter.Substring(filter.LastIndexOf(")") + 1);
-                            filter = filter.Replace(subfilterOpAndVal, "").Replace("(", "").Replace(")","");
-                            foreach (var subfilter in filter.Split("|"))
+                            var subfilters = filter.Replace(filterOpAndVal, "").Replace("(", "").Replace(")","");
+                            foreach (var subfilter in subfilters.Split('|'))
                             {
-                                value.Add(new FilterTerm(subfilter + filterOpAndVal))
+                                value.Add(new FilterTerm(subfilter + filterOpAndVal));
                             }
                         }
                         else 
