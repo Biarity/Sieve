@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sieve", "Sieve\Sieve.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SieveTests", "SieveTests\SieveTests.csproj", "{8043D264-42A0-4275-97A1-46400C02E37E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SieveUnitTests", "SieveUnitTests\SieveUnitTests.csproj", "{21C3082D-F40E-457F-BE2E-AA099E19E199}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SieveUnitTests", "SieveUnitTests\SieveUnitTests.csproj", "{21C3082D-F40E-457F-BE2E-AA099E19E199}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{904F25A9-5CBD-42AE-8422-ADAB98F4B4B7}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

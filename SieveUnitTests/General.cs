@@ -1,20 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sieve.Exceptions;
 using Sieve.Models;
 using Sieve.Services;
 using SieveUnitTests.Entities;
 using SieveUnitTests.Services;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using Sieve.Exceptions;
 
 namespace SieveUnitTests
 {
     [TestClass]
     public class General
     {
-        private SieveProcessor _processor;
-        private IQueryable<Post> _posts;
+        private readonly SieveProcessor _processor;
+        private readonly IQueryable<Post> _posts;
 
         public General()
         {
@@ -43,7 +43,7 @@ namespace SieveUnitTests
                 },
                 new Post() {
                     Id = 3,
-                    Title = "3",
+                    Title = "D",
                     LikeCount = 3,
                     IsDraft = true
                 },
@@ -86,10 +86,9 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
-            
+
             Assert.IsTrue(result.Count() == 2);
         }
-
 
         [TestMethod]
         public void CanSortBools()
@@ -112,13 +111,11 @@ namespace SieveUnitTests
                 Filters = "LikeCount==50",
             };
 
-            Console.WriteLine(model.FiltersParsed.First().Value);
-            Console.WriteLine(model.FiltersParsed.First().Operator);
-            Console.WriteLine(model.FiltersParsed.First().OperatorParsed);
+            Console.WriteLine(model.FiltersParsed[0].Value);
+            Console.WriteLine(model.FiltersParsed[0].Operator);
+            Console.WriteLine(model.FiltersParsed[0].OperatorParsed);
 
             var result = _processor.Apply(model, _posts);
-
-
 
             Assert.AreEqual(result.First().Id, 1);
             Assert.IsTrue(result.Count() == 1);
@@ -169,15 +166,12 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
+            var entry = result.FirstOrDefault();
+            var resultCount = result.Count();
 
-            Assert.AreEqual(result.First().Id, 3);
-            Assert.IsTrue(result.Count() == 1);
+            Assert.IsNotNull(entry);
+            Assert.AreEqual(1, resultCount);
+            Assert.AreEqual(3, entry.Id);
         }
     }
 }
-
-//
-//Sorts = "LikeCount",
-//Page = 1,
-//PageSize = 10
-//

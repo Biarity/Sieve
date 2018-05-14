@@ -1,20 +1,18 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sieve.Models;
-using Sieve.Services;
 using SieveUnitTests.Entities;
 using SieveUnitTests.Services;
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using Sieve.Exceptions;
 
 namespace SieveUnitTests
 {
-    [TestClass]
+	[TestClass]
     public class Mapper
     {
-        private ApplicationSieveProcessor _processor;
-        private IQueryable<Post> _posts;
+        private readonly ApplicationSieveProcessor _processor;
+        private readonly IQueryable<Post> _posts;
 
         public Mapper()
         {
@@ -44,7 +42,7 @@ namespace SieveUnitTests
                 },
             }.AsQueryable();
         }
-        
+
         [TestMethod]
         public void MapperWorks()
         {

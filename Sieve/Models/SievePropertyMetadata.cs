@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-
-namespace Sieve.Models
+﻿namespace Sieve.Models
 {
-    public class SievePropertyMetadata : ISievePropertyMetadata
+	public class SievePropertyMetadata : ISievePropertyMetadata
     {
         public string Name { get; set; }
         public bool CanFilter { get; set; }

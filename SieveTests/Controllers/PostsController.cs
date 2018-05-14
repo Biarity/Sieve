@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sieve.Models;
@@ -10,11 +7,11 @@ using SieveTests.Entities;
 
 namespace SieveTests.Controllers
 {
-    [Route("api/[controller]/[action]")]
+	[Route("api/[controller]/[action]")]
     public class PostsController : Controller
     {
-        private ISieveProcessor _sieveProcessor;
-        private ApplicationDbContext _dbContext;
+        private readonly ISieveProcessor _sieveProcessor;
+        private readonly ApplicationDbContext _dbContext;
 
         public PostsController(ISieveProcessor sieveProcessor,
             ApplicationDbContext dbContext)

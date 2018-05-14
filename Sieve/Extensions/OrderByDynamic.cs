@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace Sieve.Extensions
 {
-    public static partial class LinqExtentions
+	public static partial class LinqExtentions
     {
         public static IQueryable<TEntity> OrderByDynamic<TEntity>(this IQueryable<TEntity> source, string orderByProperty,
                           bool desc, bool useThenBy)
         {
-            string command = desc ? 
+            string command = desc ?
                 ( useThenBy ? "ThenByDescending" : "OrderByDescending") :
                 ( useThenBy ? "ThenBy" : "OrderBy");
             var type = typeof(TEntity);

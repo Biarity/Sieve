@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sieve.Exceptions
 {
@@ -11,6 +9,14 @@ namespace Sieve.Exceptions
         }
 
         public SieveException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        public SieveException()
+        {
+        }
+
+        protected SieveException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context)
         {
         }
     }

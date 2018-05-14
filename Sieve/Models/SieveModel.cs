@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace Sieve.Models
 {
-    public class SieveModel: ISieveModel<IFilterTerm, ISortTerm>
+    public class SieveModel : ISieveModel<IFilterTerm, ISortTerm>
     {
         public string Filters { get; set; }
 
         public string Sorts { get; set; }
 
-        [Range(1, Double.MaxValue)]
+        [Range(1, int.MaxValue)]
         public int? Page { get; set; }
 
-        [Range(1, Double.MaxValue)]
+        [Range(1, int.MaxValue)]
         public int? PageSize { get; set; }
-
 
         public List<IFilterTerm> FiltersParsed
         {
@@ -30,13 +27,10 @@ namespace Sieve.Models
                         if (filter.StartsWith("("))
                         {
                             var filterOpAndVal = filter.Substring(filter.LastIndexOf(")") + 1);
-                            var subfilters = filter.Replace(filterOpAndVal, "").Replace("(", "").Replace(")","");
-                            foreach (var subfilter in subfilters.Split('|'))
-                            {
-                                value.Add(new FilterTerm(subfilter + filterOpAndVal));
-                            }
+                            var subfilters = filter.Replace(filterOpAndVal, "").Replace("(", "").Replace(")", "");
+                            value.Add(new FilterTerm(subfilters + filterOpAndVal));
                         }
-                        else 
+                        else
                         {
                             value.Add(new FilterTerm(filter));
                         }
