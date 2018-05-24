@@ -127,10 +127,12 @@ namespace Sieve.Services
                     var converter = TypeDescriptor.GetConverter(property.PropertyType);
                     var parameter = Expression.Parameter(typeof(TEntity), "e");
 
-                    dynamic filterValue = Expression.Constant(
-                        converter.CanConvertFrom(typeof(string)) ?
-                        converter.ConvertFrom(filterTerm.Value) :
-                        Convert.ChangeType(filterTerm.Value, property.PropertyType));
+                    
+                    dynamic constantVal = converter.CanConvertFrom(typeof(string))
+                                              ? converter.ConvertFrom(filterTerm.Value)
+                                              : Convert.ChangeType(filterTerm.Value, property.PropertyType);
+
+                    Expression filterValue = GetClosureOverConstant(constantVal);
 
                     dynamic propertyValue = Expression.PropertyOrField(parameter, property.Name);
 
@@ -199,6 +201,14 @@ namespace Sieve.Services
             }
 
             return result;
+        }
+
+        //Workaround to ensure that the filter value gets passed as a parameter in generated SQL from EF Core
+        //See https://github.com/aspnet/EntityFrameworkCore/issues/3361
+        private Expression GetClosureOverConstant<T>(T constant)
+        {
+            Expression<Func<T>> closure = () => constant;
+            return closure.Body;
         }
 
         private IQueryable<TEntity> ApplySorting<TEntity>(
