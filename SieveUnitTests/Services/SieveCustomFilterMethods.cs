@@ -6,10 +6,16 @@ namespace SieveUnitTests.Services
 {
     public class SieveCustomFilterMethods : ISieveCustomFilterMethods
     {
-        public IQueryable<Post> IsNew(IQueryable<Post> source)
-            => source.Where(p => p.LikeCount < 100);
+        public IQueryable<Post> IsNew(IQueryable<Post> source, string op, string value)
+        {
+            var result = source.Where(p => p.LikeCount < 100);
 
-        public IQueryable<Comment> TestComment(IQueryable<Comment> source)
-            => source;
+            return result;
+        }
+
+        public IQueryable<Comment> TestComment(IQueryable<Comment> source, string op, string value)
+        {
+            return source;
+        }
     }
 }
