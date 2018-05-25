@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using Sieve.Attributes;
 
 namespace SieveTests.Entities
@@ -18,5 +19,9 @@ namespace SieveTests.Entities
 
         [Sieve(CanFilter = true, CanSort = true)]
         public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
+
+        [Sieve(CanFilter = true, CanSort = true)]
+        [Column(TypeName = "datetime")]
+        public DateTime DateLastViewed { get; set; } = DateTime.UtcNow;
     }
 }
