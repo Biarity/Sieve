@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+using System.Linq;
 
 namespace Sieve.Models
 {
     public class FilterTerm : IFilterTerm
     {
-        private string _filter;
-        private string[] operators = new string[] {
+        private static readonly string[] Operators = new string[] {
                     "==*",
                     "@=*",
                     "_=*",
@@ -24,82 +21,50 @@ namespace Sieve.Models
 
         public FilterTerm(string filter)
         {
-            _filter = filter;
+            var filterSplits = filter.Split(Operators, StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToArray();
+            Names = filterSplits[0].Split('|').Select(t => t.Trim()).ToArray();
+            Value = filterSplits.Length > 1 ? filterSplits[1] : null;
+            Operator = Array.Find(Operators, o => filter.Contains(o)) ?? "==";
+            OperatorParsed = GetOperatorParsed(Operator);
+            OperatorIsCaseInsensitive = Operator.Contains("*");
         }
 
-        public string Name
+        public string[] Names { get; }
+
+        public FilterOperator OperatorParsed { get; }
+
+        public string Value { get; }
+
+        public string Operator { get; }
+
+        private FilterOperator GetOperatorParsed(string Operator)
         {
-            get
+            switch (Operator.Trim().ToLower())
             {
-                var tokens = _filter.Split(operators, StringSplitOptions.RemoveEmptyEntries);
-                return tokens.Length > 0 ? tokens[0].Trim() : "";
-                
+                case "==":
+                case "==*":
+                    return FilterOperator.Equals;
+                case "!=":
+                    return FilterOperator.NotEquals;
+                case "<":
+                    return FilterOperator.LessThan;
+                case ">":
+                    return FilterOperator.GreaterThan;
+                case ">=":
+                    return FilterOperator.GreaterThanOrEqualTo;
+                case "<=":
+                    return FilterOperator.LessThanOrEqualTo;
+                case "@=":
+                case "@=*":
+                    return FilterOperator.Contains;
+                case "_=":
+                case "_=*":
+                    return FilterOperator.StartsWith;
+                default:
+                    return FilterOperator.Equals;
             }
         }
 
-        public string Operator
-        {
-            get
-            {
-                foreach (var op in operators)
-                {
-                    if (_filter.IndexOf(op) != -1)
-                    {
-                        return op;
-                    }
-                }
-
-                // Custom operators not supported
-                // var tokens = _filter.Split(' ');
-                // return tokens.Length > 2 ? tokens[1] : "";
-                return "";
-            }
-        }
-
-        public string Value {
-            get
-            {
-                var tokens = _filter.Split(operators, StringSplitOptions.RemoveEmptyEntries);
-                return tokens.Length > 1 ? tokens[1].Trim() : null;
-            }
-        }
-
-        public FilterOperator OperatorParsed {
-            get
-            {
-                switch (Operator.Trim().ToLower())
-                {
-                    case "==":
-                    case "==*":
-                        return FilterOperator.Equals;
-                    case "!=":
-                        return FilterOperator.NotEquals;
-                    case "<":
-                        return FilterOperator.LessThan;
-                    case ">":
-                        return FilterOperator.GreaterThan;
-                    case ">=":
-                        return FilterOperator.GreaterThanOrEqualTo;
-                    case "<=":
-                        return FilterOperator.LessThanOrEqualTo;
-                    case "@=":
-                    case "@=*":
-                        return FilterOperator.Contains;
-                    case "_=":
-                    case "_=*":
-                        return FilterOperator.StartsWith;
-                    default:
-                        return FilterOperator.Equals;
-                }
-            }
-        }
-
-        public bool OperatorIsCaseInsensitive
-        {
-            get
-            {
-                return Operator.Contains("*");
-            }
-        }
+        public bool OperatorIsCaseInsensitive { get; }
     }
 }

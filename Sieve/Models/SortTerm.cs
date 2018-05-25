@@ -1,47 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-
-namespace Sieve.Models
+﻿namespace Sieve.Models
 {
     public class SortTerm : ISortTerm
     {
-        private string _sort;
+        private readonly string _sort;
 
         public SortTerm(string sort)
         {
             _sort = sort;
         }
 
-        public string Name
-        {
-            get
-            {
-                if (_sort.StartsWith("-"))
-                {
-                    return _sort.Substring(1);
-                }
-                else
-                {
-                    return _sort;
-                }
-            }
-        }
+        public string Name => (_sort.StartsWith("-")) ? _sort.Substring(1) : _sort;
 
-        public bool Descending
-        {
-            get
-            {
-                if (_sort.StartsWith("-"))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
+        public bool Descending => _sort.StartsWith("-");
     }
 }

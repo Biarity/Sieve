@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sieve.Models
+﻿namespace Sieve.Models
 {
-    public enum FilterOperator
+	public enum FilterOperator
     {
         Equals,
         NotEquals,

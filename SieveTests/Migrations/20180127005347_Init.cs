@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace SieveTests.Migrations
 {
@@ -20,10 +19,7 @@ namespace SieveTests.Migrations
                     LikeCount = table.Column<int>(nullable: false),
                     Title = table.Column<string>(nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Posts", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_Posts", x => x.Id));
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

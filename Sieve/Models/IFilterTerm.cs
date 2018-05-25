@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-
-namespace Sieve.Models
+﻿namespace Sieve.Models
 {
     public interface IFilterTerm
     {
-        string Name { get; }
+        string[] Names { get; }
         string Operator { get; }
         bool OperatorIsCaseInsensitive { get; }
         FilterOperator OperatorParsed { get; }

@@ -4,27 +4,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
 namespace Sieve.Services
 {
-    public class SievePropertyMapper
+	public class SievePropertyMapper
     {
-        private Dictionary<Type, Dictionary<PropertyInfo, ISievePropertyMetadata>> _map
+        private readonly Dictionary<Type, Dictionary<PropertyInfo, ISievePropertyMetadata>> _map
             = new Dictionary<Type, Dictionary<PropertyInfo, ISievePropertyMetadata>>();
 
         public PropertyFluentApi<TEntity> Property<TEntity>(Expression<Func<TEntity, object>> expression)
         {
             if(!_map.ContainsKey(typeof(TEntity)))
+            {
                 _map.Add(typeof(TEntity), new Dictionary<PropertyInfo, ISievePropertyMetadata>());
+            }
 
             return new PropertyFluentApi<TEntity>(this, expression);
         }
 
         public class PropertyFluentApi<TEntity>
         {
-            private SievePropertyMapper _sievePropertyMapper;
-            private PropertyInfo _property;
+            private readonly SievePropertyMapper _sievePropertyMapper;
+            private readonly PropertyInfo _property;
 
             public PropertyFluentApi(SievePropertyMapper sievePropertyMapper, Expression<Func<TEntity, object>> expression)
             {
@@ -77,7 +78,7 @@ namespace Sieve.Services
                     var ubody = (UnaryExpression)exp.Body;
                     body = ubody.Operand as MemberExpression;
                 }
-    
+
                 return body?.Member as PropertyInfo;
             }
         }
@@ -92,16 +93,14 @@ namespace Sieve.Services
             {
                 return _map[typeof(TEntity)]
                     .FirstOrDefault(kv =>
-                    kv.Value.Name.Equals(name, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase) &&
-                    (canSortRequired ? kv.Value.CanSort : true) &&
-                    (canFilterRequired ? kv.Value.CanFilter : true)).Key;
+                    kv.Value.Name.Equals(name, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)
+                    && (canSortRequired ? kv.Value.CanSort : true)
+                    && (canFilterRequired ? kv.Value.CanFilter : true)).Key;
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentNullException)
             {
                 return null;
             }
-
         }
-        
     }
 }

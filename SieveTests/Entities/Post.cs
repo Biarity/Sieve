@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 using Sieve.Attributes;
 
 namespace SieveTests.Entities
 {
-    public class Post
+	public class Post
     {
         public int Id { get; set; }
 
