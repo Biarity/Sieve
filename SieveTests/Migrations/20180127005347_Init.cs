@@ -17,7 +17,8 @@ namespace SieveTests.Migrations
                     CommentCount = table.Column<int>(nullable: false),
                     DateCreated = table.Column<DateTimeOffset>(nullable: false),
                     LikeCount = table.Column<int>(nullable: false),
-                    Title = table.Column<string>(nullable: true)
+                    Title = table.Column<string>(nullable: true),
+                    CategoryId = table.Column<int>(nullable: true)
                 },
                 constraints: table => table.PrimaryKey("PK_Posts", x => x.Id));
         }
