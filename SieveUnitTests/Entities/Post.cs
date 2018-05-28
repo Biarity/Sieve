@@ -20,6 +20,9 @@ namespace SieveUnitTests.Entities
         public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 
         [Sieve(CanFilter = true, CanSort = true)]
+        public int? CategoryId { get; set; } = new Random().Next(0, 4);
+
+        [Sieve(CanFilter = true, CanSort = true)]
         public bool IsDraft { get; set; }
 
         public string ThisHasNoAttribute { get; set; }

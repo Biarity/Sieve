@@ -34,6 +34,8 @@ namespace SieveTests.Migrations
 
                     b.Property<int>("LikeCount");
 
+                    b.Property<int?>("CategoryId");
+
                     b.Property<string>("Title");
 
                     b.HasKey("Id");

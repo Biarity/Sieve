@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -28,24 +28,28 @@ namespace SieveUnitTests
                     Id = 0,
                     Title = "A",
                     LikeCount = 100,
-                    IsDraft = true
+                    IsDraft = true,
+                    CategoryId = null,
                 },
                 new Post() {
                     Id = 1,
                     Title = "B",
                     LikeCount = 50,
-                    IsDraft = false
+                    IsDraft = false,
+                    CategoryId = 1,
                 },
                 new Post() {
                     Id = 2,
                     Title = "C",
-                    LikeCount = 0
+                    LikeCount = 0,
+                    CategoryId = 1,
                 },
                 new Post() {
                     Id = 3,
                     Title = "D",
                     LikeCount = 3,
-                    IsDraft = true
+                    IsDraft = true,
+                    CategoryId = 2,
                 },
             }.AsQueryable();
         }
@@ -101,6 +105,19 @@ namespace SieveUnitTests
             var result = _processor.Apply(model, _posts);
 
             Assert.AreEqual(result.First().Id, 0);
+        }
+
+        [TestMethod]
+        public void CanFilterNullableInts()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "CategoryId==1"
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.IsTrue(result.Count() == 2);
         }
 
         [TestMethod]
