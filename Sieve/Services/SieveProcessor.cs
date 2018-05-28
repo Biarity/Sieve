@@ -142,7 +142,7 @@ namespace Sieve.Services
                                                   ? converter.ConvertFrom(filterTerm.Value)
                                                   : Convert.ChangeType(filterTerm.Value, property.PropertyType);
 
-                        Expression filterValue = GetClosureOverConstant(constantVal);
+                        Expression filterValue = GetClosureOverConstant(constantVal, property.PropertyType);
 
                         dynamic propertyValue = Expression.PropertyOrField(parameterExpression, property.Name);
 
@@ -219,12 +219,13 @@ namespace Sieve.Services
             }
         }
 
-        //Workaround to ensure that the filter value gets passed as a parameter in generated SQL from EF Core
-        //See https://github.com/aspnet/EntityFrameworkCore/issues/3361
-        private Expression GetClosureOverConstant<T>(T constant)
+        // Workaround to ensure that the filter value gets passed as a parameter in generated SQL from EF Core
+        // See https://github.com/aspnet/EntityFrameworkCore/issues/3361
+        // Expression.Constant passed the target type to allow Nullable comparison
+        // See http://bradwilson.typepad.com/blog/2008/07/creating-nullab.html
+        private Expression GetClosureOverConstant<T>(T constant, Type targetType)
         {
-            Expression<Func<T>> closure = () => constant;
-            return closure.Body;
+            return Expression.Constant(constant, targetType);
         }
 
         private IQueryable<TEntity> ApplySorting<TEntity>(
