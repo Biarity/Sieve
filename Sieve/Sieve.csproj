@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>2.1.0</Version>
+    <Version>2.1.2</Version>
     <Description>Sieve is a simple, clean, and extensible framework for .NET Core that adds sorting, filtering, and pagination functionality out of the box. Most common use case would be for serving ASP.NET Core GET queries. Documentation available on GitHub: https://github.com/Biarity/Sieve/
 </Description>
     <Copyright>Copyright 2018</Copyright>
@@ -10,7 +10,7 @@
     <PackageProjectUrl>https://github.com/Biarity/Sieve</PackageProjectUrl>
     <PackageIconUrl>https://emojipedia-us.s3.amazonaws.com/thumbs/240/twitter/120/alembic_2697.png</PackageIconUrl>
     <RepositoryUrl></RepositoryUrl>
-    <PackageReleaseNotes>Fix OR conditions and better SQL Server support</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix issue #28</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Authors>Biarity</Authors>

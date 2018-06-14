@@ -153,6 +153,34 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void CustomFiltersMixedWithUsualWork1()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Isnew,CategoryId==2",
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.IsTrue(result.Any(p => p.Id == 3));
+            Assert.IsTrue(result.Count() == 1);
+        }
+
+        [TestMethod]
+        public void CustomFiltersMixedWithUsualWork2()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "CategoryId==2,Isnew",
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.IsTrue(result.Any(p => p.Id == 3));
+            Assert.IsTrue(result.Count() == 1);
+        }
+
+        [TestMethod]
         public void MethodNotFoundExceptionWork()
         {
             var model = new SieveModel()

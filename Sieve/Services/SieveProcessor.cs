@@ -174,11 +174,16 @@ namespace Sieve.Services
                                             filterTerm.Value
                             };
                         result = ApplyCustomMethod(result, filterTermName, _customFilterMethods, parameters, dataForCustomMethods);
+                        
                     }
                 }
                 if (outerExpression == null)
                 {
                     outerExpression = innerExpression;
+                    continue;
+                }
+                if (innerExpression == null)
+                {
                     continue;
                 }
                 outerExpression = Expression.And(outerExpression, innerExpression);
