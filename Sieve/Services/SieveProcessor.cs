@@ -315,8 +315,9 @@ namespace Sieve.Services
         private IQueryable<TEntity> ApplyCustomMethod<TEntity>(IQueryable<TEntity> result, string name, object parent, object[] parameters, object[] optionalParameters = null)
         {
             var customMethod = parent?.GetType()
-                .GetMethod(name,
-                _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                .GetMethodExt(name,
+                _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance,
+                new Type[] { typeof(IQueryable<TEntity>), typeof(string), typeof(string) });
 
             if (customMethod != null)
             {
@@ -337,17 +338,24 @@ namespace Sieve.Services
                         throw;
                     }
                 }
-                catch (ArgumentException) // name matched with custom method for a different type
-                {
-                    var expected = typeof(IQueryable<TEntity>);
-                    var actual = customMethod.ReturnType;
-                    throw new SieveIncompatibleMethodException(name, expected, actual,
-                        $"{name} failed. Expected a custom method for type {expected} but only found for type {actual}");
-                }
             }
             else
             {
-                throw new SieveMethodNotFoundException(name, $"{name} not found.");
+                var incompatibleCustomMethod = parent?.GetType()
+                    .GetMethod(name,
+                    _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+
+                if (incompatibleCustomMethod != null)
+                {
+                    var expected = typeof(IQueryable<TEntity>);
+                    var actual = incompatibleCustomMethod.ReturnType;
+                    throw new SieveIncompatibleMethodException(name, expected, actual,
+                        $"{name} failed. Expected a custom method for type {expected} but only found for type {actual}");
+                }
+                else
+                {
+                    throw new SieveMethodNotFoundException(name, $"{name} not found.");
+                }
             }
 
             return result;

@@ -15,6 +15,7 @@ namespace SieveUnitTests
     {
         private readonly SieveProcessor _processor;
         private readonly IQueryable<Post> _posts;
+        private readonly IQueryable<Comment> _comments;
 
         public General()
         {
@@ -50,6 +51,25 @@ namespace SieveUnitTests
                     LikeCount = 3,
                     IsDraft = true,
                     CategoryId = 2,
+                },
+            }.AsQueryable();
+
+            _comments = new List<Comment>
+            {
+                new Comment() {
+                    Id = 0,
+                    DateCreated = DateTimeOffset.UtcNow.AddDays(-20),
+                    Text = "This is an old comment."
+                },
+                new Comment() {
+                    Id = 1,
+                    DateCreated = DateTimeOffset.UtcNow.AddDays(-1),
+                    Text = "This is a fairly new comment."
+                },
+                new Comment() {
+                    Id = 2,
+                    DateCreated = DateTimeOffset.UtcNow,
+                    Text = "This is a brand new comment."
                 },
             }.AsQueryable();
         }
@@ -178,6 +198,30 @@ namespace SieveUnitTests
 
             Assert.IsTrue(result.Any(p => p.Id == 3));
             Assert.IsTrue(result.Count() == 1);
+        }
+
+        [TestMethod]
+        public void CustomFiltersOnDifferentSourcesCanShareName()
+        {
+            var postModel = new SieveModel()
+            {
+                Filters = "CategoryId==2,Isnew",
+            };
+
+            var postResult = _processor.Apply(postModel, _posts);
+
+            Assert.IsTrue(postResult.Any(p => p.Id == 3));
+            Assert.AreEqual(1, postResult.Count());
+
+            var commentModel = new SieveModel()
+            {
+                Filters = "Isnew",
+            };
+
+            var commentResult = _processor.Apply(commentModel, _comments);
+
+            Assert.IsTrue(commentResult.Any(c => c.Id == 2));
+            Assert.AreEqual(2, commentResult.Count());
         }
 
         [TestMethod]
