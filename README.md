@@ -14,7 +14,7 @@ We'll use Sieve to add sorting, filtering, and pagination capabilities when GET-
 ### 1. Add required services
 
 Inject the `SieveProcessor` service. So in `Startup.cs` add:
-```
+```C#
 services.AddScoped<SieveProcessor>();
 ```
 
@@ -22,7 +22,7 @@ services.AddScoped<SieveProcessor>();
 
 Sieve will only sort/filter properties that have the attribute `[Sieve(CanSort = true, CanFilter = true)]` on them (they don't have to be both true).
 So for our `Post` entity model example:
-```
+```C#
 public int Id { get; set; }
 
 [Sieve(CanFilter = true, CanSort = true)]
@@ -46,7 +46,7 @@ Alternatively, you can use Fluent API to do the same. This is especially useful 
 
 In the action that handles returning Posts, use `SieveModel` to get the sort/filter/page query. 
 Apply it to your data by injecting `SieveProcessor` into the controller and using its `Apply<TEntity>` method. So for instance:
-```
+```C#
 [HttpGet]
 public JsonResult GetPosts(SieveModel sieveModel) 
 {
@@ -66,12 +66,12 @@ You can also explicitly specify if only filtering, sorting, and/or pagination sh
 If you want to add custom sort/filter methods, inject `ISieveCustomSortMethods` or `ISieveCustomFilterMethods` with the implementation being a class that has custom sort/filter methods that Sieve will search through.
 
 For instance:
-```
+```C#
 services.AddScoped<ISieveCustomSortMethods, SieveCustomSortMethods>();
 services.AddScoped<ISieveCustomFilterMethods, SieveCustomFilterMethods>();
 ```
 Where `SieveCustomSortMethodsOfPosts` for example is:
-```
+```C#
 public class SieveCustomSortMethods : ISieveCustomSortMethods
 {
     public IQueryable<Post> Popularity(IQueryable<Post> source, bool useThenBy, bool desc) // The method is given an indicator of weather to use ThenBy(), and if the query is descending 
@@ -87,7 +87,7 @@ public class SieveCustomSortMethods : ISieveCustomSortMethods
 }
 ```
 And `SieveCustomFilterMethods`:
-```
+```C#
 public class SieveCustomFilterMethods : ISieveCustomFilterMethods
 {
     public IQueryable<Post> IsNew(IQueryable<Post> source, string op, string value) // The method is given the {Operator} & {Value}
@@ -102,17 +102,17 @@ public class SieveCustomFilterMethods : ISieveCustomFilterMethods
 
 ## Configure Sieve
 Use the [ASP.NET Core options pattern](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options) with `SieveOptions` to tell Sieve where to look for configuration. For example:
-```
+```C#
 services.Configure<SieveOptions>(Configuration.GetSection("Sieve"));
 ```
 Then you can add the configuration:
-```
+```json
 {
     "Sieve": {
-        "CaseSensitive": `boolean: should property names be case-sensitive? Defaults to false`,
-        "DefaultPageSize": `int number: optional number to fallback to when no page argument is given. Set <=0 to disable paging if no pageSize is specified (default).`,
-        "MaxPageSize": `int number: maximum allowed page size. Set <=0 to make infinite (default)`,
-        "ThrowExceptions": `boolean: should Sieve throw exceptions instead of silently failing? Defaults to false`
+        "CaseSensitive": "boolean: should property names be case-sensitive? Defaults to false",
+        "DefaultPageSize": "int number: optional number to fallback to when no page argument is given. Set <=0 to disable paging if no pageSize is specified (default).",
+        "MaxPageSize": "int number: maximum allowed page size. Set <=0 to make infinite (default)",
+        "ThrowExceptions": "boolean: should Sieve throw exceptions instead of silently failing? Defaults to false"
     }
 }
 ```
@@ -121,7 +121,7 @@ Then you can add the configuration:
 
 With all the above in place, you can now send a GET request that includes a sort/filter/page query.
 An example:
-```
+```curl
 GET /GetPosts
 
 ?sorts=     LikeCount,CommentCount,-created         // sort by likes, then comments, then descendingly by date created 
