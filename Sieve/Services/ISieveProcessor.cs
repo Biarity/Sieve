@@ -3,15 +3,22 @@ using Sieve.Models;
 
 namespace Sieve.Services
 {
-    public interface ISieveProcessor : ISieveProcessor<ISieveModel<IFilterTerm, ISortTerm>, IFilterTerm, ISortTerm>
+    public interface ISieveProcessor : ISieveProcessor<SieveModel, FilterTerm, SortTerm>
+    {
+
+    }
+
+    public interface ISieveProcessor<TFilterTerm, TSortTerm> : ISieveProcessor<SieveModel<TFilterTerm, TSortTerm>, TFilterTerm, TSortTerm>
+        where TFilterTerm : IFilterTerm, new()
+        where TSortTerm : ISortTerm, new()
     {
 
     }
 
     public interface ISieveProcessor<TSieveModel, TFilterTerm, TSortTerm>
         where TSieveModel : class, ISieveModel<TFilterTerm, TSortTerm>
-        where TFilterTerm : IFilterTerm
-        where TSortTerm : ISortTerm
+        where TFilterTerm : IFilterTerm, new()
+        where TSortTerm : ISortTerm, new()
 
     {
         IQueryable<TEntity> Apply<TEntity>(

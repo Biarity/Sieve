@@ -2,11 +2,16 @@
 {
     public class SortTerm : ISortTerm
     {
-        private readonly string _sort;
+        public SortTerm() { }
 
-        public SortTerm(string sort)
+        private string _sort;
+        
+        public string Sort
         {
-            _sort = sort;
+            set
+            {
+                _sort = value;
+            }
         }
 
         public string Name => (_sort.StartsWith("-")) ? _sort.Substring(1) : _sort;

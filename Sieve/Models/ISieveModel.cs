@@ -1,8 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Sieve.Models
 {
-	public interface ISieveModel<TFilterTerm, TSortTerm>
+    public interface ISieveModel : ISieveModel<IFilterTerm, ISortTerm>
+    {
+
+    }
+
+    public interface ISieveModel<TFilterTerm, TSortTerm>
         where TFilterTerm : IFilterTerm
         where TSortTerm : ISortTerm
     {

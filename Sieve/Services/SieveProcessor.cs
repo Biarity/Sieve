@@ -11,7 +11,28 @@ using Sieve.Models;
 
 namespace Sieve.Services
 {
-    public class SieveProcessor : SieveProcessor<ISieveModel<IFilterTerm, ISortTerm>, IFilterTerm, ISortTerm>, ISieveProcessor
+    public class SieveProcessor : SieveProcessor<SieveModel, FilterTerm, SortTerm>, ISieveProcessor
+    {
+        public SieveProcessor(IOptions<SieveOptions> options) : base(options)
+        {
+        }
+
+        public SieveProcessor(IOptions<SieveOptions> options, ISieveCustomSortMethods customSortMethods) : base(options, customSortMethods)
+        {
+        }
+
+        public SieveProcessor(IOptions<SieveOptions> options, ISieveCustomFilterMethods customFilterMethods) : base(options, customFilterMethods)
+        {
+        }
+
+        public SieveProcessor(IOptions<SieveOptions> options, ISieveCustomSortMethods customSortMethods, ISieveCustomFilterMethods customFilterMethods) : base(options, customSortMethods, customFilterMethods)
+        {
+        }
+    }
+
+    public class SieveProcessor<TFilterTerm, TSortTerm> : SieveProcessor<SieveModel<TFilterTerm, TSortTerm>, TFilterTerm, TSortTerm>, ISieveProcessor<TFilterTerm, TSortTerm>
+        where TFilterTerm : IFilterTerm, new()
+        where TSortTerm : ISortTerm, new()
     {
         public SieveProcessor(IOptions<SieveOptions> options) : base(options)
         {
@@ -32,8 +53,8 @@ namespace Sieve.Services
 
     public class SieveProcessor<TSieveModel, TFilterTerm, TSortTerm> : ISieveProcessor<TSieveModel, TFilterTerm, TSortTerm>
         where TSieveModel : class, ISieveModel<TFilterTerm, TSortTerm>
-        where TFilterTerm : IFilterTerm
-        where TSortTerm : ISortTerm
+        where TFilterTerm : IFilterTerm, new()
+        where TSortTerm : ISortTerm, new()
     {
         private readonly IOptions<SieveOptions> _options;
         private readonly ISieveCustomSortMethods _customSortMethods;

@@ -5,6 +5,8 @@ namespace Sieve.Models
 {
     public class FilterTerm : IFilterTerm
     {
+        public FilterTerm() { }
+
         private static readonly string[] Operators = new string[] {
                     "==*",
                     "@=*",
@@ -19,23 +21,27 @@ namespace Sieve.Models
                     "_="
         };
 
-        public FilterTerm(string filter)
+        public string Filter
         {
-            var filterSplits = filter.Split(Operators, StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToArray();
-            Names = filterSplits[0].Split('|').Select(t => t.Trim()).ToArray();
-            Value = filterSplits.Length > 1 ? filterSplits[1] : null;
-            Operator = Array.Find(Operators, o => filter.Contains(o)) ?? "==";
-            OperatorParsed = GetOperatorParsed(Operator);
-            OperatorIsCaseInsensitive = Operator.Contains("*");
+            set
+            {
+                var filterSplits = value.Split(Operators, StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToArray();
+                Names = filterSplits[0].Split('|').Select(t => t.Trim()).ToArray();
+                Value = filterSplits.Length > 1 ? filterSplits[1] : null;
+                Operator = Array.Find(Operators, o => value.Contains(o)) ?? "==";
+                OperatorParsed = GetOperatorParsed(Operator);
+                OperatorIsCaseInsensitive = Operator.Contains("*");
+            }
+
         }
 
-        public string[] Names { get; }
+        public string[] Names { get; private set; }
 
-        public FilterOperator OperatorParsed { get; }
+        public FilterOperator OperatorParsed { get; private set; }
 
-        public string Value { get; }
+        public string Value { get; private set; }
 
-        public string Operator { get; }
+        public string Operator { get; private set; }
 
         private FilterOperator GetOperatorParsed(string Operator)
         {
@@ -65,6 +71,6 @@ namespace Sieve.Models
             }
         }
 
-        public bool OperatorIsCaseInsensitive { get; }
+        public bool OperatorIsCaseInsensitive { get; private set; }
     }
 }
