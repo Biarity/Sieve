@@ -11,7 +11,29 @@ using Sieve.Models;
 
 namespace Sieve.Services
 {
-    public class SieveProcessor : ISieveProcessor
+    public class SieveProcessor : SieveProcessor<ISieveModel<IFilterTerm, ISortTerm>, IFilterTerm, ISortTerm>, ISieveProcessor
+    {
+        public SieveProcessor(IOptions<SieveOptions> options) : base(options)
+        {
+        }
+
+        public SieveProcessor(IOptions<SieveOptions> options, ISieveCustomSortMethods customSortMethods) : base(options, customSortMethods)
+        {
+        }
+
+        public SieveProcessor(IOptions<SieveOptions> options, ISieveCustomFilterMethods customFilterMethods) : base(options, customFilterMethods)
+        {
+        }
+
+        public SieveProcessor(IOptions<SieveOptions> options, ISieveCustomSortMethods customSortMethods, ISieveCustomFilterMethods customFilterMethods) : base(options, customSortMethods, customFilterMethods)
+        {
+        }
+    }
+
+    public class SieveProcessor<TSieveModel, TFilterTerm, TSortTerm> : ISieveProcessor<TSieveModel, TFilterTerm, TSortTerm>
+        where TSieveModel : class, ISieveModel<TFilterTerm, TSortTerm>
+        where TFilterTerm : IFilterTerm
+        where TSortTerm : ISortTerm
     {
         private readonly IOptions<SieveOptions> _options;
         private readonly ISieveCustomSortMethods _customSortMethods;
@@ -62,7 +84,7 @@ namespace Sieve.Services
         /// <param name="applyPagination">Should the data be paginated? Defaults to true.</param>
         /// <returns>Returns a transformed version of `source`</returns>
         public IQueryable<TEntity> Apply<TEntity>(
-            ISieveModel<IFilterTerm, ISortTerm> model,
+            TSieveModel model,
             IQueryable<TEntity> source,
             object[] dataForCustomMethods = null,
             bool applyFiltering = true,
@@ -117,7 +139,7 @@ namespace Sieve.Services
         }
 
         private IQueryable<TEntity> ApplyFiltering<TEntity>(
-            ISieveModel<IFilterTerm, ISortTerm> model,
+            TSieveModel model,
             IQueryable<TEntity> result,
             object[] dataForCustomMethods = null)
         {
@@ -193,7 +215,7 @@ namespace Sieve.Services
                 : result.Where(Expression.Lambda<Func<TEntity, bool>>(outerExpression, parameterExpression));
         }
 
-        private static Expression GetExpression(IFilterTerm filterTerm, dynamic filterValue, dynamic propertyValue)
+        private static Expression GetExpression(TFilterTerm filterTerm, dynamic filterValue, dynamic propertyValue)
         {
             switch (filterTerm.OperatorParsed)
             {
@@ -234,7 +256,7 @@ namespace Sieve.Services
         }
 
         private IQueryable<TEntity> ApplySorting<TEntity>(
-            ISieveModel<IFilterTerm, ISortTerm> model,
+            TSieveModel model,
             IQueryable<TEntity> result,
             object[] dataForCustomMethods = null)
         {
@@ -269,7 +291,7 @@ namespace Sieve.Services
         }
 
         private IQueryable<TEntity> ApplyPagination<TEntity>(
-            ISieveModel<IFilterTerm, ISortTerm> model,
+            TSieveModel model,
             IQueryable<TEntity> result)
         {
             var page = model?.Page ?? 1;
