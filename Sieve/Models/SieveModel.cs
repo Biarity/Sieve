@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Sieve.Models
@@ -33,6 +34,8 @@ namespace Sieve.Models
                     var value = new List<TFilterTerm>();
                     foreach (var filter in Filters.Split(','))
                     {
+                        if (string.IsNullOrWhiteSpace(filter)) continue;
+
                         if (filter.StartsWith("("))
                         {
                             var filterOpAndVal = filter.Substring(filter.LastIndexOf(")") + 1);
@@ -41,7 +44,10 @@ namespace Sieve.Models
                             {
                                 Filter = subfilters + filterOpAndVal
                             };
-                            value.Add(filterTerm);
+                            if (!value.Any(f => f.Names.Any(n => filterTerm.Names.Any(n2 => n2 == n))))
+                            {
+                                value.Add(filterTerm);
+                            }
                         }
                         else
                         {
@@ -70,11 +76,16 @@ namespace Sieve.Models
                     var value = new List<TSortTerm>();
                     foreach (var sort in Sorts.Split(','))
                     {
+                        if (string.IsNullOrWhiteSpace(sort)) continue;
+
                         var sortTerm = new TSortTerm()
                         {
                             Sort = sort
                         };
-                        value.Add(sortTerm);
+                        if (!value.Any(s => s.Name == sortTerm.Name))
+                        {
+                            value.Add(sortTerm);
+                        }
                     }
                     return value;
                 }
