@@ -18,7 +18,7 @@ namespace Sieve.Extensions
         /// <exception cref="AmbiguousMatchException"/>
         public static MethodInfo GetMethodExt(this Type thisType,
                                                 string name,
-                                                params Type[] parameterTypes)
+                                                Type firstType)
         {
             return GetMethodExt(thisType,
                                 name,
@@ -27,7 +27,7 @@ namespace Sieve.Extensions
                                 | BindingFlags.Public
                                 | BindingFlags.NonPublic
                                 | BindingFlags.FlattenHierarchy,
-                                parameterTypes);
+                                firstType);
         }
 
         /// <summary>
@@ -39,12 +39,12 @@ namespace Sieve.Extensions
         public static MethodInfo GetMethodExt(this Type thisType,
                                                 string name,
                                                 BindingFlags bindingFlags,
-                                                params Type[] parameterTypes)
+                                                Type firstType)
         {
             MethodInfo matchingMethod = null;
 
             // Check all methods with the specified name, including in base classes
-            GetMethodExt(ref matchingMethod, thisType, name, bindingFlags, parameterTypes);
+            GetMethodExt(ref matchingMethod, thisType, name, bindingFlags, firstType);
 
             // If we're searching an interface, we have to manually search base interfaces
             if (matchingMethod == null && thisType.IsInterface)
@@ -54,7 +54,7 @@ namespace Sieve.Extensions
                                  interfaceType,
                                  name,
                                  bindingFlags,
-                                 parameterTypes);
+                                 firstType);
             }
 
             return matchingMethod;
@@ -64,7 +64,7 @@ namespace Sieve.Extensions
                                             Type type,
                                             string name,
                                             BindingFlags bindingFlags,
-                                            params Type[] parameterTypes)
+                                            Type firstType)
         {
             // Check all methods with the specified name, including in base classes
             foreach (MethodInfo methodInfo in type.GetMember(name,
@@ -74,23 +74,14 @@ namespace Sieve.Extensions
                 // Check that the parameter counts and types match, 
                 // with 'loose' matching on generic parameters
                 ParameterInfo[] parameterInfos = methodInfo.GetParameters();
-                if (parameterInfos.Length == parameterTypes.Length)
+                
+                if (parameterInfos[0].ParameterType.IsSimilarType(firstType))
                 {
-                    int i = 0;
-                    for (; i < parameterInfos.Length; ++i)
-                    {
-                        if (!parameterInfos[i].ParameterType
-                                              .IsSimilarType(parameterTypes[i]))
-                            break;
-                    }
-                    if (i == parameterInfos.Length)
-                    {
-                        if (matchingMethod == null)
-                            matchingMethod = methodInfo;
-                        else
-                            throw new AmbiguousMatchException(
-                                   "More than one matching method found!");
-                    }
+                    if (matchingMethod == null)
+                        matchingMethod = methodInfo;
+                    else
+                        throw new AmbiguousMatchException(
+                                "More than one matching method found!");
                 }
             }
         }

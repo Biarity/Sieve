@@ -225,6 +225,19 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void CustomSortsWork()
+        {
+            var model = new SieveModel()
+            {
+                Sorts = "Popularity",
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.IsFalse(result.First().Id == 0);
+        }
+
+        [TestMethod]
         public void MethodNotFoundExceptionWork()
         {
             var model = new SieveModel()

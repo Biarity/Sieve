@@ -180,7 +180,7 @@ namespace Sieve.Services
                     if (property != null)
                     {
                         var converter = TypeDescriptor.GetConverter(property.PropertyType);
-                        
+
                         dynamic constantVal = converter.CanConvertFrom(typeof(string))
                                                   ? converter.ConvertFrom(filterTerm.Value)
                                                   : Convert.ChangeType(filterTerm.Value, property.PropertyType);
@@ -211,13 +211,13 @@ namespace Sieve.Services
                     }
                     else
                     {
-                        var parameters = new object[] {
+                        result = ApplyCustomMethod(result, filterTermName, _customFilterMethods, 
+                            new object[] {
                                             result,
                                             filterTerm.Operator,
                                             filterTerm.Value
-                            };
-                        result = ApplyCustomMethod(result, filterTermName, _customFilterMethods, parameters, dataForCustomMethods);
-                        
+                            }, dataForCustomMethods);
+
                     }
                 }
                 if (outerExpression == null)
@@ -347,20 +347,23 @@ namespace Sieve.Services
             bool canSortRequired,
             bool canFilterRequired,
             string name,
-            bool isCaseSensitive) => Array.Find(typeof(TEntity).GetProperties(), p =>
-            {
-                return p.GetCustomAttribute(typeof(SieveAttribute)) is SieveAttribute sieveAttribute
+            bool isCaseSensitive)
+        {
+            return Array.Find(typeof(TEntity).GetProperties(), p =>
+                {
+                    return p.GetCustomAttribute(typeof(SieveAttribute)) is SieveAttribute sieveAttribute
                     && (canSortRequired ? sieveAttribute.CanSort : true)
                     && (canFilterRequired ? sieveAttribute.CanFilter : true)
                     && ((sieveAttribute.Name ?? p.Name).Equals(name, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase));
-            });
+                });
+        }
 
         private IQueryable<TEntity> ApplyCustomMethod<TEntity>(IQueryable<TEntity> result, string name, object parent, object[] parameters, object[] optionalParameters = null)
         {
             var customMethod = parent?.GetType()
                 .GetMethodExt(name,
                 _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance,
-                new Type[] { typeof(IQueryable<TEntity>), typeof(string), typeof(string) });
+                typeof(IQueryable<TEntity>));
 
             if (customMethod != null)
             {
