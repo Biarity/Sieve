@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>2.1.4</Version>
+    <Version>2.1.5</Version>
     <Description>Sieve is a simple, clean, and extensible framework for .NET Core that adds sorting, filtering, and pagination functionality out of the box. Most common use case would be for serving ASP.NET Core GET queries. Documentation available on GitHub: https://github.com/Biarity/Sieve/
 </Description>
     <Copyright>Copyright 2018</Copyright>
@@ -10,7 +10,7 @@
     <PackageProjectUrl>https://github.com/Biarity/Sieve</PackageProjectUrl>
     <PackageIconUrl>https://emojipedia-us.s3.amazonaws.com/thumbs/240/twitter/120/alembic_2697.png</PackageIconUrl>
     <RepositoryUrl></RepositoryUrl>
-    <PackageReleaseNotes>Better generics for SieveProcessor &amp; SieveModel</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix custom sort methods not working after 2.1</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Authors>Biarity</Authors>
