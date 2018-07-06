@@ -20,8 +20,8 @@ namespace Sieve.Models
 
         int? PageSize { get; set; }
 
-        List<TFilterTerm> FiltersParsed { get; }
+        List<TFilterTerm> GetFiltersParsed();
 
-        List<TSortTerm> SortsParsed { get; }
+        List<TSortTerm> GetSortsParsed();
     }
 }

@@ -164,14 +164,14 @@ namespace Sieve.Services
             IQueryable<TEntity> result,
             object[] dataForCustomMethods = null)
         {
-            if (model?.FiltersParsed == null)
+            if (model?.GetFiltersParsed() == null)
             {
                 return result;
             }
 
             Expression outerExpression = null;
             var parameterExpression = Expression.Parameter(typeof(TEntity), "e");
-            foreach (var filterTerm in model.FiltersParsed)
+            foreach (var filterTerm in model.GetFiltersParsed())
             {
                 Expression innerExpression = null;
                 foreach (var filterTermName in filterTerm.Names)
@@ -281,13 +281,13 @@ namespace Sieve.Services
             IQueryable<TEntity> result,
             object[] dataForCustomMethods = null)
         {
-            if (model?.SortsParsed == null)
+            if (model?.GetSortsParsed() == null)
             {
                 return result;
             }
 
             var useThenBy = false;
-            foreach (var sortTerm in model.SortsParsed)
+            foreach (var sortTerm in model.GetSortsParsed())
             {
                 var property = GetSieveProperty<TEntity>(true, false, sortTerm.Name);
 

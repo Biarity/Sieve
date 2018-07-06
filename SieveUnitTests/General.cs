@@ -148,9 +148,9 @@ namespace SieveUnitTests
                 Filters = "LikeCount==50",
             };
 
-            Console.WriteLine(model.FiltersParsed[0].Value);
-            Console.WriteLine(model.FiltersParsed[0].Operator);
-            Console.WriteLine(model.FiltersParsed[0].OperatorParsed);
+            Console.WriteLine(model.GetFiltersParsed()[0].Value);
+            Console.WriteLine(model.GetFiltersParsed()[0].Operator);
+            Console.WriteLine(model.GetFiltersParsed()[0].OperatorParsed);
 
             var result = _processor.Apply(model, _posts);
 

@@ -24,77 +24,71 @@ namespace Sieve.Models
 
         [DataMember, Range(1, int.MaxValue)]
         public int? PageSize { get; set; }
-        
-        public List<TFilterTerm> FiltersParsed
-        {
-            get
-            {
-                if (Filters != null)
-                {
-                    var value = new List<TFilterTerm>();
-                    foreach (var filter in Filters.Split(','))
-                    {
-                        if (string.IsNullOrWhiteSpace(filter)) continue;
 
-                        if (filter.StartsWith("("))
+        public List<TFilterTerm> GetFiltersParsed()
+        {
+            if (Filters != null)
+            {
+                var value = new List<TFilterTerm>();
+                foreach (var filter in Filters.Split(','))
+                {
+                    if (string.IsNullOrWhiteSpace(filter)) continue;
+
+                    if (filter.StartsWith("("))
+                    {
+                        var filterOpAndVal = filter.Substring(filter.LastIndexOf(")") + 1);
+                        var subfilters = filter.Replace(filterOpAndVal, "").Replace("(", "").Replace(")", "");
+                        var filterTerm = new TFilterTerm
                         {
-                            var filterOpAndVal = filter.Substring(filter.LastIndexOf(")") + 1);
-                            var subfilters = filter.Replace(filterOpAndVal, "").Replace("(", "").Replace(")", "");
-                            var filterTerm = new TFilterTerm
-                            {
-                                Filter = subfilters + filterOpAndVal
-                            };
-                            if (!value.Any(f => f.Names.Any(n => filterTerm.Names.Any(n2 => n2 == n))))
-                            {
-                                value.Add(filterTerm);
-                            }
-                        }
-                        else
+                            Filter = subfilters + filterOpAndVal
+                        };
+                        if (!value.Any(f => f.Names.Any(n => filterTerm.Names.Any(n2 => n2 == n))))
                         {
-                            var filterTerm = new TFilterTerm
-                            {
-                                Filter = filter
-                            };
                             value.Add(filterTerm);
                         }
                     }
-                    return value;
+                    else
+                    {
+                        var filterTerm = new TFilterTerm
+                        {
+                            Filter = filter
+                        };
+                        value.Add(filterTerm);
+                    }
                 }
-                else
-                {
-                    return null;
-                }
+                return value;
+            }
+            else
+            {
+                return null;
             }
         }
 
-        public List<TSortTerm> SortsParsed
+        public List<TSortTerm> GetSortsParsed()
         {
-            get
+            if (Sorts != null)
             {
-                if (Sorts != null)
+                var value = new List<TSortTerm>();
+                foreach (var sort in Sorts.Split(','))
                 {
-                    var value = new List<TSortTerm>();
-                    foreach (var sort in Sorts.Split(','))
+                    if (string.IsNullOrWhiteSpace(sort)) continue;
+
+                    var sortTerm = new TSortTerm()
                     {
-                        if (string.IsNullOrWhiteSpace(sort)) continue;
-
-                        var sortTerm = new TSortTerm()
-                        {
-                            Sort = sort
-                        };
-                        if (!value.Any(s => s.Name == sortTerm.Name))
-                        {
-                            value.Add(sortTerm);
-                        }
+                        Sort = sort
+                    };
+                    if (!value.Any(s => s.Name == sortTerm.Name))
+                    {
+                        value.Add(sortTerm);
                     }
-                    return value;
                 }
-                else
-                {
-                    return null;
-                }
-
+                return value;
             }
+            else
+            {
+                return null;
+            }
+
         }
     }
 }
