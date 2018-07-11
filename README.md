@@ -143,6 +143,7 @@ More formally:
 Notes:
 * Don't forget to **remove commas (`,`), brackets (`(`, `)`), and pipes (`|`) from any `{Value}` fields**
 * You can have spaces anywhere except *within* `{Name}` or `{Operator}` fields
+* If you need to look at the data before applying pagination (eg. get total count), use the optional paramters on `Apply` to defer pagination (an [example](https://github.com/Biarity/Sieve/issues/34))
 * Here's a [good example on how to work with enumerables](https://github.com/Biarity/Sieve/issues/2)
 * Another example on [how to do OR logic](https://github.com/Biarity/Sieve/issues/8)
 
