@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Sieve.Models
 {
-    public class FilterTerm : IFilterTerm
+    public class FilterTerm : IFilterTerm, IEquatable<FilterTerm>
     {
         public FilterTerm() { }
 
@@ -76,5 +76,13 @@ namespace Sieve.Models
         }
 
         public bool OperatorIsCaseInsensitive { get; private set; }
+
+        public bool Equals(FilterTerm other)
+        {
+            return Names.SequenceEqual(other.Names)
+                && Values.SequenceEqual(other.Values)
+                && Operator == other.Operator;
+        }
+
     }
 }
