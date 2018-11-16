@@ -7,6 +7,6 @@
         string Operator { get; }
         bool OperatorIsCaseInsensitive { get; }
         FilterOperator OperatorParsed { get; }
-        string Value { get; }
+        string[] Values { get; }
     }
 }

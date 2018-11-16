@@ -10,6 +10,7 @@ namespace SieveUnitTests.Entities
         [Sieve(CanFilter = true, CanSort = true)]
         public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 
+        [Sieve(CanFilter = true)]
         public string Text { get; set; }
     }
 }

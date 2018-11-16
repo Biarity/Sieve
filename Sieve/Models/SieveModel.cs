@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Sieve.Models
 {
@@ -13,6 +14,8 @@ namespace Sieve.Models
         where TFilterTerm : IFilterTerm, new()
         where TSortTerm : ISortTerm, new()
     {
+        private const string EscapedCommaPattern = @"(?<!($|[^\\])(\\\\)*?\\),";
+
         [DataMember]
         public string Filters { get; set; }
 
@@ -30,7 +33,7 @@ namespace Sieve.Models
             if (Filters != null)
             {
                 var value = new List<TFilterTerm>();
-                foreach (var filter in Filters.Split(','))
+                foreach (var filter in Regex.Split(Filters, EscapedCommaPattern))
                 {
                     if (string.IsNullOrWhiteSpace(filter)) continue;
 
@@ -69,7 +72,7 @@ namespace Sieve.Models
             if (Sorts != null)
             {
                 var value = new List<TSortTerm>();
-                foreach (var sort in Sorts.Split(','))
+                foreach (var sort in Regex.Split(Sorts, EscapedCommaPattern))
                 {
                     if (string.IsNullOrWhiteSpace(sort)) continue;
 

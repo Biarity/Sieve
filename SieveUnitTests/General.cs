@@ -69,7 +69,7 @@ namespace SieveUnitTests
                 new Comment() {
                     Id = 2,
                     DateCreated = DateTimeOffset.UtcNow,
-                    Text = "This is a brand new comment."
+                    Text = "This is a brand new comment. ()"
                 },
             }.AsQueryable();
         }
@@ -148,7 +148,7 @@ namespace SieveUnitTests
                 Filters = "LikeCount==50",
             };
 
-            Console.WriteLine(model.GetFiltersParsed()[0].Value);
+            Console.WriteLine(model.GetFiltersParsed()[0].Values);
             Console.WriteLine(model.GetFiltersParsed()[0].Operator);
             Console.WriteLine(model.GetFiltersParsed()[0].OperatorParsed);
 
@@ -260,7 +260,7 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
-        public void OrFilteringWorks()
+        public void OrNameFilteringWorks()
         {
             var model = new SieveModel()
             {
@@ -274,6 +274,33 @@ namespace SieveUnitTests
             Assert.IsNotNull(entry);
             Assert.AreEqual(1, resultCount);
             Assert.AreEqual(3, entry.Id);
+        }
+        
+        [TestMethod]
+        public void OrValueFilteringWorks()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Title==C|D",
+            };
+
+            var result = _processor.Apply(model, _posts);
+            Assert.AreEqual(2, result.Count());
+            Assert.IsTrue(result.Any(p => p.Id == 2));
+            Assert.IsTrue(result.Any(p => p.Id == 3));
+        }
+
+        [TestMethod]
+        public void OrValueFilteringWorks2()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Text@=(|)",
+            };
+
+            var result = _processor.Apply(model, _comments);
+            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual(2, result.FirstOrDefault().Id);
         }
     }
 }

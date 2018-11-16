@@ -180,33 +180,37 @@ namespace Sieve.Services
                     if (property != null)
                     {
                         var converter = TypeDescriptor.GetConverter(property.PropertyType);
-
-                        dynamic constantVal = converter.CanConvertFrom(typeof(string))
-                                                  ? converter.ConvertFrom(filterTerm.Value)
-                                                  : Convert.ChangeType(filterTerm.Value, property.PropertyType);
-
-                        Expression filterValue = GetClosureOverConstant(constantVal, property.PropertyType);
-
                         dynamic propertyValue = Expression.PropertyOrField(parameterExpression, property.Name);
 
-                        if (filterTerm.OperatorIsCaseInsensitive)
+                        foreach (var filterTermValue in filterTerm.Values)
                         {
-                            propertyValue = Expression.Call(propertyValue,
-                                typeof(string).GetMethods()
-                                .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
 
-                            filterValue = Expression.Call(filterValue,
-                                typeof(string).GetMethods()
-                                .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
-                        }
+                            dynamic constantVal = converter.CanConvertFrom(typeof(string))
+                                                      ? converter.ConvertFrom(filterTermValue)
+                                                      : Convert.ChangeType(filterTermValue, property.PropertyType);
 
-                        if (innerExpression == null)
-                        {
-                            innerExpression = GetExpression(filterTerm, filterValue, propertyValue);
-                        }
-                        else
-                        {
-                            innerExpression = Expression.Or(innerExpression, GetExpression(filterTerm, filterValue, propertyValue));
+                            Expression filterValue = GetClosureOverConstant(constantVal, property.PropertyType);
+
+
+                            if (filterTerm.OperatorIsCaseInsensitive)
+                            {
+                                propertyValue = Expression.Call(propertyValue,
+                                    typeof(string).GetMethods()
+                                    .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
+
+                                filterValue = Expression.Call(filterValue,
+                                    typeof(string).GetMethods()
+                                    .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
+                            }
+
+                            if (innerExpression == null)
+                            {
+                                innerExpression = GetExpression(filterTerm, filterValue, propertyValue);
+                            }
+                            else
+                            {
+                                innerExpression = Expression.Or(innerExpression, GetExpression(filterTerm, filterValue, propertyValue));
+                            }
                         }
                     }
                     else
@@ -215,7 +219,7 @@ namespace Sieve.Services
                             new object[] {
                                             result,
                                             filterTerm.Operator,
-                                            filterTerm.Value
+                                            filterTerm.Values
                             }, dataForCustomMethods);
 
                     }
