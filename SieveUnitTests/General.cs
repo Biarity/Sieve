@@ -173,6 +173,20 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void CustomFiltersWithOperatorsWork()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "HasInTitle==A",
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.IsTrue(result.Any(p => p.Id == 0));
+            Assert.IsTrue(result.Count() == 1);
+        }
+
+        [TestMethod]
         public void CustomFiltersMixedWithUsualWork1()
         {
             var model = new SieveModel()

@@ -90,7 +90,7 @@ And `SieveCustomFilterMethods`:
 ```C#
 public class SieveCustomFilterMethods : ISieveCustomFilterMethods
 {
-    public IQueryable<Post> IsNew(IQueryable<Post> source, string op, string value) // The method is given the {Operator} & {Value}
+    public IQueryable<Post> IsNew(IQueryable<Post> source, string op, string[] values) // The method is given the {Operator} & {Value}
     {
         var result = source.Where(p => p.LikeCount < 100 &&
                                         p.CommentCount < 5);
@@ -180,6 +180,15 @@ It is recommended that you write exception-handling middleware to globally handl
 
 ### Example project
 You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
+
+
+## Upgrading to v2.2.0
+
+2.2.0 introduced OR logic for filter values. This means your custom filters will need to accept multiple values rather than just the one.
+
+* In all your custom filter methods, change the last argument to be a `string[] values` instead of `string value`
+* The first value can then be found to be `values[0]` rather than `value`
+* Multiple values will be present if the client uses OR logic
 
 ## Upgrading from v1.* to v2.*
 
