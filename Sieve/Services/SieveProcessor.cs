@@ -203,13 +203,20 @@ namespace Sieve.Services
                                     .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
                             }
 
+                            var expression = GetExpression(filterTerm, filterValue, propertyValue);
+
+                            if (filterTerm.OperatorIsNegated)
+                            {
+                                expression = Expression.Not(expression);
+                            }
+
                             if (innerExpression == null)
                             {
-                                innerExpression = GetExpression(filterTerm, filterValue, propertyValue);
+                                innerExpression = expression;
                             }
                             else
                             {
-                                innerExpression = Expression.Or(innerExpression, GetExpression(filterTerm, filterValue, propertyValue));
+                                innerExpression = Expression.Or(innerExpression, expression);
                             }
                         }
                     }

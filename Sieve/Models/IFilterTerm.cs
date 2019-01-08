@@ -6,6 +6,7 @@
         string[] Names { get; }
         string Operator { get; }
         bool OperatorIsCaseInsensitive { get; }
+        bool OperatorIsNegated { get; }
         FilterOperator OperatorParsed { get; }
         string[] Values { get; }
     }
