@@ -102,6 +102,19 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void NotContainsWorks()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Title!@=D",
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.IsTrue(result.Count() == 3);
+        }
+
+        [TestMethod]
         public void CanFilterBools()
         {
             var model = new SieveModel()

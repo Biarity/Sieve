@@ -11,6 +11,10 @@ namespace Sieve.Models
         private const string EscapedPipePattern = @"(?<!($|[^\\])(\\\\)*?\\)\|";
 
         private static readonly string[] Operators = new string[] {
+                    "!@=*",
+                    "!_=*",
+                    "!@=",
+                    "!_=",
                     "==*",
                     "@=*",
                     "_=*",
@@ -34,7 +38,8 @@ namespace Sieve.Models
                 Values = filterSplits.Length > 1 ? Regex.Split(filterSplits[1], EscapedPipePattern).Select(t => t.Trim()).ToArray() : null;
                 Operator = Array.Find(Operators, o => value.Contains(o)) ?? "==";
                 OperatorParsed = GetOperatorParsed(Operator);
-                OperatorIsCaseInsensitive = Operator.Contains("*");
+                OperatorIsCaseInsensitive = Operator.EndsWith("*");
+                OperatorIsNegated = OperatorParsed != FilterOperator.NotEquals && Operator.StartsWith("!");
             }
 
         }
@@ -47,12 +52,11 @@ namespace Sieve.Models
 
         public string Operator { get; private set; }
 
-        private FilterOperator GetOperatorParsed(string Operator)
+        private FilterOperator GetOperatorParsed(string @operator)
         {
-            switch (Operator.Trim().ToLower())
+            switch (@operator.TrimEnd('*'))
             {
                 case "==":
-                case "==*":
                     return FilterOperator.Equals;
                 case "!=":
                     return FilterOperator.NotEquals;
@@ -65,10 +69,10 @@ namespace Sieve.Models
                 case "<=":
                     return FilterOperator.LessThanOrEqualTo;
                 case "@=":
-                case "@=*":
+                case "!@=":
                     return FilterOperator.Contains;
                 case "_=":
-                case "_=*":
+                case "!_=":
                     return FilterOperator.StartsWith;
                 default:
                     return FilterOperator.Equals;
@@ -76,6 +80,8 @@ namespace Sieve.Models
         }
 
         public bool OperatorIsCaseInsensitive { get; private set; }
+
+        public bool OperatorIsNegated { get; private set; }
 
         public bool Equals(FilterTerm other)
         {
