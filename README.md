@@ -162,10 +162,13 @@ You can replace this DSL with your own (eg. use JSON instead) by implementing an
 | `<=`       | Less than or equal to    |
 | `@=`       | Contains                 |
 | `_=`       | Starts with              |
+| `!@=`       | Contains                 |
+| `!_=`       | Starts with              |
 | `@=*`      | Case-insensitive string Contains |
 | `_=*`      | Case-insensitive string Starts with |
 | `==*`      | Case-insensitive string Equals |
-
+| `!@=*`      | Case-insensitive string not Contains |
+| `!_=*`      | Case-insensitive string not Starts with |
 
 ### Handle Sieve's exceptions
 
