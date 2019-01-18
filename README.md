@@ -40,7 +40,7 @@ public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 ```
 There is also the `Name` parameter that you can use to have a different name for use by clients.
 
-Alternatively, you can use Fluent API to do the same. This is especially useful if you don't want to use attributes or have multiple APIs. [More on Sieve's Fluent API here](https://github.com/Biarity/Sieve/issues/4#issuecomment-364629048).
+Alternatively, you can use [Fluent API](#fluent-api) to do the same. This is especially useful if you don't want to use attributes or have multiple APIs. 
 
 ### 3. Get sort/filter/page queries by using the Sieve model in your controllers
 
@@ -156,7 +156,7 @@ For example, using this object model:
 
 ```C#
 public class Post {
-    public User creator { get; set; }
+    public User Creator { get; set; }
 }
 
 public class User {
@@ -167,12 +167,11 @@ public class User {
 Mark `Post.User` to be filterable:
 ```C#
 // in MapProperties
-mapper.Property<Post>(p => p.User.Name)
+mapper.Property<Post>(p => p.Creator.Name)
     .CanFilter();
 ```
 
-Now you can make requests such as: `filters=User.Name==specific_name`
-
+Now you can make requests such as: `filters=User.Name==specific_name`.
 
 ### Creating your own DSL
 You can replace this DSL with your own (eg. use JSON instead) by implementing an [ISieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/ISieveModel.cs). You can use the default [SieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/SieveModel.cs) for reference.
@@ -210,6 +209,44 @@ It is recommended that you write exception-handling middleware to globally handl
 ### Example project
 You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
 
+## Fluent API
+To use the Fluent API instead of attributes in marking properties, setup an alternative `SieveProcessor` that overrides `MapProperties`. For example:
+```
+public class ApplicationSieveProcessor : SieveProcessor
+{
+    public ApplicationSieveProcessor(
+        IOptions<SieveOptions> options, 
+        ISieveCustomSortMethods customSortMethods, 
+        ISieveCustomFilterMethods customFilterMethods) 
+        : base(options, customSortMethods, customFilterMethods)
+    {
+    }
+
+    protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
+    {
+        mapper.Property<Post>(p => p.Title)
+            .CanFilter()
+            .HasName("a_different_query_name_here");
+
+        mapper.Property<Post>(p => p.CommentCount)
+            .CanSort();
+
+        mapper.Property<Post>(p => p.DateCreated)
+            .CanSort()
+            .CanFilter()
+            .HasName("created_on");
+
+        return mapper;
+    }
+}
+```
+
+Now you should inject the new class instead:
+```C#
+services.AddScoped<ISieveProcessor, ApplicationSieveProcessor>();
+```
+
+Find More on Sieve's Fluent API [here](https://github.com/Biarity/Sieve/issues/4#issuecomment-364629048).
 
 ## Upgrading to v2.2.0
 
