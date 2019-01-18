@@ -148,6 +148,32 @@ Notes:
 * Here's a [good example on how to work with enumerables](https://github.com/Biarity/Sieve/issues/2)
 * Another example on [how to do OR logic](https://github.com/Biarity/Sieve/issues/8)
 
+### Nested objects
+You can filter/sort on a nested object's property by marking the property using the Fluent API. 
+Marking via attributes not currently supported.
+
+For example, using this object model:
+
+```C#
+public class Post {
+    public User creator { get; set; }
+}
+
+public class User {
+    public string Name { get; set; }
+}
+```
+
+Mark `Post.User` to be filterable:
+```C#
+// in MapProperties
+mapper.Property<Post>(p => p.User.Name)
+    .CanFilter();
+```
+
+Now you can make requests such as: `filters=User.Name==specific_name`
+
+
 ### Creating your own DSL
 You can replace this DSL with your own (eg. use JSON instead) by implementing an [ISieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/ISieveModel.cs). You can use the default [SieveModel](https://github.com/Biarity/Sieve/blob/master/Sieve/Models/SieveModel.cs) for reference.
 
