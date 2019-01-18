@@ -359,7 +359,7 @@ namespace Sieve.Services
             if(property.Item1 == null)
             {
                 var prop = FindPropertyBySieveAttribute<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
-                return (prop.Name, prop);
+                return (prop?.Name, prop);
             }
             return property;
                 

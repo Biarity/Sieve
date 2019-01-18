@@ -11,6 +11,8 @@ namespace Sieve.Attributes
         /// </summary>
         public string Name { get; set; }
 
+        public string FullName => Name;
+
         public bool CanSort { get; set; }
         public bool CanFilter { get; set; }
     }

@@ -32,7 +32,7 @@ namespace Sieve.Services
             {
                 _sievePropertyMapper = sievePropertyMapper;
                 (_fullName, _property) = GetPropertyInfo(expression);
-                _name = _property.Name;
+                _name = _fullName;
                 _canFilter = false;
                 _canSort = false;
             }
@@ -97,18 +97,18 @@ namespace Sieve.Services
         public (string, PropertyInfo) FindProperty<TEntity>(
             bool canSortRequired,
             bool canFilterRequired,
-            string fullName,
+            string name,
             bool isCaseSensitive)
         {
             try
             {
                 var result = _map[typeof(TEntity)]
                     .FirstOrDefault(kv =>
-                    kv.Value.FullName.Equals(fullName, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)
+                    kv.Value.Name.Equals(name, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)
                     && (canSortRequired ? kv.Value.CanSort : true)
                     && (canFilterRequired ? kv.Value.CanFilter : true));
 
-                return (result.Value.FullName, result.Key);
+                return (result.Value?.FullName, result.Key);
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentNullException)
             {
