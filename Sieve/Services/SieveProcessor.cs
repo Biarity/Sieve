@@ -176,11 +176,16 @@ namespace Sieve.Services
                 Expression innerExpression = null;
                 foreach (var filterTermName in filterTerm.Names)
                 {
-                    var property = GetSieveProperty<TEntity>(false, true, filterTermName);
+                    var (fullName, property) = GetSieveProperty<TEntity>(false, true, filterTermName);
                     if (property != null)
                     {
                         var converter = TypeDescriptor.GetConverter(property.PropertyType);
-                        dynamic propertyValue = Expression.PropertyOrField(parameterExpression, property.Name);
+
+                        dynamic propertyValue = parameterExpression;
+                        foreach (var part in fullName.Split('.'))
+                        {
+                            propertyValue = Expression.PropertyOrField(propertyValue, part);
+                        }
 
                         foreach (var filterTermValue in filterTerm.Values)
                         {
@@ -300,11 +305,11 @@ namespace Sieve.Services
             var useThenBy = false;
             foreach (var sortTerm in model.GetSortsParsed())
             {
-                var property = GetSieveProperty<TEntity>(true, false, sortTerm.Name);
+                var (fullName, property) = GetSieveProperty<TEntity>(true, false, sortTerm.Name);
 
                 if (property != null)
                 {
-                    result = result.OrderByDynamic(property.Name, sortTerm.Descending, useThenBy);
+                    result = result.OrderByDynamic(fullName, property, sortTerm.Descending, useThenBy);
                 }
                 else
                 {
@@ -345,13 +350,19 @@ namespace Sieve.Services
             return mapper;
         }
 
-        private PropertyInfo GetSieveProperty<TEntity>(
+        private (string, PropertyInfo) GetSieveProperty<TEntity>(
             bool canSortRequired,
             bool canFilterRequired,
             string name)
         {
-            return mapper.FindProperty<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive)
-                ?? FindPropertyBySieveAttribute<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
+            var property = mapper.FindProperty<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
+            if(property.Item1 == null)
+            {
+                var prop = FindPropertyBySieveAttribute<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
+                return (prop.Name, prop);
+            }
+            return property;
+                
         }
 
         private PropertyInfo FindPropertyBySieveAttribute<TEntity>(
