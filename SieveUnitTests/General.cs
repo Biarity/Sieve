@@ -19,7 +19,7 @@ namespace SieveUnitTests
 
         public General()
         {
-            _processor = new SieveProcessor(new SieveOptionsAccessor(),
+            _processor = new ApplicationSieveProcessor(new SieveOptionsAccessor(),
                 new SieveCustomSortMethods(),
                 new SieveCustomFilterMethods());
 
@@ -31,6 +31,7 @@ namespace SieveUnitTests
                     LikeCount = 100,
                     IsDraft = true,
                     CategoryId = null,
+                    TopComment = new Comment { Id = 0, Text = "A" }
                 },
                 new Post() {
                     Id = 1,
@@ -38,12 +39,14 @@ namespace SieveUnitTests
                     LikeCount = 50,
                     IsDraft = false,
                     CategoryId = 1,
+                    TopComment = new Comment { Id = 3, Text = "A" }
                 },
                 new Post() {
                     Id = 2,
                     Title = "C",
                     LikeCount = 0,
                     CategoryId = 1,
+                    TopComment = new Comment { Id = 2, Text = "Z" }
                 },
                 new Post() {
                     Id = 3,
@@ -51,6 +54,7 @@ namespace SieveUnitTests
                     LikeCount = 3,
                     IsDraft = true,
                     CategoryId = 2,
+                    TopComment = new Comment { Id = 1, Text = "Z" }
                 },
             }.AsQueryable();
 
@@ -328,6 +332,38 @@ namespace SieveUnitTests
             var result = _processor.Apply(model, _comments);
             Assert.AreEqual(1, result.Count());
             Assert.AreEqual(2, result.FirstOrDefault().Id);
+        }
+
+        [TestMethod]
+        public void NestedFilteringWorks()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "TopComment.Text!@=A",
+            };
+
+            var result = _processor.Apply(model, _posts);
+            Assert.AreEqual(2, result.Count());
+            var posts = result.ToList();
+            Assert.IsTrue(posts[0].TopComment.Text.Contains("Z"));
+            Assert.IsTrue(posts[1].TopComment.Text.Contains("Z"));
+        }
+
+        [TestMethod]
+        public void NestedSortingWorks()
+        {
+            var model = new SieveModel()
+            {
+                Sorts = "TopComment.Id",
+            };
+
+            var result = _processor.Apply(model, _posts);
+            Assert.AreEqual(4, result.Count());
+            var posts = result.ToList();
+            Assert.AreEqual(posts[0].Id, 0);
+            Assert.AreEqual(posts[1].Id, 3);
+            Assert.AreEqual(posts[2].Id, 2);
+            Assert.AreEqual(posts[3].Id, 1);
         }
     }
 }

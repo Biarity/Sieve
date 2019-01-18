@@ -22,6 +22,12 @@ namespace SieveUnitTests.Services
                 .CanFilter()
                 .HasName("shortname");
 
+            mapper.Property<Post>(p => p.TopComment.Text)
+                .CanFilter();
+
+            mapper.Property<Post>(p => p.TopComment.Id)
+                .CanSort();
+
             mapper.Property<Post>(p => p.OnlySortableViaFluentApi)
                 .CanSort();
 

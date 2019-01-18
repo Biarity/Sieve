@@ -30,5 +30,7 @@ namespace SieveUnitTests.Entities
         public string ThisHasNoAttributeButIsAccessible { get; set; }
 
         public int OnlySortableViaFluentApi { get; set; }
+
+        public Comment TopComment { get; set; }
     }
 }
