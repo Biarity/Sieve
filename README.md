@@ -211,7 +211,8 @@ You can find an example project incorporating most Sieve concepts in [SieveTests
 
 ## Fluent API
 To use the Fluent API instead of attributes in marking properties, setup an alternative `SieveProcessor` that overrides `MapProperties`. For example:
-```
+
+```C#
 public class ApplicationSieveProcessor : SieveProcessor
 {
     public ApplicationSieveProcessor(
