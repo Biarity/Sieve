@@ -7,6 +7,7 @@ using Sieve.Models;
 using Sieve.Services;
 using SieveUnitTests.Entities;
 using SieveUnitTests.Services;
+using SieveUnitTests.ValueObjects;
 
 namespace SieveUnitTests
 {
@@ -63,17 +64,23 @@ namespace SieveUnitTests
                 new Comment() {
                     Id = 0,
                     DateCreated = DateTimeOffset.UtcNow.AddDays(-20),
-                    Text = "This is an old comment."
+                    Text = "This is an old comment.",
+                    AuthorFirstName = new Name("FirstName1"),
+                    AuthorLastName = new Name("LastName1")
                 },
                 new Comment() {
                     Id = 1,
                     DateCreated = DateTimeOffset.UtcNow.AddDays(-1),
-                    Text = "This is a fairly new comment."
+                    Text = "This is a fairly new comment.",
+                    AuthorFirstName = new Name("FirstName2"),
+                    AuthorLastName = new Name("LastName2")
                 },
                 new Comment() {
                     Id = 2,
                     DateCreated = DateTimeOffset.UtcNow,
-                    Text = "This is a brand new comment. ()"
+                    Text = "This is a brand new comment. ()",
+                    AuthorFirstName = new Name("FirstName3"),
+                    AuthorLastName = new Name("LastName3")
                 },
             }.AsQueryable();
         }
@@ -364,6 +371,21 @@ namespace SieveUnitTests
             Assert.AreEqual(posts[1].Id, 3);
             Assert.AreEqual(posts[2].Id, 2);
             Assert.AreEqual(posts[3].Id, 1);
+        }
+
+        [TestMethod]
+        public void NestedFilteringWithIdenticTypesWorks()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "(firstName|lastName)@=*2",
+            };
+
+            var result = _processor.Apply(model, _comments);
+            Assert.AreEqual(1, result.Count());
+
+            var comment = result.First();
+            Assert.AreEqual(comment.Id, 1);
         }
     }
 }

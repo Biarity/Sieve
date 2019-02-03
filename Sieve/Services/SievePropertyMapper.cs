@@ -4,20 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
 namespace Sieve.Services
 {
 	public class SievePropertyMapper
     {
-        private readonly Dictionary<Type, Dictionary<PropertyInfo, ISievePropertyMetadata>> _map
-            = new Dictionary<Type, Dictionary<PropertyInfo, ISievePropertyMetadata>>();
+        private readonly Dictionary<Type, ICollection<KeyValuePair<PropertyInfo, ISievePropertyMetadata>>> _map
+            = new Dictionary<Type, ICollection<KeyValuePair<PropertyInfo, ISievePropertyMetadata>>>();
 
         public PropertyFluentApi<TEntity> Property<TEntity>(Expression<Func<TEntity, object>> expression)
         {
             if(!_map.ContainsKey(typeof(TEntity)))
             {
-                _map.Add(typeof(TEntity), new Dictionary<PropertyInfo, ISievePropertyMetadata>());
+                _map.Add(typeof(TEntity), new List<KeyValuePair<PropertyInfo, ISievePropertyMetadata>>());
             }
 
             return new PropertyFluentApi<TEntity>(this, expression);
@@ -65,13 +64,16 @@ namespace Sieve.Services
 
             private void UpdateMap()
             {
-                _sievePropertyMapper._map[typeof(TEntity)][_property] = new SievePropertyMetadata()
+                var metadata = new SievePropertyMetadata()
                 {
                     Name = _name,
                     FullName = _fullName,
                     CanFilter = _canFilter,
                     CanSort = _canSort
                 };
+                var pair = new KeyValuePair<PropertyInfo, ISievePropertyMetadata>(_property, metadata);
+
+                _sievePropertyMapper._map[typeof(TEntity)].Add(pair);
             }
 
             private static (string, PropertyInfo) GetPropertyInfo(Expression<Func<TEntity, object>> exp)
@@ -105,8 +107,8 @@ namespace Sieve.Services
                 var result = _map[typeof(TEntity)]
                     .FirstOrDefault(kv =>
                     kv.Value.Name.Equals(name, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)
-                    && (canSortRequired ? kv.Value.CanSort : true)
-                    && (canFilterRequired ? kv.Value.CanFilter : true));
+                    && (!canSortRequired || kv.Value.CanSort)
+                    && (!canFilterRequired || kv.Value.CanFilter));
 
                 return (result.Value?.FullName, result.Key);
             }
