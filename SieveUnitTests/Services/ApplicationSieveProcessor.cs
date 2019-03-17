@@ -31,13 +31,13 @@ namespace SieveUnitTests.Services
             mapper.Property<Post>(p => p.OnlySortableViaFluentApi)
                 .CanSort();
 
-            mapper.Property<Comment>(c => c.AuthorFirstName.Value)
+            mapper.Property<Post>(p => p.TopComment.Text)
                 .CanFilter()
-                .HasName("firstName");
+                .HasName("topc");
 
-            mapper.Property<Comment>(c => c.AuthorLastName.Value)
+            mapper.Property<Post>(p => p.FeaturedComment.Text)
                 .CanFilter()
-                .HasName("lastName");
+                .HasName("featc");
 
             return mapper;
         }

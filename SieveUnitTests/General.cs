@@ -7,7 +7,6 @@ using Sieve.Models;
 using Sieve.Services;
 using SieveUnitTests.Entities;
 using SieveUnitTests.Services;
-using SieveUnitTests.ValueObjects;
 
 namespace SieveUnitTests
 {
@@ -32,7 +31,8 @@ namespace SieveUnitTests
                     LikeCount = 100,
                     IsDraft = true,
                     CategoryId = null,
-                    TopComment = new Comment { Id = 0, Text = "A" }
+                    TopComment = new Comment { Id = 0, Text = "A1" },
+                    FeaturedComment = new Comment { Id = 4, Text = "A2" }
                 },
                 new Post() {
                     Id = 1,
@@ -40,14 +40,16 @@ namespace SieveUnitTests
                     LikeCount = 50,
                     IsDraft = false,
                     CategoryId = 1,
-                    TopComment = new Comment { Id = 3, Text = "A" }
+                    TopComment = new Comment { Id = 3, Text = "B1" },
+                    FeaturedComment = new Comment { Id = 5, Text = "B2" }
                 },
                 new Post() {
                     Id = 2,
                     Title = "C",
                     LikeCount = 0,
                     CategoryId = 1,
-                    TopComment = new Comment { Id = 2, Text = "Z" }
+                    TopComment = new Comment { Id = 2, Text = "C1" },
+                    FeaturedComment = new Comment { Id = 6, Text = "C2" }
                 },
                 new Post() {
                     Id = 3,
@@ -55,7 +57,8 @@ namespace SieveUnitTests
                     LikeCount = 3,
                     IsDraft = true,
                     CategoryId = 2,
-                    TopComment = new Comment { Id = 1, Text = "Z" }
+                    TopComment = new Comment { Id = 1, Text = "D1" },
+                    FeaturedComment = new Comment { Id = 7, Text = "D2" }
                 },
             }.AsQueryable();
 
@@ -64,23 +67,17 @@ namespace SieveUnitTests
                 new Comment() {
                     Id = 0,
                     DateCreated = DateTimeOffset.UtcNow.AddDays(-20),
-                    Text = "This is an old comment.",
-                    AuthorFirstName = new Name("FirstName1"),
-                    AuthorLastName = new Name("LastName1")
+                    Text = "This is an old comment."
                 },
                 new Comment() {
                     Id = 1,
                     DateCreated = DateTimeOffset.UtcNow.AddDays(-1),
-                    Text = "This is a fairly new comment.",
-                    AuthorFirstName = new Name("FirstName2"),
-                    AuthorLastName = new Name("LastName2")
+                    Text = "This is a fairly new comment."
                 },
                 new Comment() {
                     Id = 2,
                     DateCreated = DateTimeOffset.UtcNow,
-                    Text = "This is a brand new comment. ()",
-                    AuthorFirstName = new Name("FirstName3"),
-                    AuthorLastName = new Name("LastName3")
+                    Text = "This is a brand new comment. (Text in braces)"
                 },
             }.AsQueryable();
         }
@@ -350,10 +347,11 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
-            Assert.AreEqual(2, result.Count());
+            Assert.AreEqual(3, result.Count());
             var posts = result.ToList();
-            Assert.IsTrue(posts[0].TopComment.Text.Contains("Z"));
-            Assert.IsTrue(posts[1].TopComment.Text.Contains("Z"));
+            Assert.IsTrue(posts[0].TopComment.Text.Contains("B"));
+            Assert.IsTrue(posts[1].TopComment.Text.Contains("C"));
+            Assert.IsTrue(posts[2].TopComment.Text.Contains("D"));
         }
 
         [TestMethod]
@@ -378,14 +376,19 @@ namespace SieveUnitTests
         {
             var model = new SieveModel()
             {
-                Filters = "(firstName|lastName)@=*2",
+                Filters = "(topc|featc)@=*2",
             };
 
-            var result = _processor.Apply(model, _comments);
-            Assert.AreEqual(1, result.Count());
+            var result = _processor.Apply(model, _posts);
+            Assert.AreEqual(4, result.Count());
 
-            var comment = result.First();
-            Assert.AreEqual(comment.Id, 1);
+            model = new SieveModel()
+            {
+                Filters = "(topc|featc)@=*B",
+            };
+
+            result = _processor.Apply(model, _posts);
+            Assert.AreEqual(1, result.Count());
         }
     }
 }
