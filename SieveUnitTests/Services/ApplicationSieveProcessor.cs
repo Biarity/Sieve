@@ -31,6 +31,14 @@ namespace SieveUnitTests.Services
             mapper.Property<Post>(p => p.OnlySortableViaFluentApi)
                 .CanSort();
 
+            mapper.Property<Comment>(c => c.AuthorFirstName.Value)
+                .CanFilter()
+                .HasName("firstName");
+
+            mapper.Property<Comment>(c => c.AuthorLastName.Value)
+                .CanFilter()
+                .HasName("lastName");
+
             return mapper;
         }
     }
