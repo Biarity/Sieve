@@ -84,6 +84,15 @@ public class SieveCustomSortMethods : ISieveCustomSortMethods
 
         return result; // Must return modified IQueryable<TEntity>
     }
+
+    public IQueryable<T> Oldest<T>(IQueryable<T> source, bool useThenBy, bool desc) where T : BaseEntity // Generic functions are allowed too
+    {
+        var result = useThenBy ?
+            ((IOrderedQueryable<T>)source).ThenByDescending(p => p.DateCreated) :
+            source.OrderByDescending(p => p.DateCreated);
+
+        return result;
+    }
 }
 ```
 And `SieveCustomFilterMethods`:
@@ -96,6 +105,12 @@ public class SieveCustomFilterMethods : ISieveCustomFilterMethods
                                         p.CommentCount < 5);
 
         return result; // Must return modified IQueryable<TEntity>
+    }
+
+    public IQueryable<T> Latest<T>(IQueryable<T> source, string op, string[] values) where T : BaseEntity // Generic functions are allowed too
+    {
+        var result = source.Where(c => c.DateCreated > DateTimeOffset.UtcNow.AddDays(-14));
+        return result;
     }
 }
 ```

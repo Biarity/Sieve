@@ -32,5 +32,11 @@ namespace SieveUnitTests.Services
         {
             return source;
         }
+
+        public IQueryable<T> Latest<T>(IQueryable<T> source, string op, string[] values) where T : BaseEntity
+        {
+            var result = source.Where(c => c.DateCreated > DateTimeOffset.UtcNow.AddDays(-14));
+            return result;
+        }
     }
 }

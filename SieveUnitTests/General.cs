@@ -194,6 +194,20 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void CustomGenericFiltersWork()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Latest",
+            };
+
+            var result = _processor.Apply(model, _comments);
+
+            Assert.IsFalse(result.Any(p => p.Id == 0));
+            Assert.IsTrue(result.Count() == 2);
+        }
+
+        [TestMethod]
         public void CustomFiltersWithOperatorsWork()
         {
             var model = new SieveModel()
@@ -270,6 +284,19 @@ namespace SieveUnitTests
             var result = _processor.Apply(model, _posts);
 
             Assert.IsFalse(result.First().Id == 0);
+        }
+
+        [TestMethod]
+        public void CustomGenericSortsWork()
+        {
+            var model = new SieveModel()
+            {
+                Sorts = "Oldest",
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.IsTrue(result.Last().Id == 0);
         }
 
         [TestMethod]
