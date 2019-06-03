@@ -355,6 +355,26 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void NestedFilteringWithAttributesWork()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "TopComment.Text!@=A",
+            };
+
+            var processor = new SieveProcessor(new SieveOptionsAccessor(),
+                new SieveCustomSortMethods(),
+                new SieveCustomFilterMethods());
+
+            var result = processor.Apply(model, _posts);
+            Assert.AreEqual(3, result.Count());
+            var posts = result.ToList();
+            Assert.IsTrue(posts[0].TopComment.Text.Contains("B"));
+            Assert.IsTrue(posts[1].TopComment.Text.Contains("C"));
+            Assert.IsTrue(posts[2].TopComment.Text.Contains("D"));
+        }
+
+        [TestMethod]
         public void NestedSortingWorks()
         {
             var model = new SieveModel()
@@ -363,6 +383,27 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
+            Assert.AreEqual(4, result.Count());
+            var posts = result.ToList();
+            Assert.AreEqual(posts[0].Id, 0);
+            Assert.AreEqual(posts[1].Id, 3);
+            Assert.AreEqual(posts[2].Id, 2);
+            Assert.AreEqual(posts[3].Id, 1);
+        }
+
+        [TestMethod]
+        public void NestedSortingWithAttributesWork()
+        {
+            var model = new SieveModel()
+            {
+                Sorts = "TopComment.Id",
+            };
+
+            var processor = new SieveProcessor(new SieveOptionsAccessor(),
+                new SieveCustomSortMethods(),
+                new SieveCustomFilterMethods());
+
+            var result = processor.Apply(model, _posts);
             Assert.AreEqual(4, result.Count());
             var posts = result.ToList();
             Assert.AreEqual(posts[0].Id, 0);

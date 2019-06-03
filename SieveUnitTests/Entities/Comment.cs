@@ -5,6 +5,7 @@ namespace SieveUnitTests.Entities
 {
 	public class Comment
     {
+        [Sieve(CanSort = true)]
         public int Id { get; set; }
 
         [Sieve(CanFilter = true, CanSort = true)]

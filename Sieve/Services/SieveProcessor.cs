@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
@@ -358,28 +360,82 @@ namespace Sieve.Services
             string name)
         {
             var property = mapper.FindProperty<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
+
             if(property.Item1 == null)
             {
-                var prop = FindPropertyBySieveAttribute<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
-                return (prop?.Name, prop);
+                property = FindPropertyBySieveAttribute<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
             }
+
             return property;
-                
         }
 
-        private PropertyInfo FindPropertyBySieveAttribute<TEntity>(
+        private (string, PropertyInfo) FindPropertyBySieveAttribute<TEntity>(
             bool canSortRequired,
             bool canFilterRequired,
             string name,
             bool isCaseSensitive)
         {
-            return Array.Find(typeof(TEntity).GetProperties(), p =>
+            var fullName = new List<string>();
+            var type = typeof(TEntity);
+            var comparison = isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            if (name.Contains('.'))
+            {
+                var parts = name.Split('.');
+
+                foreach (var part in parts.Take(parts.Length - 1))
                 {
-                    return p.GetCustomAttribute(typeof(SieveAttribute)) is SieveAttribute sieveAttribute
-                    && (canSortRequired ? sieveAttribute.CanSort : true)
-                    && (canFilterRequired ? sieveAttribute.CanFilter : true)
-                    && ((sieveAttribute.Name ?? p.Name).Equals(name, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase));
-                });
+                    var propertyInfo = Array.Find(type.GetProperties(), p =>
+                    {
+                        return (p.GetCustomAttribute(typeof(SieveAttribute)) is SieveAttribute sieveAttribute
+                               && ((sieveAttribute.Name ?? p.Name).Equals(part, comparison)))
+                            || p.Name.Equals(part, comparison);
+                    });
+
+                    if (propertyInfo == null)
+                    {
+                        return (null, null);
+                    }
+
+                    fullName.Add(propertyInfo.Name);
+
+                    type = propertyInfo.PropertyType;
+
+                    if (IsNonStringEnumerable(type) && type.GenericTypeArguments.Length > 0)
+                    {
+                        type = type.GenericTypeArguments[0];
+                    }
+                }
+
+                name = parts[parts.Length - 1];
+            }
+
+            var propInfo = Array.Find(type.GetProperties(), p =>
+            {
+                return p.GetCustomAttribute(typeof(SieveAttribute)) is SieveAttribute sieveAttribute
+                       && (canSortRequired ? sieveAttribute.CanSort : true)
+                       && (canFilterRequired ? sieveAttribute.CanFilter : true)
+                       && ((sieveAttribute.Name ?? p.Name).Equals(name, comparison));
+            });
+
+            if (propInfo == null)
+            {
+                return (null, null);
+            }
+
+            fullName.Add(propInfo.Name);
+
+            return (string.Join(".", fullName), propInfo);
+        }
+
+        private static bool IsNonStringEnumerable(Type type)
+        {
+            if (type == null || type == typeof(string))
+            {
+                return false;
+            }
+
+            return typeof(IEnumerable).IsAssignableFrom(type);
         }
 
         private IQueryable<TEntity> ApplyCustomMethod<TEntity>(IQueryable<TEntity> result, string name, object parent, object[] parameters, object[] optionalParameters = null)
