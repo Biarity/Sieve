@@ -186,6 +186,8 @@ namespace Sieve.Services
                         {
                             propertyValue = Expression.PropertyOrField(propertyValue, part);
                         }
+                        
+                        if (filterTerm.Values == null) continue;
 
                         foreach (var filterTermValue in filterTerm.Values)
                         {
