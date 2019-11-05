@@ -192,6 +192,7 @@ You can replace this DSL with your own (eg. use JSON instead) by implementing an
 | `@=*`      | Case-insensitive string Contains |
 | `_=*`      | Case-insensitive string Starts with |
 | `==*`      | Case-insensitive string Equals |
+| `!=*`      | Case-insensitive string Not equals |
 | `!@=*`     | Case-insensitive string does not Contains |
 | `!_=*`     | Case-insensitive string does not Starts with |
 
