@@ -97,6 +97,20 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void NotEqualsCanBeCaseInsensitive()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Title!=*a"
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.AreEqual(result.First().Id, 1);
+            Assert.IsTrue(result.Count() == 3);
+        }
+
+        [TestMethod]
         public void ContainsIsCaseSensitive()
         {
             var model = new SieveModel()
