@@ -186,6 +186,8 @@ namespace Sieve.Services
                         {
                             propertyValue = Expression.PropertyOrField(propertyValue, part);
                         }
+                        
+                        if (filterTerm.Values == null) continue;
 
                         foreach (var filterTermValue in filterTerm.Values)
                         {
@@ -335,10 +337,9 @@ namespace Sieve.Services
             var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;
             var maxPageSize = _options.Value.MaxPageSize > 0 ? _options.Value.MaxPageSize : pageSize;
 
-            result = result.Skip((page - 1) * pageSize);
-
             if (pageSize > 0)
             {
+                result = result.Skip((page - 1) * pageSize);
                 result = result.Take(Math.Min(pageSize, maxPageSize));
             }
 
@@ -386,6 +387,28 @@ namespace Sieve.Services
                 .GetMethodExt(name,
                 _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance,
                 typeof(IQueryable<TEntity>));
+
+
+            if (customMethod == null)
+            {
+                // Find generic methods `public IQueryable<T> Filter<T>(IQueryable<T> source, ...)`
+                var genericCustomMethod = parent?.GetType()
+                .GetMethodExt(name,
+                _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance,
+                typeof(IQueryable<>));
+
+                if (genericCustomMethod != null &&
+                    genericCustomMethod.ReturnType.IsGenericType &&
+                    genericCustomMethod.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
+                {
+                    var genericBaseType = genericCustomMethod.ReturnType.GenericTypeArguments[0];
+                    var constraints = genericBaseType.GetGenericParameterConstraints();
+                    if (constraints == null || constraints.Length == 0 || constraints.All((t) => t.IsAssignableFrom(typeof(TEntity))))
+                    {
+                        customMethod = genericCustomMethod.MakeGenericMethod(typeof(TEntity));
+                    }
+                }
+            }
 
             if (customMethod != null)
             {

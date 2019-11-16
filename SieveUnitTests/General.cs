@@ -97,6 +97,20 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void NotEqualsCanBeCaseInsensitive()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Title!=*a"
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.AreEqual(result.First().Id, 1);
+            Assert.IsTrue(result.Count() == 3);
+        }
+
+        [TestMethod]
         public void ContainsIsCaseSensitive()
         {
             var model = new SieveModel()
@@ -194,6 +208,20 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void CustomGenericFiltersWork()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Latest",
+            };
+
+            var result = _processor.Apply(model, _comments);
+
+            Assert.IsFalse(result.Any(p => p.Id == 0));
+            Assert.IsTrue(result.Count() == 2);
+        }
+
+        [TestMethod]
         public void CustomFiltersWithOperatorsWork()
         {
             var model = new SieveModel()
@@ -270,6 +298,19 @@ namespace SieveUnitTests
             var result = _processor.Apply(model, _posts);
 
             Assert.IsFalse(result.First().Id == 0);
+        }
+
+        [TestMethod]
+        public void CustomGenericSortsWork()
+        {
+            var model = new SieveModel()
+            {
+                Sorts = "Oldest",
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.IsTrue(result.Last().Id == 0);
         }
 
         [TestMethod]
