@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace Sieve.Extensions
 {
@@ -74,7 +72,7 @@ namespace Sieve.Extensions
                 // Check that the parameter counts and types match, 
                 // with 'loose' matching on generic parameters
                 ParameterInfo[] parameterInfos = methodInfo.GetParameters();
-                
+
                 if (parameterInfos[0].ParameterType.IsSimilarType(firstType))
                 {
                     if (matchingMethod == null)

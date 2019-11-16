@@ -7,7 +7,7 @@ namespace Sieve.Models
         public SortTerm() { }
 
         private string _sort;
-        
+
         public string Sort
         {
             set

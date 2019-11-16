@@ -1,6 +1,6 @@
 ﻿namespace Sieve.Models
 {
-	public class SieveOptions
+    public class SieveOptions
     {
         public bool CaseSensitive { get; set; } = false;
 

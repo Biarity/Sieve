@@ -1,6 +1,6 @@
 ﻿namespace Sieve.Services
 {
-	public interface ISieveCustomSortMethods
+    public interface ISieveCustomSortMethods
     {
     }
 }

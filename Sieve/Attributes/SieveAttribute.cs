@@ -1,9 +1,9 @@
-﻿using Sieve.Models;
-using System;
+﻿using System;
+using Sieve.Models;
 
 namespace Sieve.Attributes
 {
-	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class SieveAttribute : Attribute, ISievePropertyMetadata
     {
         /// <summary>

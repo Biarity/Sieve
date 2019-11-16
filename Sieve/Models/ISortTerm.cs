@@ -1,6 +1,6 @@
 ﻿namespace Sieve.Models
 {
-	public interface ISortTerm
+    public interface ISortTerm
     {
         string Sort { set; }
         bool Descending { get; }

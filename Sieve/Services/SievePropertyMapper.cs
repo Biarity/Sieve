@@ -1,20 +1,20 @@
-﻿using Sieve.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Sieve.Models;
 
 namespace Sieve.Services
 {
-	public class SievePropertyMapper
+    public class SievePropertyMapper
     {
         private readonly Dictionary<Type, ICollection<KeyValuePair<PropertyInfo, ISievePropertyMetadata>>> _map
             = new Dictionary<Type, ICollection<KeyValuePair<PropertyInfo, ISievePropertyMetadata>>>();
 
         public PropertyFluentApi<TEntity> Property<TEntity>(Expression<Func<TEntity, object>> expression)
         {
-            if(!_map.ContainsKey(typeof(TEntity)))
+            if (!_map.ContainsKey(typeof(TEntity)))
             {
                 _map.Add(typeof(TEntity), new List<KeyValuePair<PropertyInfo, ISievePropertyMetadata>>());
             }

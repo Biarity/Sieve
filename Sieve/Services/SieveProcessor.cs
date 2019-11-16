@@ -227,7 +227,7 @@ namespace Sieve.Services
                     }
                     else
                     {
-                        result = ApplyCustomMethod(result, filterTermName, _customFilterMethods, 
+                        result = ApplyCustomMethod(result, filterTermName, _customFilterMethods,
                             new object[] {
                                             result,
                                             filterTerm.Operator,
@@ -356,13 +356,13 @@ namespace Sieve.Services
             string name)
         {
             var property = mapper.FindProperty<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
-            if(property.Item1 == null)
+            if (property.Item1 == null)
             {
                 var prop = FindPropertyBySieveAttribute<TEntity>(canSortRequired, canFilterRequired, name, _options.Value.CaseSensitive);
                 return (prop?.Name, prop);
             }
             return property;
-                
+
         }
 
         private PropertyInfo FindPropertyBySieveAttribute<TEntity>(
