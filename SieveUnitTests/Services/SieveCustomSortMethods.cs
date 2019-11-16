@@ -16,5 +16,14 @@ namespace SieveUnitTests.Services
 
             return result;
         }
+
+        public IQueryable<T> Oldest<T>(IQueryable<T> source, bool useThenBy, bool desc) where T : BaseEntity
+        {
+            var result = useThenBy ?
+                ((IOrderedQueryable<T>)source).ThenByDescending(p => p.DateCreated) :
+                source.OrderByDescending(p => p.DateCreated);
+
+            return result;
+        }
     }
 }
