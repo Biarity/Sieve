@@ -3,7 +3,7 @@ using Sieve.Attributes;
 
 namespace SieveUnitTests.Entities
 {
-	public class Post : BaseEntity
+    public class Post : BaseEntity
     {
 
         [Sieve(CanFilter = true, CanSort = true)]

@@ -5,7 +5,7 @@ using SieveUnitTests.Entities;
 
 namespace SieveUnitTests.Services
 {
-	public class ApplicationSieveProcessor : SieveProcessor
+    public class ApplicationSieveProcessor : SieveProcessor
     {
         public ApplicationSieveProcessor(
             IOptions<SieveOptions> options,

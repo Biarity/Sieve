@@ -5,7 +5,7 @@ using SieveTests.Entities;
 
 namespace SieveTests.Services
 {
-	public class ApplicationSieveProcessor : SieveProcessor
+    public class ApplicationSieveProcessor : SieveProcessor
     {
         public ApplicationSieveProcessor(IOptions<SieveOptions> options, ISieveCustomSortMethods customSortMethods, ISieveCustomFilterMethods customFilterMethods) : base(options, customSortMethods, customFilterMethods)
         {

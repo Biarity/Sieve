@@ -1,14 +1,14 @@
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sieve.Exceptions;
 using Sieve.Models;
 using SieveUnitTests.Entities;
 using SieveUnitTests.Services;
-using System.Linq;
-using System.Collections.Generic;
-using Sieve.Exceptions;
 
 namespace SieveUnitTests
 {
-	[TestClass]
+    [TestClass]
     public class Mapper
     {
         private readonly ApplicationSieveProcessor _processor;

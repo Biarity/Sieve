@@ -351,7 +351,7 @@ namespace SieveUnitTests
             Assert.AreEqual(1, resultCount);
             Assert.AreEqual(3, entry.Id);
         }
-        
+
         [TestMethod]
         public void OrValueFilteringWorks()
         {

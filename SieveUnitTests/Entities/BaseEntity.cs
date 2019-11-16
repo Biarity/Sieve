@@ -3,7 +3,7 @@ using Sieve.Attributes;
 
 namespace SieveUnitTests.Entities
 {
-	public class BaseEntity
+    public class BaseEntity
     {
         public int Id { get; set; }
 
