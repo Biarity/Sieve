@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -169,6 +170,8 @@ namespace Sieve.Services
                 return result;
             }
 
+            var cultureInfoToUseForTypeConversion = new CultureInfo(_options.Value.CultureNameOfTypeConversion ?? "en");
+
             Expression outerExpression = null;
             var parameterExpression = Expression.Parameter(typeof(TEntity), "e");
             foreach (var filterTerm in model.GetFiltersParsed())
@@ -193,7 +196,7 @@ namespace Sieve.Services
                         {
 
                             dynamic constantVal = converter.CanConvertFrom(typeof(string))
-                                                      ? converter.ConvertFrom(filterTermValue)
+                                                      ? converter.ConvertFrom(null, cultureInfoToUseForTypeConversion, filterTermValue)
                                                       : Convert.ChangeType(filterTermValue, property.PropertyType);
 
                             Expression filterValue = GetClosureOverConstant(constantVal, property.PropertyType);
