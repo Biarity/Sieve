@@ -163,6 +163,32 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void CanSortBoolsWithDesc()
+        {
+            var model = new SieveModel()
+            {
+                Sorts = "IsDraft desc"
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.AreEqual(result.First().Id, 0);
+        }
+
+        [TestMethod]
+        public void CanSortBoolsWithAsc()
+        {
+            var model = new SieveModel()
+            {
+                Sorts = "IsDraft asc"
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.AreEqual(result.First().Id, 1);
+        }
+
+        [TestMethod]
         public void CanFilterNullableInts()
         {
             var model = new SieveModel()

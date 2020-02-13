@@ -16,9 +16,34 @@ namespace Sieve.Models
             }
         }
 
-        public string Name => (_sort.StartsWith("-")) ? _sort.Substring(1) : _sort;
+        public string Name
+        {
+            get
+            {
+                if (_sort.StartsWith("-"))
+                {
+                    return _sort.Substring(1);
+                }
+                else if (_sort.EndsWith(" desc"))
+                {
+                    return _sort.Replace(" desc", "");
+                }
+                else if (_sort.EndsWith(" asc"))
+                {
+                    return _sort.Replace(" asc", "");
+                }
+                else
+                    return _sort;
+            }
+        }
 
-        public bool Descending => _sort.StartsWith("-");
+        public bool Descending
+        {
+            get
+            {
+                return _sort.StartsWith("-") || _sort.EndsWith(" desc");
+            }
+        }
 
         public bool Equals(SortTerm other)
         {
