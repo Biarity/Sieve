@@ -353,6 +353,23 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void CombinedAndOrWithSpaceFilteringWorks()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "Title==D, (Title|LikeCount)==3",
+            };
+
+            var result = _processor.Apply(model, _posts);
+            var entry = result.FirstOrDefault();
+            var resultCount = result.Count();
+
+            Assert.IsNotNull(entry);
+            Assert.AreEqual(1, resultCount);
+            Assert.AreEqual(3, entry.Id);
+        }
+
+        [TestMethod]
         public void OrValueFilteringWorks()
         {
             var model = new SieveModel()
