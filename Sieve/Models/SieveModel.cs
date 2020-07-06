@@ -44,10 +44,7 @@ namespace Sieve.Models
                         {
                             Filter = subfilters + filterOpAndVal
                         };
-                        if (!value.Any(f => f.Names.Any(n => filterTerm.Names.Any(n2 => n2 == n))))
-                        {
-                            value.Add(filterTerm);
-                        }
+                        value.Add(filterTerm);
                     }
                     else
                     {
