@@ -170,21 +170,27 @@ namespace Sieve.Services
             }
 
             Expression outerExpression = null;
-            var parameterExpression = Expression.Parameter(typeof(TEntity), "e");
+            var parameter = Expression.Parameter(typeof(TEntity), "e");
             foreach (var filterTerm in model.GetFiltersParsed())
             {
                 Expression innerExpression = null;
                 foreach (var filterTermName in filterTerm.Names)
                 {
-                    var (fullName, property) = GetSieveProperty<TEntity>(false, true, filterTermName);
+                    var (fullPropertyName, property) = GetSieveProperty<TEntity>(false, true, filterTermName);
                     if (property != null)
                     {
                         var converter = TypeDescriptor.GetConverter(property.PropertyType);
+                        Expression propertyValue = parameter;
+                        Expression nullCheck = null;
 
-                        dynamic propertyValue = parameterExpression;
-                        foreach (var part in fullName.Split('.'))
+                        foreach (var name in fullPropertyName.Split('.'))
                         {
-                            propertyValue = Expression.PropertyOrField(propertyValue, part);
+                            propertyValue = Expression.PropertyOrField(propertyValue, name);
+
+                            if (propertyValue.Type.IsNullable())
+                            {
+                                nullCheck = GenerateFilterNullCheckExpression(propertyValue, nullCheck);
+                            }
                         }
 
                         if (filterTerm.Values == null) continue;
@@ -215,6 +221,11 @@ namespace Sieve.Services
                             if (filterTerm.OperatorIsNegated)
                             {
                                 expression = Expression.Not(expression);
+                            }
+
+                            if (nullCheck != null)
+                            {
+                                expression = Expression.AndAlso(nullCheck, expression);
                             }
 
                             if (innerExpression == null)
@@ -251,7 +262,14 @@ namespace Sieve.Services
             }
             return outerExpression == null
                 ? result
-                : result.Where(Expression.Lambda<Func<TEntity, bool>>(outerExpression, parameterExpression));
+                : result.Where(Expression.Lambda<Func<TEntity, bool>>(outerExpression, parameter));
+        }
+
+        private static Expression GenerateFilterNullCheckExpression(Expression propertyValue, Expression nullCheckExpression)
+        {
+            return nullCheckExpression == null
+                ? Expression.NotEqual(propertyValue, Expression.Default(propertyValue.Type))
+                : Expression.AndAlso(nullCheckExpression, Expression.NotEqual(propertyValue, Expression.Default(propertyValue.Type)));
         }
 
         private static Expression GetExpression(TFilterTerm filterTerm, dynamic filterValue, dynamic propertyValue)
@@ -311,7 +329,7 @@ namespace Sieve.Services
 
                 if (property != null)
                 {
-                    result = result.OrderByDynamic(fullName, property, sortTerm.Descending, useThenBy);
+                    result = result.OrderByDynamic(fullName, sortTerm.Descending, useThenBy);
                 }
                 else
                 {
@@ -373,12 +391,12 @@ namespace Sieve.Services
             bool isCaseSensitive)
         {
             return Array.Find(typeof(TEntity).GetProperties(), p =>
-                {
-                    return p.GetCustomAttribute(typeof(SieveAttribute)) is SieveAttribute sieveAttribute
-                    && (canSortRequired ? sieveAttribute.CanSort : true)
-                    && (canFilterRequired ? sieveAttribute.CanFilter : true)
-                    && ((sieveAttribute.Name ?? p.Name).Equals(name, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase));
-                });
+            {
+                return p.GetCustomAttribute(typeof(SieveAttribute)) is SieveAttribute sieveAttribute
+                && (!canSortRequired || sieveAttribute.CanSort)
+                && (!canFilterRequired || sieveAttribute.CanFilter)
+                && (sieveAttribute.Name ?? p.Name).Equals(name, isCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+            });
         }
 
         private IQueryable<TEntity> ApplyCustomMethod<TEntity>(IQueryable<TEntity> result, string name, object parent, object[] parameters, object[] optionalParameters = null)

@@ -31,7 +31,6 @@ namespace SieveUnitTests
                     LikeCount = 100,
                     IsDraft = true,
                     CategoryId = null,
-                    TopComment = new Comment { Id = 0, Text = "A1" },
                     FeaturedComment = new Comment { Id = 4, Text = "A2" }
                 },
                 new Post() {
@@ -57,7 +56,7 @@ namespace SieveUnitTests
                     LikeCount = 3,
                     IsDraft = true,
                     CategoryId = 2,
-                    TopComment = new Comment { Id = 1, Text = "D1" },
+                    TopComment = new Comment { Id = 1 },
                     FeaturedComment = new Comment { Id = 7, Text = "D2" }
                 },
             }.AsQueryable();
@@ -388,11 +387,10 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
-            Assert.AreEqual(3, result.Count());
+            Assert.AreEqual(2, result.Count());
             var posts = result.ToList();
             Assert.IsTrue(posts[0].TopComment.Text.Contains("B"));
             Assert.IsTrue(posts[1].TopComment.Text.Contains("C"));
-            Assert.IsTrue(posts[2].TopComment.Text.Contains("D"));
         }
 
         [TestMethod]
