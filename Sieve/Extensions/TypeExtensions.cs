@@ -2,7 +2,7 @@
 
 namespace Sieve.Extensions
 {
-    public static partial class TypeExtentions
+    public static partial class TypeExtensions
     {
         public static bool IsNullable(this Type type)
         {

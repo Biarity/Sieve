@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Sieve.Extensions
 {
-    public static partial class LinqExtentions
+    public static partial class LinqExtensions
     {
         public static IQueryable<TEntity> OrderByDynamic<TEntity>(
             this IQueryable<TEntity> source,
