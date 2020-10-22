@@ -13,7 +13,7 @@ namespace Sieve.Models
         where TFilterTerm : IFilterTerm, new()
         where TSortTerm : ISortTerm, new()
     {
-        private const string EscapedCommaPattern = @"(?<!($|[^\\])(\\\\)*?\\),";
+        private const string EscapedCommaPattern = @"(?<!($|[^\\])(\\\\)*?\\),\s*";
 
         [DataMember]
         public string Filters { get; set; }
