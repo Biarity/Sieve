@@ -466,5 +466,67 @@ namespace SieveUnitTests
             result = _processor.Apply(model, _posts);
             Assert.AreEqual(1, result.Count());
         }
+
+        [TestMethod]
+        public void FilteringNullsWorks()
+        {
+            var posts = new List<Post>
+            {
+                new Post() {
+                    Id = 1,
+                    Title = null,
+                    LikeCount = 0,
+                    IsDraft = false,
+                    CategoryId = null,
+                    TopComment = null,
+                    FeaturedComment = null
+                },
+            }.AsQueryable();
+
+            var model = new SieveModel()
+            {
+                Filters = "FeaturedComment.Text!@=Some value",
+            };
+
+            var result = _processor.Apply(model, posts);
+            Assert.AreEqual(0, result.Count());
+        }
+
+        [TestMethod]
+        public void SortingNullsWorks()
+        {
+            var posts = new List<Post>
+            {
+                new Post() {
+                    Id = 1,
+                    Title = null,
+                    LikeCount = 0,
+                    IsDraft = false,
+                    CategoryId = null,
+                    TopComment =  new Comment { Id = 1 },
+                    FeaturedComment = null
+                },
+                new Post() {
+                    Id = 2,
+                    Title = null,
+                    LikeCount = 0,
+                    IsDraft = false,
+                    CategoryId = null,
+                    TopComment = null,
+                    FeaturedComment = null
+                },
+            }.AsQueryable();
+
+            var model = new SieveModel()
+            {
+                Sorts = "TopComment.Id",
+            };
+
+            var result = _processor.Apply(model, posts);
+            Assert.AreEqual(2, result.Count());
+            var sortedPosts = result.ToList();
+            Assert.AreEqual(sortedPosts[0].Id, 2);
+            Assert.AreEqual(sortedPosts[1].Id, 1);
+        }
     }
 }
