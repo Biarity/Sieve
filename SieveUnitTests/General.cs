@@ -352,6 +352,24 @@ namespace SieveUnitTests
             Assert.AreEqual(3, entry.Id);
         }
 
+        [DataTestMethod]
+        [DataRow("CategoryId==1,(CategoryId|LikeCount)==50")]
+        [DataRow("(CategoryId|LikeCount)==50,CategoryId==1")]
+        public void CombinedAndOrFilterIndependentOfOrder(string filter)
+        {
+            var model = new SieveModel()
+            {
+                Filters = filter,
+            };
+
+            var result = _processor.Apply(model, _posts);
+            var entry = result.FirstOrDefault();
+            var resultCount = result.Count();
+
+            Assert.IsNotNull(entry);
+            Assert.AreEqual(1, resultCount);
+        }
+
         [TestMethod]
         public void OrValueFilteringWorks()
         {
