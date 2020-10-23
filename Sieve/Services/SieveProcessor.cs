@@ -56,6 +56,7 @@ namespace Sieve.Services
         where TFilterTerm : IFilterTerm, new()
         where TSortTerm : ISortTerm, new()
     {
+        private const string nullFilterValue = "null";
         private readonly IOptions<SieveOptions> _options;
         private readonly ISieveCustomSortMethods _customSortMethods;
         private readonly ISieveCustomFilterMethods _customFilterMethods;
@@ -179,15 +180,14 @@ namespace Sieve.Services
                     var (fullPropertyName, property) = GetSieveProperty<TEntity>(false, true, filterTermName);
                     if (property != null)
                     {
-                        var converter = TypeDescriptor.GetConverter(property.PropertyType);
                         Expression propertyValue = parameter;
                         Expression nullCheck = null;
-
-                        foreach (var name in fullPropertyName.Split('.'))
+                        var names = fullPropertyName.Split('.');
+                        for (var i = 0; i < names.Length; i++)
                         {
-                            propertyValue = Expression.PropertyOrField(propertyValue, name);
+                            propertyValue = Expression.PropertyOrField(propertyValue, names[i]);
 
-                            if (propertyValue.Type.IsNullable())
+                            if (i != names.Length - 1 && propertyValue.Type.IsNullable())
                             {
                                 nullCheck = GenerateFilterNullCheckExpression(propertyValue, nullCheck);
                             }
@@ -195,15 +195,13 @@ namespace Sieve.Services
 
                         if (filterTerm.Values == null) continue;
 
+                        var converter = TypeDescriptor.GetConverter(property.PropertyType);
                         foreach (var filterTermValue in filterTerm.Values)
                         {
-
-                            dynamic constantVal = converter.CanConvertFrom(typeof(string))
-                                                      ? converter.ConvertFrom(filterTermValue)
-                                                      : Convert.ChangeType(filterTermValue, property.PropertyType);
-
-                            Expression filterValue = GetClosureOverConstant(constantVal, property.PropertyType);
-
+                            var isFilterTermValueNull = filterTermValue.ToLower() == nullFilterValue;
+                            var filterValue = isFilterTermValueNull
+                                ? Expression.Constant(null, property.PropertyType)
+                                : ConvertStringValueToConstantExpression(filterTermValue, property, converter);
 
                             if (filterTerm.OperatorIsCaseInsensitive)
                             {
@@ -223,9 +221,13 @@ namespace Sieve.Services
                                 expression = Expression.Not(expression);
                             }
 
-                            if (nullCheck != null)
+                            var filterValueNullCheck = !isFilterTermValueNull && propertyValue.Type.IsNullable()
+                                ? GenerateFilterNullCheckExpression(propertyValue, nullCheck)
+                                : nullCheck;
+
+                            if (filterValueNullCheck != null)
                             {
-                                expression = Expression.AndAlso(nullCheck, expression);
+                                expression = Expression.AndAlso(filterValueNullCheck, expression);
                             }
 
                             if (innerExpression == null)
@@ -270,6 +272,15 @@ namespace Sieve.Services
             return nullCheckExpression == null
                 ? Expression.NotEqual(propertyValue, Expression.Default(propertyValue.Type))
                 : Expression.AndAlso(nullCheckExpression, Expression.NotEqual(propertyValue, Expression.Default(propertyValue.Type)));
+        }
+
+        private Expression ConvertStringValueToConstantExpression(string value, PropertyInfo property, TypeConverter converter)
+        {
+            dynamic constantVal = converter.CanConvertFrom(typeof(string))
+                ? converter.ConvertFrom(value)
+                : Convert.ChangeType(value, property.PropertyType);
+
+            return GetClosureOverConstant(constantVal, property.PropertyType);
         }
 
         private static Expression GetExpression(TFilterTerm filterTerm, dynamic filterValue, dynamic propertyValue)
