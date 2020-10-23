@@ -528,5 +528,41 @@ namespace SieveUnitTests
             Assert.AreEqual(sortedPosts[0].Id, 2);
             Assert.AreEqual(sortedPosts[1].Id, 1);
         }
+
+        [TestMethod]
+        public void FilteringOnNullWorks()
+        {
+            var posts = new List<Post>
+            {
+                new Post() {
+                    Id = 1,
+                    Title = null,
+                    LikeCount = 0,
+                    IsDraft = false,
+                    CategoryId = null,
+                    TopComment = null,
+                    FeaturedComment = null
+                },
+                new Post() {
+                    Id = 2,
+                    Title = null,
+                    LikeCount = 0,
+                    IsDraft = false,
+                    CategoryId = null,
+                    TopComment = null,
+                    FeaturedComment = new Comment {  Id = 1, Text = null }
+                },
+            }.AsQueryable();
+
+            var model = new SieveModel()
+            {
+                Filters = "FeaturedComment.Text==null",
+            };
+
+            var result = _processor.Apply(model, posts);
+            Assert.AreEqual(1, result.Count());
+            var filteredPosts = result.ToList();
+            Assert.AreEqual(filteredPosts[0].Id, 2);
+        }
     }
 }
