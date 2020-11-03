@@ -1,9 +1,10 @@
 ﻿using System;
 using Sieve.Attributes;
+using SieveUnitTests.Abstractions.Entity;
 
 namespace SieveUnitTests.Entities
 {
-    public class BaseEntity
+    public class BaseEntity : IBaseEntity
     {
         public int Id { get; set; }
 

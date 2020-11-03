@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Sieve.Extensions
 {
@@ -9,10 +10,11 @@ namespace Sieve.Extensions
         public static IQueryable<TEntity> OrderByDynamic<TEntity>(
             this IQueryable<TEntity> source,
             string fullPropertyName,
+            PropertyInfo propertyInfo,
             bool desc,
             bool useThenBy)
         {
-            var lambda = GenerateLambdaWithSafeMemberAccess<TEntity>(fullPropertyName);
+            var lambda = GenerateLambdaWithSafeMemberAccess<TEntity>(fullPropertyName, propertyInfo);
 
             var command = desc
                 ? (useThenBy ? "ThenByDescending" : "OrderByDescending")
@@ -28,7 +30,11 @@ namespace Sieve.Extensions
             return source.Provider.CreateQuery<TEntity>(resultExpression);
         }
 
-        private static Expression<Func<TEntity, object>> GenerateLambdaWithSafeMemberAccess<TEntity>(string fullPropertyName)
+        private static Expression<Func<TEntity, object>> GenerateLambdaWithSafeMemberAccess<TEntity>
+        (
+            string fullPropertyName,
+            PropertyInfo propertyInfo
+        )
         {
             var parameter = Expression.Parameter(typeof(TEntity), "e");
             Expression propertyValue = parameter;
@@ -36,7 +42,15 @@ namespace Sieve.Extensions
 
             foreach (var name in fullPropertyName.Split('.'))
             {
-                propertyValue = Expression.PropertyOrField(propertyValue, name);
+                try
+                {
+                    propertyValue = Expression.PropertyOrField(propertyValue, name);
+                }
+                catch (ArgumentException)
+                {
+                    // name is not a direct property of field of propertyValue expression. construct a memberAccess then.
+                    propertyValue = Expression.MakeMemberAccess(propertyValue, propertyInfo);
+                }
 
                 if (propertyValue.Type.IsNullable())
                 {
