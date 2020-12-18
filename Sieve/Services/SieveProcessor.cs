@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
@@ -340,7 +341,7 @@ namespace Sieve.Services
 
                 if (property != null)
                 {
-                    result = result.OrderByDynamic(fullName, sortTerm.Descending, useThenBy);
+                    result = result.OrderByDynamic(fullName, property, sortTerm.Descending, useThenBy);
                 }
                 else
                 {
@@ -461,16 +462,35 @@ namespace Sieve.Services
             }
             else
             {
-                var incompatibleCustomMethod = parent?.GetType()
-                    .GetMethod(name,
-                    _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                var incompatibleCustomMethods = parent?
+                                                    .GetType()
+                                                    .GetMethods
+                                                    (
+                                                        _options.Value.CaseSensitive
+                                                            ? BindingFlags.Default
+                                                            : BindingFlags.IgnoreCase | BindingFlags.Public |
+                                                              BindingFlags.Instance
+                                                    )
+                                                    .Where(method => string.Equals(method.Name, name,
+                                                        _options.Value.CaseSensitive
+                                                            ? StringComparison.InvariantCulture
+                                                            : StringComparison.InvariantCultureIgnoreCase))
+                                                    .ToList()
+                                                ??
+                                                new List<MethodInfo>();
 
-                if (incompatibleCustomMethod != null)
+                if (incompatibleCustomMethods.Any())
                 {
-                    var expected = typeof(IQueryable<TEntity>);
-                    var actual = incompatibleCustomMethod.ReturnType;
-                    throw new SieveIncompatibleMethodException(name, expected, actual,
-                        $"{name} failed. Expected a custom method for type {expected} but only found for type {actual}");
+                    var incompatibles =
+                        from incompatibleCustomMethod in incompatibleCustomMethods
+                        let expected = typeof(IQueryable<TEntity>)
+                        let actual = incompatibleCustomMethod.ReturnType
+                        select new SieveIncompatibleMethodException(name, expected, actual,
+                            $"{name} failed. Expected a custom method for type {expected} but only found for type {actual}");
+
+                    var aggregate = new AggregateException(incompatibles);
+
+                    throw new SieveIncompatibleMethodException(aggregate.Message, aggregate);
                 }
                 else
                 {

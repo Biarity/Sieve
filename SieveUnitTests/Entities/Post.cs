@@ -1,9 +1,10 @@
 ﻿using System;
 using Sieve.Attributes;
+using SieveUnitTests.Abstractions.Entity;
 
 namespace SieveUnitTests.Entities
 {
-    public class Post : BaseEntity
+    public class Post : BaseEntity, IPost
     {
 
         [Sieve(CanFilter = true, CanSort = true)]

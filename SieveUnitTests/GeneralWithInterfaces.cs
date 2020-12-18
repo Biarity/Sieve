@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sieve.Exceptions;
 using Sieve.Models;
@@ -12,19 +13,19 @@ using SieveUnitTests.Services;
 namespace SieveUnitTests
 {
     [TestClass]
-    public class General
+    public class GeneralWithInterfaces
     {
         private readonly SieveProcessor _processor;
-        private readonly IQueryable<Post> _posts;
+        private readonly IQueryable<IPost> _posts;
         private readonly IQueryable<Comment> _comments;
 
-        public General()
+        public GeneralWithInterfaces()
         {
             _processor = new ApplicationSieveProcessor(new SieveOptionsAccessor(),
                 new SieveCustomSortMethods(),
                 new SieveCustomFilterMethods());
 
-            _posts = new List<Post>
+            _posts = new List<IPost>
             {
                 new Post() {
                     Id = 0,
