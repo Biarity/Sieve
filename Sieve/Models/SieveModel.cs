@@ -14,6 +14,7 @@ namespace Sieve.Models
         where TSortTerm : ISortTerm, new()
     {
         private const string EscapedCommaPattern = @"(?<!($|[^\\])(\\\\)*?\\),\s*";
+        private const string CommaToEscape = @"\,";
 
         [DataMember]
         public string Filters { get; set; }
@@ -36,10 +37,13 @@ namespace Sieve.Models
                 {
                     if (string.IsNullOrWhiteSpace(filter)) continue;
 
-                    if (filter.StartsWith("("))
+                    var escapedFilter = filter
+                        .Replace(CommaToEscape, ",");
+
+                    if (escapedFilter.StartsWith("("))
                     {
-                        var filterOpAndVal = filter.Substring(filter.LastIndexOf(")") + 1);
-                        var subfilters = filter.Replace(filterOpAndVal, "").Replace("(", "").Replace(")", "");
+                        var filterOpAndVal = escapedFilter.Substring(escapedFilter.LastIndexOf(")") + 1);
+                        var subfilters = escapedFilter.Replace(filterOpAndVal, "").Replace("(", "").Replace(")", "");
                         var filterTerm = new TFilterTerm
                         {
                             Filter = subfilters + filterOpAndVal
@@ -50,7 +54,7 @@ namespace Sieve.Models
                     {
                         var filterTerm = new TFilterTerm
                         {
-                            Filter = filter
+                            Filter = escapedFilter
                         };
                         value.Add(filterTerm);
                     }

@@ -583,5 +583,61 @@ namespace SieveUnitTests
             Assert.AreEqual(posts[2].Id, 1);
             Assert.AreEqual(posts[3].Id, 0);
         }
+
+        [TestMethod]
+        public void CanFilter_WithEscapeCharacter()
+        {
+            var comments = new List<Comment>
+            {
+                new Comment
+                {
+                    Id = 0,
+                    DateCreated = DateTimeOffset.UtcNow,
+                    Text = "Here is, a comment"
+                },
+                new Comment
+                {
+                    Id = 1,
+                    DateCreated = DateTimeOffset.UtcNow.AddDays(-1),
+                    Text = "Here is, another comment"
+                },
+            }.AsQueryable();
+
+            var model = new SieveModel
+            {
+                Filters = "Text==Here is\\, another comment"
+            };
+
+            var result = _processor.Apply(model, comments);
+            Assert.AreEqual(1, result.Count());
+        }
+
+        [TestMethod]
+        public void OrEscapedPipeValueFilteringWorks()
+        {
+            var comments = new List<Comment>
+            {
+                new Comment
+                {
+                    Id = 0,
+                    DateCreated = DateTimeOffset.UtcNow,
+                    Text = "Here is | a comment"
+                },
+                new Comment
+                {
+                    Id = 1,
+                    DateCreated = DateTimeOffset.UtcNow.AddDays(-1),
+                    Text = "Here is | another comment"
+                },
+            }.AsQueryable();
+
+            var model = new SieveModel()
+            {
+                Filters = "Text==Here is \\| a comment|Here is \\| another comment",
+            };
+
+            var result = _processor.Apply(model, comments);
+            Assert.AreEqual(2, result.Count());
+        }
     }
 }
