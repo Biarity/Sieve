@@ -177,6 +177,19 @@ namespace SieveUnitTests
         }
 
         [TestMethod]
+        public void CanFilterNullableIntsWithNotEqual()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "CategoryId!=1"
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.IsTrue(result.Count() == 2);
+        }
+
+        [TestMethod]
         public void EqualsDoesntFailWithNonStringTypes()
         {
             var model = new SieveModel()

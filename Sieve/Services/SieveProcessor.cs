@@ -222,7 +222,7 @@ namespace Sieve.Services
                                 expression = Expression.Not(expression);
                             }
 
-                            var filterValueNullCheck = !isFilterTermValueNull && propertyValue.Type.IsNullable()
+                            var filterValueNullCheck = expression.NodeType != ExpressionType.NotEqual && !isFilterTermValueNull && propertyValue.Type.IsNullable()
                                 ? GenerateFilterNullCheckExpression(propertyValue, nullCheck)
                                 : nullCheck;
 
