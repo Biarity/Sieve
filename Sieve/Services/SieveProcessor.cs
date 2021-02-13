@@ -237,7 +237,7 @@ namespace Sieve.Services
                             }
                             else
                             {
-                                innerExpression = Expression.Or(innerExpression, expression);
+                                innerExpression = Expression.OrElse(innerExpression, expression);
                             }
                         }
                     }
