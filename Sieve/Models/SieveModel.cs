@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -14,7 +13,7 @@ namespace Sieve.Models
         where TFilterTerm : IFilterTerm, new()
         where TSortTerm : ISortTerm, new()
     {
-        private const string EscapedCommaPattern = @"(?<!($|[^\\])(\\\\)*?\\),";
+        private const string EscapedCommaPattern = @"(?<!($|[^\\])(\\\\)*?\\),\s*";
 
         [DataMember]
         public string Filters { get; set; }
@@ -45,10 +44,7 @@ namespace Sieve.Models
                         {
                             Filter = subfilters + filterOpAndVal
                         };
-                        if (!value.Any(f => f.Names.Any(n => filterTerm.Names.Any(n2 => n2 == n))))
-                        {
-                            value.Add(filterTerm);
-                        }
+                        value.Add(filterTerm);
                     }
                     else
                     {

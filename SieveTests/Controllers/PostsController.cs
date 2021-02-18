@@ -7,7 +7,7 @@ using SieveTests.Entities;
 
 namespace SieveTests.Controllers
 {
-	[Route("api/[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     public class PostsController : Controller
     {
         private readonly ISieveProcessor _sieveProcessor;

@@ -1,6 +1,6 @@
 ﻿namespace Sieve.Models
 {
-	public enum FilterOperator
+    public enum FilterOperator
     {
         Equals,
         NotEquals,

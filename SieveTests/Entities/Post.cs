@@ -4,7 +4,7 @@ using Sieve.Attributes;
 
 namespace SieveTests.Entities
 {
-	public class Post
+    public class Post
     {
         public int Id { get; set; }
 

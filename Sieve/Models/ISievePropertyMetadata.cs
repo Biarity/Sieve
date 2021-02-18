@@ -1,6 +1,6 @@
 ﻿namespace Sieve.Models
 {
-	public interface ISievePropertyMetadata
+    public interface ISievePropertyMetadata
     {
         string Name { get; set; }
         string FullName { get; }

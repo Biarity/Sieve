@@ -58,6 +58,7 @@ namespace Sieve.Services
         where TFilterTerm : IFilterTerm, new()
         where TSortTerm : ISortTerm, new()
     {
+        private const string nullFilterValue = "null";
         private readonly IOptions<SieveOptions> _options;
         private readonly ISieveCustomSortMethods _customSortMethods;
         private readonly ISieveCustomFilterMethods _customFilterMethods;
@@ -172,34 +173,37 @@ namespace Sieve.Services
             }
 
             Expression outerExpression = null;
-            var parameterExpression = Expression.Parameter(typeof(TEntity), "e");
+            var parameter = Expression.Parameter(typeof(TEntity), "e");
             foreach (var filterTerm in model.GetFiltersParsed())
             {
                 Expression innerExpression = null;
                 foreach (var filterTermName in filterTerm.Names)
                 {
-                    var (fullName, property) = GetSieveProperty<TEntity>(false, true, filterTermName);
+                    var (fullPropertyName, property) = GetSieveProperty<TEntity>(false, true, filterTermName);
                     if (property != null)
                     {
-                        var converter = TypeDescriptor.GetConverter(property.PropertyType);
-
-                        dynamic propertyValue = parameterExpression;
-                        foreach (var part in fullName.Split('.'))
+                        Expression propertyValue = parameter;
+                        Expression nullCheck = null;
+                        var names = fullPropertyName.Split('.');
+                        for (var i = 0; i < names.Length; i++)
                         {
-                            propertyValue = Expression.PropertyOrField(propertyValue, part);
+                            propertyValue = Expression.PropertyOrField(propertyValue, names[i]);
+
+                            if (i != names.Length - 1 && propertyValue.Type.IsNullable())
+                            {
+                                nullCheck = GenerateFilterNullCheckExpression(propertyValue, nullCheck);
+                            }
                         }
-                        
+
                         if (filterTerm.Values == null) continue;
 
+                        var converter = TypeDescriptor.GetConverter(property.PropertyType);
                         foreach (var filterTermValue in filterTerm.Values)
                         {
-
-                            dynamic constantVal = converter.CanConvertFrom(typeof(string))
-                                                      ? converter.ConvertFrom(filterTermValue)
-                                                      : Convert.ChangeType(filterTermValue, property.PropertyType);
-
-                            Expression filterValue = GetClosureOverConstant(constantVal, property.PropertyType);
-
+                            var isFilterTermValueNull = filterTermValue.ToLower() == nullFilterValue;
+                            var filterValue = isFilterTermValueNull
+                                ? Expression.Constant(null, property.PropertyType)
+                                : ConvertStringValueToConstantExpression(filterTermValue, property, converter);
 
                             if (filterTerm.OperatorIsCaseInsensitive)
                             {
@@ -219,6 +223,15 @@ namespace Sieve.Services
                                 expression = Expression.Not(expression);
                             }
 
+                            var filterValueNullCheck = !isFilterTermValueNull && propertyValue.Type.IsNullable()
+                                ? GenerateFilterNullCheckExpression(propertyValue, nullCheck)
+                                : nullCheck;
+
+                            if (filterValueNullCheck != null)
+                            {
+                                expression = Expression.AndAlso(filterValueNullCheck, expression);
+                            }
+
                             if (innerExpression == null)
                             {
                                 innerExpression = expression;
@@ -231,7 +244,7 @@ namespace Sieve.Services
                     }
                     else
                     {
-                        result = ApplyCustomMethod(result, filterTermName, _customFilterMethods, 
+                        result = ApplyCustomMethod(result, filterTermName, _customFilterMethods,
                             new object[] {
                                             result,
                                             filterTerm.Operator,
@@ -253,7 +266,23 @@ namespace Sieve.Services
             }
             return outerExpression == null
                 ? result
-                : result.Where(Expression.Lambda<Func<TEntity, bool>>(outerExpression, parameterExpression));
+                : result.Where(Expression.Lambda<Func<TEntity, bool>>(outerExpression, parameter));
+        }
+
+        private static Expression GenerateFilterNullCheckExpression(Expression propertyValue, Expression nullCheckExpression)
+        {
+            return nullCheckExpression == null
+                ? Expression.NotEqual(propertyValue, Expression.Default(propertyValue.Type))
+                : Expression.AndAlso(nullCheckExpression, Expression.NotEqual(propertyValue, Expression.Default(propertyValue.Type)));
+        }
+
+        private Expression ConvertStringValueToConstantExpression(string value, PropertyInfo property, TypeConverter converter)
+        {
+            dynamic constantVal = converter.CanConvertFrom(typeof(string))
+                ? converter.ConvertFrom(value)
+                : Convert.ChangeType(value, property.PropertyType);
+
+            return GetClosureOverConstant(constantVal, property.PropertyType);
         }
 
         private static Expression GetExpression(TFilterTerm filterTerm, dynamic filterValue, dynamic propertyValue)
@@ -339,10 +368,9 @@ namespace Sieve.Services
             var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;
             var maxPageSize = _options.Value.MaxPageSize > 0 ? _options.Value.MaxPageSize : pageSize;
 
-            result = result.Skip((page - 1) * pageSize);
-
             if (pageSize > 0)
             {
+                result = result.Skip((page - 1) * pageSize);
                 result = result.Take(Math.Min(pageSize, maxPageSize));
             }
 
@@ -445,6 +473,28 @@ namespace Sieve.Services
                 _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance,
                 typeof(IQueryable<TEntity>));
 
+
+            if (customMethod == null)
+            {
+                // Find generic methods `public IQueryable<T> Filter<T>(IQueryable<T> source, ...)`
+                var genericCustomMethod = parent?.GetType()
+                .GetMethodExt(name,
+                _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance,
+                typeof(IQueryable<>));
+
+                if (genericCustomMethod != null &&
+                    genericCustomMethod.ReturnType.IsGenericType &&
+                    genericCustomMethod.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
+                {
+                    var genericBaseType = genericCustomMethod.ReturnType.GenericTypeArguments[0];
+                    var constraints = genericBaseType.GetGenericParameterConstraints();
+                    if (constraints == null || constraints.Length == 0 || constraints.All((t) => t.IsAssignableFrom(typeof(TEntity))))
+                    {
+                        customMethod = genericCustomMethod.MakeGenericMethod(typeof(TEntity));
+                    }
+                }
+            }
+
             if (customMethod != null)
             {
                 try
@@ -467,16 +517,35 @@ namespace Sieve.Services
             }
             else
             {
-                var incompatibleCustomMethod = parent?.GetType()
-                    .GetMethod(name,
-                    _options.Value.CaseSensitive ? BindingFlags.Default : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                var incompatibleCustomMethods = parent?
+                                                    .GetType()
+                                                    .GetMethods
+                                                    (
+                                                        _options.Value.CaseSensitive
+                                                            ? BindingFlags.Default
+                                                            : BindingFlags.IgnoreCase | BindingFlags.Public |
+                                                              BindingFlags.Instance
+                                                    )
+                                                    .Where(method => string.Equals(method.Name, name,
+                                                        _options.Value.CaseSensitive
+                                                            ? StringComparison.InvariantCulture
+                                                            : StringComparison.InvariantCultureIgnoreCase))
+                                                    .ToList()
+                                                ??
+                                                new List<MethodInfo>();
 
-                if (incompatibleCustomMethod != null)
+                if (incompatibleCustomMethods.Any())
                 {
-                    var expected = typeof(IQueryable<TEntity>);
-                    var actual = incompatibleCustomMethod.ReturnType;
-                    throw new SieveIncompatibleMethodException(name, expected, actual,
-                        $"{name} failed. Expected a custom method for type {expected} but only found for type {actual}");
+                    var incompatibles =
+                        from incompatibleCustomMethod in incompatibleCustomMethods
+                        let expected = typeof(IQueryable<TEntity>)
+                        let actual = incompatibleCustomMethod.ReturnType
+                        select new SieveIncompatibleMethodException(name, expected, actual,
+                            $"{name} failed. Expected a custom method for type {expected} but only found for type {actual}");
+
+                    var aggregate = new AggregateException(incompatibles);
+
+                    throw new SieveIncompatibleMethodException(aggregate.Message, aggregate);
                 }
                 else
                 {

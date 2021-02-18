@@ -1,6 +1,6 @@
 ﻿namespace Sieve.Services
 {
-	public interface ISieveCustomFilterMethods
+    public interface ISieveCustomFilterMethods
     {
     }
 }

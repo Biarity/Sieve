@@ -13,6 +13,7 @@ namespace Sieve.Models
         private static readonly string[] Operators = new string[] {
                     "!@=*",
                     "!_=*",
+                    "!=*",
                     "!@=",
                     "!_=",
                     "==*",

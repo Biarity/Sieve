@@ -1,11 +1,11 @@
 ﻿using System;
 using Sieve.Attributes;
+using SieveUnitTests.Abstractions.Entity;
 
 namespace SieveUnitTests.Entities
 {
-	public class Post
+    public class Post : BaseEntity, IPost
     {
-        public int Id { get; set; }
 
         [Sieve(CanFilter = true, CanSort = true)]
         public string Title { get; set; } = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 8);
@@ -15,9 +15,6 @@ namespace SieveUnitTests.Entities
 
         [Sieve(CanFilter = true, CanSort = true)]
         public int CommentCount { get; set; } = new Random().Next(0, 1000);
-
-        [Sieve(CanFilter = true, CanSort = true)]
-        public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 
         [Sieve(CanFilter = true, CanSort = true)]
         public int? CategoryId { get; set; } = new Random().Next(0, 4);
