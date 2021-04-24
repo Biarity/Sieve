@@ -1,22 +1,21 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
+using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
-using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
-using Nuke.Common.Utilities.Collections;
-using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
+[AzurePipelines(AzurePipelinesImage.UbuntuLatest,
+    InvokedTargets = new[] { nameof(Ci) },
+    NonEntryTargets = new[] { nameof(Clean), nameof(Restore), nameof(Compile), nameof(Test), nameof(Package) })]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -92,5 +91,8 @@ class Build : NukeBuild
                 .EnableNoRestore()
                 .EnableNoBuild());
         });
+
+    Target Ci => _ => _
+        .DependsOn(Package);
 
 }
