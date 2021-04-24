@@ -25,30 +25,33 @@ class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    public static int Main () => Execute<Build>(x => x.Compile);
+    public static int Main() => Execute<Build>(x => x.Package);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [Solution] 
+    [Solution]
     readonly Solution Solution;
-    
-    [GitRepository] 
+
+    Project SieveProject => Solution.AllProjects.First(p => p.Name == "Sieve");
+
+    [GitRepository]
     readonly GitRepository GitRepository;
-    
-    [GitVersion(Framework = "netcoreapp3.1")] 
+
+    [GitVersion(Framework = "netcoreapp3.1")]
     readonly GitVersion GitVersion;
 
     AbsolutePath OutputDirectory => RootDirectory / "output";
 
     Target Clean => _ => _
-        .Before(Restore)
         .Executes(() =>
         {
+            DotNetClean();
             EnsureCleanDirectory(OutputDirectory);
         });
 
     Target Restore => _ => _
+        .DependsOn(Clean)
         .Executes(() =>
         {
             DotNetRestore(s => s
@@ -66,6 +69,28 @@ class Build : NukeBuild
                 .SetFileVersion(GitVersion.AssemblySemFileVer)
                 .SetInformationalVersion(GitVersion.InformationalVersion)
                 .EnableNoRestore());
+        });
+
+    Target Test => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            DotNetTest(s => s
+                .SetProjectFile(Solution)
+                .EnableNoRestore()
+                .EnableNoBuild());
+        });
+
+    Target Package => _ => _
+        .DependsOn(Test)
+        .Executes(() =>
+        {
+            DotNetPack(s => s
+                .SetProject(SieveProject)
+                .SetOutputDirectory(OutputDirectory)
+                .SetVersion(GitVersion.NuGetVersionV2)
+                .EnableNoRestore()
+                .EnableNoBuild());
         });
 
 }
