@@ -9,5 +9,7 @@
         public int MaxPageSize { get; set; } = 0;
 
         public bool ThrowExceptions { get; set; } = false;
+
+        public string CultureNameOfTypeConversion { get; set; } = "en";
     }
 }
