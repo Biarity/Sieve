@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -171,6 +172,8 @@ namespace Sieve.Services
                 return result;
             }
 
+            var cultureInfoToUseForTypeConversion = new CultureInfo(_options.Value.CultureNameOfTypeConversion ?? "en");
+
             Expression outerExpression = null;
             var parameter = Expression.Parameter(typeof(TEntity), "e");
             foreach (var filterTerm in model.GetFiltersParsed())
@@ -202,7 +205,7 @@ namespace Sieve.Services
                             var isFilterTermValueNull = filterTermValue.ToLower() == nullFilterValue;
                             var filterValue = isFilterTermValueNull
                                 ? Expression.Constant(null, property.PropertyType)
-                                : ConvertStringValueToConstantExpression(filterTermValue, property, converter);
+                                : ConvertStringValueToConstantExpression(filterTermValue, property, converter, cultureInfoToUseForTypeConversion);
 
                             if (filterTerm.OperatorIsCaseInsensitive)
                             {
@@ -275,10 +278,10 @@ namespace Sieve.Services
                 : Expression.AndAlso(nullCheckExpression, Expression.NotEqual(propertyValue, Expression.Default(propertyValue.Type)));
         }
 
-        private Expression ConvertStringValueToConstantExpression(string value, PropertyInfo property, TypeConverter converter)
+        private Expression ConvertStringValueToConstantExpression(string value, PropertyInfo property, TypeConverter converter, CultureInfo cultureInfo)
         {
             dynamic constantVal = converter.CanConvertFrom(typeof(string))
-                ? converter.ConvertFrom(value)
+                ? converter.ConvertFrom(null, cultureInfo, value)
                 : Convert.ChangeType(value, property.PropertyType);
 
             return GetClosureOverConstant(constantVal, property.PropertyType);
