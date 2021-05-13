@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
 using Sieve.Models;
+using Sieve.Sample.Entities;
 using Sieve.Services;
-using SieveTests.Entities;
 
-namespace SieveTests.Services
+namespace Sieve.Sample.Services
 {
     public class ApplicationSieveProcessor : SieveProcessor
     {

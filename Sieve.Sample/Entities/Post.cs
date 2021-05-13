@@ -2,14 +2,14 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Sieve.Attributes;
 
-namespace SieveTests.Entities
+namespace Sieve.Sample.Entities
 {
     public class Post
     {
         public int Id { get; set; }
 
         [Sieve(CanFilter = true, CanSort = true)]
-        public string Title { get; set; } = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 8);
+        public string Title { get; set; } = Guid.NewGuid().ToString().Replace("-", string.Empty)[..8];
 
         [Sieve(CanFilter = true, CanSort = true)]
         public int LikeCount { get; set; } = new Random().Next(0, 1000);

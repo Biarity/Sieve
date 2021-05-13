@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace SieveTests.Entities
+namespace Sieve.Sample.Entities
 {
     public class ApplicationDbContext : DbContext
     {

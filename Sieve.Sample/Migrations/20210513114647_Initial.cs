@@ -1,10 +1,9 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace SieveTests.Migrations
+namespace Sieve.Sample.Migrations
 {
-    public partial class Init : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,14 +12,18 @@ namespace SieveTests.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Title = table.Column<string>(nullable: true),
+                    LikeCount = table.Column<int>(nullable: false),
                     CommentCount = table.Column<int>(nullable: false),
                     DateCreated = table.Column<DateTimeOffset>(nullable: false),
-                    LikeCount = table.Column<int>(nullable: false),
-                    Title = table.Column<string>(nullable: true),
+                    DateLastViewed = table.Column<DateTime>(type: "datetime", nullable: false),
                     CategoryId = table.Column<int>(nullable: true)
                 },
-                constraints: table => table.PrimaryKey("PK_Posts", x => x.Id));
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Posts", x => x.Id);
+                });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
