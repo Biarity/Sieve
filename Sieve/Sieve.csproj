@@ -6,7 +6,6 @@
     <Authors>2018 Biarity, 2021 Kevin Sommer</Authors>
 
     <PackageTags>Filter;Sort;Page;Paging;</PackageTags>
-    <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Biarity/Sieve</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
