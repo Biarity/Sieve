@@ -1,6 +1,7 @@
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
+using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
@@ -12,6 +13,11 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
+[GitHubActions("ci", GitHubActionsImage.UbuntuLatest,
+    OnPushBranches = new[] {"master"},
+    AutoGenerate = true,
+    InvokedTargets = new[] {nameof(Ci)}, 
+    CacheKeyFiles = new string[0])]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -19,22 +25,18 @@ class Build : NukeBuild
     ///   - JetBrains Rider            https://nuke.build/rider
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
-
-     public static int Main() => Execute<Build>(x => x.Package);
+    public static int Main() => Execute<Build>(x => x.Package);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [Solution]
-    readonly Solution Solution;
+    [Solution] readonly Solution Solution;
 
     Project SieveProject => Solution.AllProjects.First(p => p.Name == "Sieve");
 
-    [GitRepository]
-    readonly GitRepository GitRepository;
+    [GitRepository] readonly GitRepository GitRepository;
 
-    [GitVersion(Framework = "netcoreapp3.1")]
-    readonly GitVersion GitVersion;
+    [GitVersion(Framework = "netcoreapp3.1")] readonly GitVersion GitVersion;
 
     AbsolutePath OutputDirectory => RootDirectory / "output";
 
@@ -91,5 +93,4 @@ class Build : NukeBuild
 
     Target Ci => _ => _
         .DependsOn(Package);
-
 }
