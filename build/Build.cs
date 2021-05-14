@@ -107,7 +107,7 @@ class Build : NukeBuild
                     DotNetNuGetPush(s => s
                         .SetTargetPath(x)
                         .SetSource("https://api.nuget.org/v3/index.json")
-                        .SetApiKey("xxxxxxx"));
+                        .SetApiKey(NUGET_API_KEY));
                 });
         });
 
