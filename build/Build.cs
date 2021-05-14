@@ -1,4 +1,5 @@
 using System.Linq;
+using Colorful;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.GitHubActions;
@@ -22,7 +23,8 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     OnPushBranches = new[] {"master", "releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(CiPublish)},
-    CacheKeyFiles = new string[0])]
+    CacheKeyFiles = new string[0],
+    ImportSecrets = new[] {"NUGET_API_KEY"})]
 class Build : NukeBuild
 {
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
@@ -33,6 +35,9 @@ class Build : NukeBuild
     [GitVersion(Framework = "netcoreapp3.1")] readonly GitVersion GitVersion;
 
     [Solution] readonly Solution Solution;
+
+    // ReSharper disable once InconsistentNaming
+    [Parameter] string NUGET_API_KEY;
 
     Project SieveProject => Solution.AllProjects.First(p => p.Name == "Sieve");
 
@@ -91,6 +96,7 @@ class Build : NukeBuild
         .DependsOn(Package)
         .Executes(() =>
         {
+            Console.WriteLine(string.IsNullOrEmpty(NUGET_API_KEY));
         });
 
     Target Ci => _ => _
