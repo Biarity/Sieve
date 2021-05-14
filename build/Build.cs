@@ -95,6 +95,7 @@ class Build : NukeBuild
 
     Target Publish => _ => _
         .DependsOn(Package)
+        .Requires(() => IsServerBuild)
         .Requires(() => NUGET_API_KEY)
         .Requires(() => Configuration.Equals(Configuration.Release))
         .Executes(() =>
