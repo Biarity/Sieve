@@ -20,7 +20,7 @@ on:
   push:
     branches:
       - master
-      - 'features/*'
+      - 'releases/*'
   pull_request:
     branches:
       - master
