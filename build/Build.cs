@@ -14,7 +14,6 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
 [GitHubActions("ci", GitHubActionsImage.UbuntuLatest,
-    OnPushBranches = new[] {"master", "releases/*"},
     OnPullRequestBranches = new[] {"master", "releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(Ci)},
@@ -95,7 +94,7 @@ class Build : NukeBuild
         });
 
     Target Ci => _ => _
-        .DependsOn(Package);
+        .DependsOn(Test);
 
     Target CiPublish => _ => _
         .DependsOn(Publish);
