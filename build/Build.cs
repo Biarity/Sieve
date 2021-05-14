@@ -105,7 +105,7 @@ class Build : NukeBuild
                 .ForEach(x =>
                 {
                     DotNetNuGetPush(s => s
-                        .SetTargetPath(x)
+                        .SetTargetPath(OutputDirectory / x)
                         .SetSource("https://api.nuget.org/v3/index.json")
                         .SetApiKey(NUGET_API_KEY));
                 });
