@@ -7,5 +7,8 @@ namespace SieveUnitTests.Entities
     {
         [Sieve(CanFilter = true)]
         public string Text { get; set; }
+        
+        [Sieve(CanFilter = true)]
+        public string Author { get; set; }
     }
 }
