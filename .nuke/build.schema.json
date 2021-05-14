@@ -43,6 +43,9 @@
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
         },
+        "NUGET_API_KEY": {
+          "type": "string"
+        },
         "Plan": {
           "type": "boolean",
           "description": "Shows the execution plan (HTML)"
@@ -65,9 +68,11 @@
             "type": "string",
             "enum": [
               "Ci",
+              "CiPublish",
               "Clean",
               "Compile",
               "Package",
+              "Publish",
               "Restore",
               "Test"
             ]
@@ -84,9 +89,11 @@
             "type": "string",
             "enum": [
               "Ci",
+              "CiPublish",
               "Clean",
               "Compile",
               "Package",
+              "Publish",
               "Restore",
               "Test"
             ]
