@@ -1,5 +1,5 @@
 using System.Linq;
-using Colorful;
+using GlobExpressions;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.GitHubActions;
@@ -9,6 +9,7 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
+using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
@@ -94,9 +95,19 @@ class Build : NukeBuild
 
     Target Publish => _ => _
         .DependsOn(Package)
+        .Requires(() => NUGET_API_KEY)
+        .Requires(() => Configuration.Equals(Configuration.Release))
         .Executes(() =>
         {
-            Console.WriteLine(string.IsNullOrEmpty(NUGET_API_KEY));
+            Glob.Files(OutputDirectory, "*.nupkg")
+                .NotEmpty()
+                .ForEach(x =>
+                {
+                    DotNetNuGetPush(s => s
+                        .SetTargetPath(x)
+                        .SetSource("https://api.nuget.org/v3/index.json")
+                        .SetApiKey("xxxxxxx"));
+                });
         });
 
     Target Ci => _ => _
