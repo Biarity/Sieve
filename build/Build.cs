@@ -15,7 +15,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [ShutdownDotNetAfterServerBuild]
 [GitHubActions("ci", GitHubActionsImage.UbuntuLatest,
     OnPushBranches = new[] {"master", "releases/*"},
-    OnPullRequestBranches = new[] {"master"},
+    OnPullRequestBranches = new[] {"master", "releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(Ci)},
     CacheKeyFiles = new string[0])]
