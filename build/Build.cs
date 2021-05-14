@@ -19,6 +19,11 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(Ci)},
     CacheKeyFiles = new string[0])]
+[GitHubActions("ci_publish", GitHubActionsImage.UbuntuLatest,
+    OnPushBranches = new[] {"master", "releases/*"},
+    AutoGenerate = true,
+    InvokedTargets = new[] {nameof(CiPublish)},
+    CacheKeyFiles = new string[0])]
 class Build : NukeBuild
 {
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
@@ -83,13 +88,17 @@ class Build : NukeBuild
                 .EnableNoBuild());
         });
 
+    Target Publish => _ => _
+        .DependsOn(Package)
+        .Executes(() =>
+        {
+        });
+
     Target Ci => _ => _
         .DependsOn(Package);
 
-    /// Support plugins are available for:
-    /// - JetBrains ReSharper        https://nuke.build/resharper
-    /// - JetBrains Rider            https://nuke.build/rider
-    /// - Microsoft VisualStudio     https://nuke.build/visualstudio
-    /// - Microsoft VSCode           https://nuke.build/vscode
+    Target CiPublish => _ => _
+        .DependsOn(Publish);
+
     public static int Main() => Execute<Build>(x => x.Package);
 }

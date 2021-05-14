@@ -65,9 +65,11 @@
             "type": "string",
             "enum": [
               "Ci",
+              "CiPublish",
               "Clean",
               "Compile",
               "Package",
+              "Publish",
               "Restore",
               "Test"
             ]
@@ -84,9 +86,11 @@
             "type": "string",
             "enum": [
               "Ci",
+              "CiPublish",
               "Clean",
               "Compile",
               "Package",
+              "Publish",
               "Restore",
               "Test"
             ]
