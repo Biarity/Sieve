@@ -19,7 +19,6 @@ name: ci_publish
 on:
   push:
     branches:
-      - master
       - 'releases/*'
 
 jobs:

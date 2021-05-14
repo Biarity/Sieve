@@ -21,7 +21,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     InvokedTargets = new[] {nameof(Ci)},
     CacheKeyFiles = new string[0])]
 [GitHubActions("ci_publish", GitHubActionsImage.UbuntuLatest,
-    OnPushBranches = new[] {"master", "releases/*"},
+    OnPushBranches = new[] {"releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(CiPublish)},
     CacheKeyFiles = new string[0],
