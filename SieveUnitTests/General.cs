@@ -614,7 +614,7 @@ namespace SieveUnitTests
             Assert.Equal(0,posts[3].Id);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanFilter_WithEscapeCharacter()
         {
             var comments = new List<Comment>
@@ -639,10 +639,10 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, comments);
-            Assert.AreEqual(1, result.Count());
+            Assert.Equal(1, result.Count());
         }
 
-        [TestMethod]
+        [Fact]
         public void OrEscapedPipeValueFilteringWorks()
         {
             var comments = new List<Comment>
@@ -667,7 +667,7 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, comments);
-            Assert.AreEqual(2, result.Count());
+            Assert.Equal(2, result.Count());
         }
     }
 }
