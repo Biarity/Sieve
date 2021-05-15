@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -13,8 +14,15 @@ namespace Sieve.Models
         where TFilterTerm : IFilterTerm, new()
         where TSortTerm : ISortTerm, new()
     {
+        /// <summary>
+        /// Pattern used to split filters and sorts by comma.
+        /// </summary>
         private const string EscapedCommaPattern = @"(?<!($|[^\\])(\\\\)*?\\),\s*";
-        private const string CommaToEscape = @"\,";
+
+        /// <summary>
+        /// Escaped comma e.g. used in filter filter string.
+        /// </summary>
+        private const string EscapedComma = @"\,";
 
         [DataMember]
         public string Filters { get; set; }
@@ -35,18 +43,24 @@ namespace Sieve.Models
                 var value = new List<TFilterTerm>();
                 foreach (var filter in Regex.Split(Filters, EscapedCommaPattern))
                 {
-                    if (string.IsNullOrWhiteSpace(filter)) continue;
+                    if (string.IsNullOrWhiteSpace(filter))
+                    {
+                        continue;
+                    }
+
+                    var filterValue = filter.Replace(EscapedComma, ",");
 
                     var escapedFilter = filter
                         .Replace(CommaToEscape, ",");
 
                     if (escapedFilter.StartsWith("("))
                     {
-                        var filterOpAndVal = escapedFilter.Substring(escapedFilter.LastIndexOf(")") + 1);
-                        var subfilters = escapedFilter.Replace(filterOpAndVal, "").Replace("(", "").Replace(")", "");
+                        var filterOpAndVal = filterValue[(filterValue.LastIndexOf(")", StringComparison.Ordinal) + 1)..];
+                        var subFilters = filterValue.Replace(filterOpAndVal, "").Replace("(", "").Replace(")", "");
+
                         var filterTerm = new TFilterTerm
                         {
-                            Filter = subfilters + filterOpAndVal
+                            Filter = subFilters + filterOpAndVal
                         };
                         value.Add(filterTerm);
                     }
@@ -54,7 +68,7 @@ namespace Sieve.Models
                     {
                         var filterTerm = new TFilterTerm
                         {
-                            Filter = escapedFilter
+                            Filter = filterValue
                         };
                         value.Add(filterTerm);
                     }
@@ -69,29 +83,28 @@ namespace Sieve.Models
 
         public List<TSortTerm> GetSortsParsed()
         {
-            if (Sorts != null)
-            {
-                var value = new List<TSortTerm>();
-                foreach (var sort in Regex.Split(Sorts, EscapedCommaPattern))
-                {
-                    if (string.IsNullOrWhiteSpace(sort)) continue;
-
-                    var sortTerm = new TSortTerm()
-                    {
-                        Sort = sort
-                    };
-                    if (!value.Any(s => s.Name == sortTerm.Name))
-                    {
-                        value.Add(sortTerm);
-                    }
-                }
-                return value;
-            }
-            else
+            if (Sorts == null)
             {
                 return null;
             }
 
+            var value = new List<TSortTerm>();
+            foreach (var sort in Regex.Split(Sorts, EscapedCommaPattern))
+            {
+                if (string.IsNullOrWhiteSpace(sort)) continue;
+
+                var sortTerm = new TSortTerm
+                {
+                    Sort = sort
+                };
+
+                if (value.All(s => s.Name != sortTerm.Name))
+                {
+                    value.Add(sortTerm);
+                }
+            }
+
+            return value;
         }
     }
 }

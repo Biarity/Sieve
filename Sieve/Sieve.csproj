@@ -1,22 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>2.3.3</Version>
-    <Description>Sieve is a simple, clean, and extensible framework for .NET Core that adds sorting, filtering, and pagination functionality out of the box. Most common use case would be for serving ASP.NET Core GET queries. Documentation available on GitHub: https://github.com/Biarity/Sieve/
-</Description>
-    <Copyright>Copyright 2018</Copyright>
-    <PackageLicenseUrl>https://github.com/Biarity/Sieve/blob/master/LICENSE</PackageLicenseUrl>
+    <TargetFramework>netstandard2.1</TargetFramework>   
+    <Description>Sieve is a simple, clean, and extensible framework for .NET Core that adds sorting, filtering, and pagination functionality out of the box. Most common use case would be for serving ASP.NET Core GET queries. Documentation available on GitHub: https://github.com/Biarity/Sieve/</Description>
+    <Authors>Biarity;Ashish Patel;Kevin Sommer</Authors>
+
+    <PackageTags>Filter;Sort;Page;Paging;</PackageTags>
     <PackageProjectUrl>https://github.com/Biarity/Sieve</PackageProjectUrl>
-    <PackageIconUrl>https://emojipedia-us.s3.amazonaws.com/thumbs/240/twitter/120/alembic_2697.png</PackageIconUrl>
-    <RepositoryUrl></RepositoryUrl>
-    <PackageReleaseNotes>Only Skip when pageSize &gt; 0 (#63)
-Added support for generic filter and sort methods (#60)
-Don't process when filterTerm.Values is null (#59)
-</PackageReleaseNotes>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Authors>Biarity</Authors>
+
+    <RepositoryUrl>https://github.com/Biarity/Sieve</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <!-- Declare that the Repository URL can be published to NuSpec -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <!-- Embed source files that are not tracked by the source control manager to the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Include PDB in the built .nupkg -->
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <ItemGroup>
