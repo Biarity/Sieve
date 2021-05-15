@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -18,7 +18,7 @@ namespace Sieve.Models
         /// Pattern used to split filters and sorts by comma.
         /// </summary>
         private const string EscapedCommaPattern = @"(?<!($|[^\\])(\\\\)*?\\),\s*";
-
+        
         /// <summary>
         /// Escaped comma e.g. used in filter filter string.
         /// </summary>
@@ -50,14 +50,10 @@ namespace Sieve.Models
 
                     var filterValue = filter.Replace(EscapedComma, ",");
 
-                    var escapedFilter = filter
-                        .Replace(CommaToEscape, ",");
-
-                    if (escapedFilter.StartsWith("("))
+                    if (filter.StartsWith("("))
                     {
                         var filterOpAndVal = filterValue[(filterValue.LastIndexOf(")", StringComparison.Ordinal) + 1)..];
                         var subFilters = filterValue.Replace(filterOpAndVal, "").Replace("(", "").Replace(")", "");
-
                         var filterTerm = new TFilterTerm
                         {
                             Filter = subFilters + filterOpAndVal
