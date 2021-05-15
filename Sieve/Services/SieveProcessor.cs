@@ -377,7 +377,11 @@ namespace Sieve.Services
         {
             var page = model?.Page ?? 1;
             var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;
-            var maxPageSize = _options.Value.MaxPageSize > 0 ? _options.Value.MaxPageSize : pageSize;
+
+            if (_options.Value.MaxPageSize > 0)
+            {
+                pageSize = Math.Min(pageSize, _options.Value.MaxPageSize);
+            }
 
             if (pageSize <= 0)
             {
@@ -385,7 +389,7 @@ namespace Sieve.Services
             }
 
             result = result.Skip((page - 1) * pageSize);
-            result = result.Take(Math.Min(pageSize, maxPageSize));
+            result = result.Take(page);
 
             return result;
         }
