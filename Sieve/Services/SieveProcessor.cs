@@ -68,17 +68,16 @@ namespace Sieve.Services
         where TSortTerm : ISortTerm, new()
     {
         private const string NullFilterValue = "null";
-        private readonly IOptions<SieveOptions> _options;
         private readonly ISieveCustomSortMethods _customSortMethods;
         private readonly ISieveCustomFilterMethods _customFilterMethods;
-        private readonly SievePropertyMapper _mapper = new SievePropertyMapper();
+        private SievePropertyMapper _mapper;
+        private SievePropertyMapper Mapper => _mapper ??= MapProperties(new SievePropertyMapper());
 
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomSortMethods customSortMethods,
             ISieveCustomFilterMethods customFilterMethods)
         {
-            _mapper = MapProperties(_mapper);
-            _options = options;
+            Options = options;
             _customSortMethods = customSortMethods;
             _customFilterMethods = customFilterMethods;
         }
@@ -86,24 +85,23 @@ namespace Sieve.Services
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomSortMethods customSortMethods)
         {
-            _mapper = MapProperties(_mapper);
-            _options = options;
+            Options = options;
             _customSortMethods = customSortMethods;
         }
 
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomFilterMethods customFilterMethods)
         {
-            _mapper = MapProperties(_mapper);
-            _options = options;
+            Options = options;
             _customFilterMethods = customFilterMethods;
         }
 
         public SieveProcessor(IOptions<SieveOptions> options)
         {
-            _mapper = MapProperties(_mapper);
-            _options = options;
+            Options = options;
         }
+
+        protected IOptions<SieveOptions> Options { get; }
 
         /// <summary>
         /// Apply filtering, sorting, and pagination parameters found in `model` to `source`
@@ -148,7 +146,7 @@ namespace Sieve.Services
             }
             catch (Exception ex)
             {
-                if (!_options.Value.ThrowExceptions)
+                if (!Options.Value.ThrowExceptions)
                 {
                     return result;
                 }
@@ -376,8 +374,8 @@ namespace Sieve.Services
         private IQueryable<TEntity> ApplyPagination<TEntity>(TSieveModel model, IQueryable<TEntity> result)
         {
             var page = model?.Page ?? 1;
-            var pageSize = model?.PageSize ?? _options.Value.DefaultPageSize;
-            var maxPageSize = _options.Value.MaxPageSize > 0 ? _options.Value.MaxPageSize : pageSize;
+            var pageSize = model?.PageSize ?? Options.Value.DefaultPageSize;
+            var maxPageSize = Options.Value.MaxPageSize > 0 ? Options.Value.MaxPageSize : pageSize;
 
             if (pageSize <= 0)
             {
@@ -398,15 +396,15 @@ namespace Sieve.Services
         private (string, PropertyInfo) GetSieveProperty<TEntity>(bool canSortRequired, bool canFilterRequired,
             string name)
         {
-            var property = _mapper.FindProperty<TEntity>(canSortRequired, canFilterRequired, name,
-                _options.Value.CaseSensitive);
+            var property = Mapper.FindProperty<TEntity>(canSortRequired, canFilterRequired, name,
+                Options.Value.CaseSensitive);
             if (property.Item1 != null)
             {
                 return property;
             }
 
             var prop = FindPropertyBySieveAttribute<TEntity>(canSortRequired, canFilterRequired, name,
-                _options.Value.CaseSensitive);
+                Options.Value.CaseSensitive);
             return (prop?.Name, prop);
         }
 
@@ -426,7 +424,7 @@ namespace Sieve.Services
         {
             var customMethod = parent?.GetType()
                 .GetMethodExt(name,
-                    _options.Value.CaseSensitive
+                    Options.Value.CaseSensitive
                         ? BindingFlags.Default
                         : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance,
                     typeof(IQueryable<TEntity>));
@@ -437,7 +435,7 @@ namespace Sieve.Services
                 // Find generic methods `public IQueryable<T> Filter<T>(IQueryable<T> source, ...)`
                 var genericCustomMethod = parent?.GetType()
                     .GetMethodExt(name,
-                        _options.Value.CaseSensitive
+                        Options.Value.CaseSensitive
                             ? BindingFlags.Default
                             : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance,
                         typeof(IQueryable<>));
@@ -481,11 +479,11 @@ namespace Sieve.Services
                 var incompatibleCustomMethods =
                     parent?
                         .GetType()
-                        .GetMethods(_options.Value.CaseSensitive
+                        .GetMethods(Options.Value.CaseSensitive
                             ? BindingFlags.Default
                             : BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
                         .Where(method => string.Equals(method.Name, name,
-                            _options.Value.CaseSensitive
+                            Options.Value.CaseSensitive
                                 ? StringComparison.InvariantCulture
                                 : StringComparison.InvariantCultureIgnoreCase))
                         .ToList()
