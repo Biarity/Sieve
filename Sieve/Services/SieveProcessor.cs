@@ -399,7 +399,7 @@ namespace Sieve.Services
         private (string, PropertyInfo) GetSieveProperty<TEntity>(bool canSortRequired, bool canFilterRequired,
             string name)
         {
-            var property = Mapper.FindProperty<TEntity>(canSortRequired, canFilterRequired, name,
+            var property = _mapper.FindProperty<TEntity>(canSortRequired, canFilterRequired, name,
                 Options.Value.CaseSensitive);
             if (property.Item1 != null)
             {
