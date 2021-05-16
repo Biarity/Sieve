@@ -613,5 +613,44 @@ namespace SieveUnitTests
             Assert.Equal(1,posts[2].Id);
             Assert.Equal(0,posts[3].Id);
         }
+        
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        public void Paging_DifferentPages(int page)
+        {
+            var model = new SieveModel
+            {
+                Page = page,
+                PageSize = 1,
+            };
+
+            var result = _processor.Apply(model, _posts);
+            var posts = result.ToList();
+            
+            Assert.Single(posts);
+            var expectedId = page - 1;
+            Assert.Equal(expectedId, posts.First().Id);
+        }
+        
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        public void Paging_DifferentPageSizes(int pageSize)
+        {
+            var model = new SieveModel
+            {
+                Page = 1,
+                PageSize = pageSize,
+            };
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.Equal(pageSize, result.Count());
+        }
     }
 }
