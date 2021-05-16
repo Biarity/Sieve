@@ -70,13 +70,13 @@ namespace Sieve.Services
         private const string NullFilterValue = "null";
         private readonly ISieveCustomSortMethods _customSortMethods;
         private readonly ISieveCustomFilterMethods _customFilterMethods;
-        private SievePropertyMapper _mapper;
-        private SievePropertyMapper Mapper => _mapper ??= MapProperties(new SievePropertyMapper());
+        private readonly SievePropertyMapper _mapper = new SievePropertyMapper();
 
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomSortMethods customSortMethods,
             ISieveCustomFilterMethods customFilterMethods)
         {
+            _mapper = MapProperties(_mapper);
             Options = options;
             _customSortMethods = customSortMethods;
             _customFilterMethods = customFilterMethods;
@@ -85,6 +85,7 @@ namespace Sieve.Services
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomSortMethods customSortMethods)
         {
+            _mapper = MapProperties(_mapper);
             Options = options;
             _customSortMethods = customSortMethods;
         }
@@ -92,12 +93,14 @@ namespace Sieve.Services
         public SieveProcessor(IOptions<SieveOptions> options,
             ISieveCustomFilterMethods customFilterMethods)
         {
+            _mapper = MapProperties(_mapper);
             Options = options;
             _customFilterMethods = customFilterMethods;
         }
 
         public SieveProcessor(IOptions<SieveOptions> options)
         {
+            _mapper = MapProperties(_mapper);
             Options = options;
         }
 
