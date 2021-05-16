@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.14">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.14" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SieveUnitTests\SieveUnitTests.csproj" />
+    <ProjectReference Include="..\Sieve\Sieve.csproj" />
+  </ItemGroup>
+
+</Project>
