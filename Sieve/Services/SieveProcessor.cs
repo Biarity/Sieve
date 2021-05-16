@@ -389,7 +389,7 @@ namespace Sieve.Services
             }
 
             result = result.Skip((page - 1) * pageSize);
-            result = result.Take(page);
+            result = result.Take(pageSize);
 
             return result;
         }

@@ -10,6 +10,7 @@
         /// <summary>
         /// Fallback value of no page size is specified in the request.
         /// </summary>
+        /// <remarks>Values less or equal to 0 disable paging.</remarks>
         public int DefaultPageSize { get; set; } = 0;
 
         /// <summary>
