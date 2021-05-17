@@ -163,7 +163,7 @@ namespace Sieve.Services
             }
         }
 
-        private IQueryable<TEntity> ApplyFiltering<TEntity>(TSieveModel model, IQueryable<TEntity> result,
+        protected virtual IQueryable<TEntity> ApplyFiltering<TEntity>(TSieveModel model, IQueryable<TEntity> result,
             object[] dataForCustomMethods = null)
         {
             if (model?.GetFiltersParsed() == null)
@@ -343,7 +343,7 @@ namespace Sieve.Services
             return Expression.Convert(hoistedConstant.Body, targetType);
         }
 
-        private IQueryable<TEntity> ApplySorting<TEntity>(TSieveModel model, IQueryable<TEntity> result,
+        protected virtual IQueryable<TEntity> ApplySorting<TEntity>(TSieveModel model, IQueryable<TEntity> result,
             object[] dataForCustomMethods = null)
         {
             if (model?.GetSortsParsed() == null)
@@ -372,7 +372,7 @@ namespace Sieve.Services
             return result;
         }
 
-        private IQueryable<TEntity> ApplyPagination<TEntity>(TSieveModel model, IQueryable<TEntity> result)
+        protected virtual IQueryable<TEntity> ApplyPagination<TEntity>(TSieveModel model, IQueryable<TEntity> result)
         {
             var page = model?.Page ?? 1;
             var pageSize = model?.PageSize ?? Options.Value.DefaultPageSize;
