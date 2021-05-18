@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sieve.Exceptions;
 using Sieve.Models;
 using SieveUnitTests.Entities;
 using SieveUnitTests.Services;
+using Xunit;
 
 namespace SieveUnitTests
 {
-    [TestClass]
     public class Mapper
     {
         private readonly ApplicationSieveProcessor _processor;
@@ -22,19 +21,22 @@ namespace SieveUnitTests
 
             _posts = new List<Post>
             {
-                new Post() {
+                new Post
+                {
                     Id = 1,
                     ThisHasNoAttributeButIsAccessible = "A",
                     ThisHasNoAttribute = "A",
                     OnlySortableViaFluentApi = 100
                 },
-                new Post() {
+                new Post
+                {
                     Id = 2,
                     ThisHasNoAttributeButIsAccessible = "B",
                     ThisHasNoAttribute = "B",
                     OnlySortableViaFluentApi = 50
                 },
-                new Post() {
+                new Post
+                {
                     Id = 3,
                     ThisHasNoAttributeButIsAccessible = "C",
                     ThisHasNoAttribute = "C",
@@ -43,25 +45,25 @@ namespace SieveUnitTests
             }.AsQueryable();
         }
 
-        [TestMethod]
+        [Fact]
         public void MapperWorks()
         {
-            var model = new SieveModel()
+            var model = new SieveModel
             {
                 Filters = "shortname@=A",
             };
 
             var result = _processor.Apply(model, _posts);
 
-            Assert.AreEqual(result.First().ThisHasNoAttributeButIsAccessible, "A");
+            Assert.Equal("A", result.First().ThisHasNoAttributeButIsAccessible);
 
-            Assert.IsTrue(result.Count() == 1);
+            Assert.True(result.Count() == 1);
         }
 
-        [TestMethod]
+        [Fact]
         public void MapperSortOnlyWorks()
         {
-            var model = new SieveModel()
+            var model = new SieveModel
             {
                 Filters = "OnlySortableViaFluentApi@=50",
                 Sorts = "OnlySortableViaFluentApi"
@@ -69,17 +71,11 @@ namespace SieveUnitTests
 
             var result = _processor.Apply(model, _posts, applyFiltering: false, applyPagination: false);
 
-            Assert.ThrowsException<SieveMethodNotFoundException>(() => _processor.Apply(model, _posts));
+            Assert.Throws<SieveMethodNotFoundException>(() => _processor.Apply(model, _posts));
 
-            Assert.AreEqual(result.First().Id, 3);
+            Assert.Equal(3, result.First().Id);
 
-            Assert.IsTrue(result.Count() == 3);
+            Assert.True(result.Count() == 3);
         }
     }
 }
-
-//
-//Sorts = "LikeCount",
-//Page = 1,
-//PageSize = 10
-//
