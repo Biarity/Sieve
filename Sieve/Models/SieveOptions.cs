@@ -9,5 +9,7 @@
         public int MaxPageSize { get; set; } = 0;
 
         public bool ThrowExceptions { get; set; } = false;
+
+        public bool IgnoreNullsOnNotEqual { get; set; } = true;
     }
 }

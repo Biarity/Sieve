@@ -15,13 +15,21 @@ namespace SieveUnitTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
         private readonly SieveProcessor _processor;
+        private readonly SieveProcessor _nullableProcessor;
         private readonly IQueryable<Post> _posts;
         private readonly IQueryable<Comment> _comments;
 
         public General(ITestOutputHelper testOutputHelper)
         {
+            var nullableAccessor = new SieveOptionsAccessor();
+            nullableAccessor.Value.IgnoreNullsOnNotEqual = false;
+
             _testOutputHelper = testOutputHelper;
             _processor = new ApplicationSieveProcessor(new SieveOptionsAccessor(),
+                new SieveCustomSortMethods(),
+                new SieveCustomFilterMethods());
+
+            _nullableProcessor = new ApplicationSieveProcessor(nullableAccessor,
                 new SieveCustomSortMethods(),
                 new SieveCustomFilterMethods());
 
@@ -180,10 +188,27 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
+            var nullableResult = _nullableProcessor.Apply(model, _posts);
 
             Assert.True(result.Count() == 2);
+            Assert.True(nullableResult.Count() == 2);
         }
-        
+
+        [Fact]
+        public void CanFilterNullableIntsWithNotEqual()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "CategoryId!=1"
+            };
+
+            var result = _processor.Apply(model, _posts);
+            var nullableResult = _nullableProcessor.Apply(model, _posts);
+
+            Assert.True(result.Count() == 1);
+            Assert.True(nullableResult.Count() == 2);
+        }
+
         [Theory]
         [InlineData(@"Text@=*\,")]
         [InlineData(@"Text@=*\, ")]
@@ -199,19 +224,6 @@ namespace SieveUnitTests
             var result = _processor.Apply(model, _comments);
 
             Assert.True(result.Count() == 1);
-        }
-
-        [Fact]
-        public void CanFilterNullableIntsWithNotEqual()
-        {
-            var model = new SieveModel()
-            {
-                Filters = "CategoryId!=1"
-            };
-
-            var result = _processor.Apply(model, _posts);
-
-            Assert.True(result.Count() == 2);
         }
 
         [Fact]
