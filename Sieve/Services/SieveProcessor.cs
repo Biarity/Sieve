@@ -217,10 +217,13 @@ namespace Sieve.Services
                                 expression = Expression.Not(expression);
                             }
 
-                            var filterValueNullCheck = GetFilterValueNullCheck(parameter, fullPropertyName, isFilterTermValueNull);
-                            if (filterValueNullCheck != null)
+                            if (expression.NodeType != ExpressionType.NotEqual || Options.Value.IgnoreNullsOnNotEqual)
                             {
-                                expression = Expression.AndAlso(filterValueNullCheck, expression);
+                                var filterValueNullCheck = GetFilterValueNullCheck(parameter, fullPropertyName, isFilterTermValueNull);
+                                if (filterValueNullCheck != null)
+                                {
+                                    expression = Expression.AndAlso(filterValueNullCheck, expression);
+                                }
                             }
 
                             innerExpression = innerExpression == null
@@ -254,8 +257,7 @@ namespace Sieve.Services
                 : result.Where(Expression.Lambda<Func<TEntity, bool>>(outerExpression, parameter));
         }
 
-        private static Expression GetFilterValueNullCheck(Expression parameter, string fullPropertyName,
-            bool isFilterTermValueNull)
+        private static Expression GetFilterValueNullCheck(Expression parameter, string fullPropertyName, bool isFilterTermValueNull)
         {
             var (propertyValue, nullCheck) = GetPropertyValueAndNullCheckExpression(parameter, fullPropertyName);
 
