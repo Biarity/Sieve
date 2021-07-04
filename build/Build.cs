@@ -1,4 +1,5 @@
 using System.Linq;
+using GlobExpressions;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.GitHubActions;
@@ -8,17 +9,23 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
+using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
 [GitHubActions("ci", GitHubActionsImage.UbuntuLatest,
-    OnPushBranches = new[] {"master"},
-    OnPullRequestBranches = new[] {"master"},
+    OnPullRequestBranches = new[] {"master", "releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(Ci)},
     CacheKeyFiles = new string[0])]
+[GitHubActions("ci_publish", GitHubActionsImage.UbuntuLatest,
+    OnPushBranches = new[] {"releases/*"},
+    AutoGenerate = true,
+    InvokedTargets = new[] {nameof(CiPublish)},
+    CacheKeyFiles = new string[0],
+    ImportSecrets = new[] {"NUGET_API_KEY"})]
 class Build : NukeBuild
 {
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
@@ -29,6 +36,9 @@ class Build : NukeBuild
     [GitVersion(Framework = "netcoreapp3.1")] readonly GitVersion GitVersion;
 
     [Solution] readonly Solution Solution;
+
+    // ReSharper disable once InconsistentNaming
+    [Parameter] string NUGET_API_KEY;
 
     Project SieveProject => Solution.AllProjects.First(p => p.Name == "Sieve");
 
@@ -83,13 +93,29 @@ class Build : NukeBuild
                 .EnableNoBuild());
         });
 
-    Target Ci => _ => _
-        .DependsOn(Package);
+    Target Publish => _ => _
+        .DependsOn(Package)
+        .Requires(() => IsServerBuild)
+        .Requires(() => NUGET_API_KEY)
+        .Requires(() => Configuration.Equals(Configuration.Release))
+        .Executes(() =>
+        {
+            Glob.Files(OutputDirectory, "*.nupkg")
+                .NotEmpty()
+                .ForEach(x =>
+                {
+                    DotNetNuGetPush(s => s
+                        .SetTargetPath(OutputDirectory / x)
+                        .SetSource("https://api.nuget.org/v3/index.json")
+                        .SetApiKey(NUGET_API_KEY));
+                });
+        });
 
-    /// Support plugins are available for:
-    /// - JetBrains ReSharper        https://nuke.build/resharper
-    /// - JetBrains Rider            https://nuke.build/rider
-    /// - Microsoft VisualStudio     https://nuke.build/visualstudio
-    /// - Microsoft VSCode           https://nuke.build/vscode
+    Target Ci => _ => _
+        .DependsOn(Test);
+
+    Target CiPublish => _ => _
+        .DependsOn(Publish);
+
     public static int Main() => Execute<Build>(x => x.Package);
 }

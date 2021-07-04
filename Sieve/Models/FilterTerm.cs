@@ -9,6 +9,7 @@ namespace Sieve.Models
         public FilterTerm() { }
 
         private const string EscapedPipePattern = @"(?<!($|[^\\])(\\\\)*?\\)\|";
+        private const string PipeToEscape = @"\|";
 
         private static readonly string[] Operators = new string[] {
                     "!@=*",
@@ -36,7 +37,11 @@ namespace Sieve.Models
                 var filterSplits = value.Split(Operators, StringSplitOptions.RemoveEmptyEntries)
                     .Select(t => t.Trim()).ToArray();
                 Names = Regex.Split(filterSplits[0], EscapedPipePattern).Select(t => t.Trim()).ToArray();
-                Values = filterSplits.Length > 1 ? Regex.Split(filterSplits[1], EscapedPipePattern).Select(t => t.Trim()).ToArray() : null;
+                Values = filterSplits.Length > 1
+                    ? Regex.Split(filterSplits[1], EscapedPipePattern)
+                        .Select(t => t.Replace(PipeToEscape, "|").Trim())
+                        .ToArray()
+                    : null;
                 Operator = Array.Find(Operators, o => value.Contains(o)) ?? "==";
                 OperatorParsed = GetOperatorParsed(Operator);
                 OperatorIsCaseInsensitive = Operator.EndsWith("*");
@@ -90,6 +95,5 @@ namespace Sieve.Models
                 && Values.SequenceEqual(other.Values)
                 && Operator == other.Operator;
         }
-
     }
 }

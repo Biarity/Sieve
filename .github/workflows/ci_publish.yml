@@ -9,17 +9,16 @@
 #
 #     - To trigger manual generation invoke:
 #
-#         nuke --generate-configuration GitHubActions_ci --host GitHubActions
+#         nuke --generate-configuration GitHubActions_ci_publish --host GitHubActions
 #
 # </auto-generated>
 # ------------------------------------------------------------------------------
 
-name: ci
+name: ci_publish
 
 on:
-  pull_request:
+  push:
     branches:
-      - master
       - 'releases/*'
 
 jobs:
@@ -28,5 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Run './build.cmd Ci'
-        run: ./build.cmd Ci
+      - name: Run './build.cmd CiPublish'
+        run: ./build.cmd CiPublish
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
