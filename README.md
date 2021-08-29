@@ -75,7 +75,7 @@ Where `SieveCustomSortMethodsOfPosts` for example is:
 ```C#
 public class SieveCustomSortMethods : ISieveCustomSortMethods
 {
-    public IQueryable<Post> Popularity(IQueryable<Post> source, bool useThenBy, bool desc) // The method is given an indicator of weather to use ThenBy(), and if the query is descending 
+    public IQueryable<Post> Popularity(IQueryable<Post> source, bool useThenBy, bool desc) // The method is given an indicator of whether to use ThenBy(), and if the query is descending 
     {
         var result = useThenBy ?
             ((IOrderedQueryable<Post>)source).ThenBy(p => p.LikeCount) : // ThenBy only works on IOrderedQueryable<TEntity>
