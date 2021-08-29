@@ -15,13 +15,21 @@ namespace SieveUnitTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
         private readonly SieveProcessor _processor;
+        private readonly SieveProcessor _nullableProcessor;
         private readonly IQueryable<Post> _posts;
         private readonly IQueryable<Comment> _comments;
 
         public General(ITestOutputHelper testOutputHelper)
         {
+            var nullableAccessor = new SieveOptionsAccessor();
+            nullableAccessor.Value.IgnoreNullsOnNotEqual = false;
+
             _testOutputHelper = testOutputHelper;
             _processor = new ApplicationSieveProcessor(new SieveOptionsAccessor(),
+                new SieveCustomSortMethods(),
+                new SieveCustomFilterMethods());
+
+            _nullableProcessor = new ApplicationSieveProcessor(nullableAccessor,
                 new SieveCustomSortMethods(),
                 new SieveCustomFilterMethods());
 
@@ -180,10 +188,27 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
+            var nullableResult = _nullableProcessor.Apply(model, _posts);
 
             Assert.True(result.Count() == 2);
+            Assert.True(nullableResult.Count() == 2);
         }
-        
+
+        [Fact]
+        public void CanFilterNullableIntsWithNotEqual()
+        {
+            var model = new SieveModel()
+            {
+                Filters = "CategoryId!=1"
+            };
+
+            var result = _processor.Apply(model, _posts);
+            var nullableResult = _nullableProcessor.Apply(model, _posts);
+
+            Assert.True(result.Count() == 1);
+            Assert.True(nullableResult.Count() == 2);
+        }
+
         [Theory]
         [InlineData(@"Text@=*\,")]
         [InlineData(@"Text@=*\, ")]
@@ -612,6 +637,62 @@ namespace SieveUnitTests
             Assert.Equal(2,posts[1].Id);
             Assert.Equal(1,posts[2].Id);
             Assert.Equal(0,posts[3].Id);
+        }
+
+        [Fact]
+        public void CanFilter_WithEscapeCharacter()
+        {
+            var comments = new List<Comment>
+            {
+                new Comment
+                {
+                    Id = 0,
+                    DateCreated = DateTimeOffset.UtcNow,
+                    Text = "Here is, a comment"
+                },
+                new Comment
+                {
+                    Id = 1,
+                    DateCreated = DateTimeOffset.UtcNow.AddDays(-1),
+                    Text = "Here is, another comment"
+                },
+            }.AsQueryable();
+
+            var model = new SieveModel
+            {
+                Filters = "Text==Here is\\, another comment"
+            };
+
+            var result = _processor.Apply(model, comments);
+            Assert.Equal(1, result.Count());
+        }
+
+        [Fact]
+        public void OrEscapedPipeValueFilteringWorks()
+        {
+            var comments = new List<Comment>
+            {
+                new Comment
+                {
+                    Id = 0,
+                    DateCreated = DateTimeOffset.UtcNow,
+                    Text = "Here is | a comment"
+                },
+                new Comment
+                {
+                    Id = 1,
+                    DateCreated = DateTimeOffset.UtcNow.AddDays(-1),
+                    Text = "Here is | another comment"
+                },
+            }.AsQueryable();
+
+            var model = new SieveModel()
+            {
+                Filters = "Text==Here is \\| a comment|Here is \\| another comment",
+            };
+
+            var result = _processor.Apply(model, comments);
+            Assert.Equal(2, result.Count());
         }
     }
 }
