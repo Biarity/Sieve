@@ -21,7 +21,8 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     InvokedTargets = new[] {nameof(Ci)},
     CacheKeyFiles = new string[0])]
 [GitHubActions("ci_publish", GitHubActionsImage.UbuntuLatest,
-    OnPushBranches = new[] {"master", "releases/*"},
+    OnPushBranches = new[] { "releases/*" },
+    OnPushTags = new[] { "v*" },
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(CiPublish)},
     CacheKeyFiles = new string[0],
@@ -83,6 +84,7 @@ class Build : NukeBuild
     Target Package => _ => _
         .DependsOn(Test)
         .Executes(() =>
+        
         {
             DotNetPack(s => s
                 .SetProject(SieveProject)

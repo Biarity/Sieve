@@ -19,8 +19,9 @@ name: ci_publish
 on:
   push:
     branches:
-      - master
       - 'releases/*'
+    tags:
+      - 'v*'
 
 jobs:
   ubuntu-latest:
