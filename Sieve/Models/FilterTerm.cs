@@ -8,7 +8,7 @@ namespace Sieve.Models
     {
         public FilterTerm() { }
 
-        private const string EscapedPipePattern = @"(?<!($|[^\\])(\\\\)*?\\)\|";
+        private const string EscapedPipePattern = @"(?<!($|[^\\]|^)(\\\\)*?\\)\|";
         private const string PipeToEscape = @"\|";
 
         private static readonly string[] Operators = new string[] {
