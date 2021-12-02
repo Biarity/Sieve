@@ -73,7 +73,7 @@ namespace SieveUnitTests
                     CategoryId = 2,
                     TopComment = new Comment { Id = 1, Text = "D1" },
                     FeaturedComment = new Comment { Id = 7, Text = "D2" }
-                },
+                }
             }.AsQueryable();
 
             _comments = new List<Comment>
@@ -684,15 +684,116 @@ namespace SieveUnitTests
                     DateCreated = DateTimeOffset.UtcNow.AddDays(-1),
                     Text = "Here is | another comment"
                 },
+                new Comment
+                {
+                    Id = 2,
+                    DateCreated = DateTimeOffset.UtcNow.AddDays(-1),
+                    Text = @"Here is \| another comment(1)"
+                }
             }.AsQueryable();
 
-            var model = new SieveModel()
+            var model = new SieveModel
             {
-                Filters = "Text==Here is \\| a comment|Here is \\| another comment",
+                Filters = @"Text==Here is \| a comment|Here is \| another comment|Here is \\\| another comment(1)",
             };
 
             var result = _processor.Apply(model, comments);
-            Assert.Equal(2, result.Count());
+            Assert.Equal(3, result.Count());
         }
+        
+        [Theory]
+        [InlineData("CategoryId==1,(CategoryId|LikeCount)==50")]
+        [InlineData("(CategoryId|LikeCount)==50,CategoryId==1")]
+        public void CanFilterWithEscape(string filter)
+        {
+            var model = new SieveModel
+            {
+                Filters = filter
+            };
+
+            var result = _processor.Apply(model, _posts);
+            var entry = result.FirstOrDefault();
+            var resultCount = result.Count();
+
+            Assert.NotNull(entry);
+            Assert.Equal(1, resultCount);
+        }
+        
+        [Theory]
+        [InlineData(@"Title@=\\")]
+        public void CanFilterWithEscapedBackSlash(string filter)
+        {
+            var posts = new List<Post>
+            {
+                new Post
+                {
+                    Id = 1,
+                    Title = "E\\",
+                    LikeCount = 4,
+                    IsDraft = true,
+                    CategoryId = 1,
+                    TopComment = new Comment { Id = 1, Text = "E1" },
+                    FeaturedComment = new Comment { Id = 7, Text = "E2" }
+                }
+            }.AsQueryable();
+            
+            var model = new SieveModel
+            {
+                Filters = filter
+            };
+
+            var result = _processor.Apply(model, posts);
+            var entry = result.FirstOrDefault();
+            var resultCount = result.Count();
+
+            Assert.NotNull(entry);
+            Assert.Equal(1, resultCount);
+        }
+        
+        [Theory]
+        [InlineData(@"Title@=\== ")]
+        [InlineData(@"Title@=\!= ")]
+        [InlineData(@"Title@=\> ")]
+        [InlineData(@"Title@=\< ")]
+        [InlineData(@"Title@=\<= ")]
+        [InlineData(@"Title@=\>= ")]
+        [InlineData(@"Title@=\@= ")]
+        [InlineData(@"Title@=\_= ")]
+        [InlineData(@"Title@=!\@= ")]
+        [InlineData(@"Title@=!\_= ")]
+        [InlineData(@"Title@=\@=* ")]
+        [InlineData(@"Title@=\_=* ")]
+        [InlineData(@"Title@=\==* ")]
+        [InlineData(@"Title@=\!=* ")]
+        [InlineData(@"Title@=!\@=* ")]
+        public void CanFilterWithEscapedOperators(string filter)
+        {
+            var posts = new List<Post>
+            {
+                new Post
+                {
+                    Id = 1,
+                    Title = @"Operators: == != > < >= <= @= _= !@= !_= @=* _=* ==* !=* !@=* !_=* ",
+                    LikeCount = 1,
+                    IsDraft = true,
+                    CategoryId = 1,
+                    TopComment = new Comment { Id = 1, Text = "F1" },
+                    FeaturedComment = new Comment { Id = 7, Text = "F2" }
+                }
+            }.AsQueryable();
+            
+            var model = new SieveModel
+            {
+                Filters = filter,
+            };
+
+            var result = _processor.Apply(model, posts);
+            var entry = result.FirstOrDefault();
+            var resultCount = result.Count();
+
+            Assert.NotNull(entry);
+            Assert.Equal(1, resultCount);
+        }
+        
     }
 }
