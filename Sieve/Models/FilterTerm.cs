@@ -6,43 +6,36 @@ namespace Sieve.Models
 {
     public class FilterTerm : IFilterTerm, IEquatable<FilterTerm>
     {
-        public FilterTerm() { }
-
-        private const string EscapedPipePattern = @"(?<!($|[^\\])(\\\\)*?\\)\|";
+        private const string EscapedPipePattern = @"(?<!($|[^\\]|^)(\\\\)*?\\)\|";
         private const string PipeToEscape = @"\|";
-
-        private static readonly string[] Operators = new string[] {
-                    "!@=*",
-                    "!_=*",
-                    "!=*",
-                    "!@=",
-                    "!_=",
-                    "==*",
-                    "@=*",
-                    "_=*",
-                    "==",
-                    "!=",
-                    ">=",
-                    "<=",
-                    ">",
-                    "<",
-                    "@=",
-                    "_="
-        };
+        private const string BackslashToEscape = @"\\";
+        private const string OperatorsRegEx = @"(!@=\*|!_=\*|!=\*|!@=|!_=|==\*|@=\*|_=\*|==|!=|>=|<=|>|<|@=|_=)";
+        private const string EscapeNegPatternForOper = @"(?<!\\)" + OperatorsRegEx;
+        private const string EscapePosPatternForOper = @"(?<=\\)" + OperatorsRegEx;
 
         public string Filter
         {
             set
             {
-                var filterSplits = value.Split(Operators, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(t => t.Trim()).ToArray();
+                var filterSplits = Regex.Split(value,EscapeNegPatternForOper).Select(t => t.Trim()).ToArray();
+                
                 Names = Regex.Split(filterSplits[0], EscapedPipePattern).Select(t => t.Trim()).ToArray();
-                Values = filterSplits.Length > 1
-                    ? Regex.Split(filterSplits[1], EscapedPipePattern)
+
+                if (filterSplits.Length > 2)
+                {
+                    foreach (var match in Regex.Matches(filterSplits[2],EscapePosPatternForOper))
+                    {
+                        var matchStr = match.ToString();
+                        filterSplits[2] = filterSplits[2].Replace('\\' + matchStr, matchStr);
+                    }
+
+                    Values = Regex.Split(filterSplits[2], EscapedPipePattern)
                         .Select(t => t.Replace(PipeToEscape, "|").Trim())
-                        .ToArray()
-                    : null;
-                Operator = Array.Find(Operators, o => value.Contains(o)) ?? "==";
+                        .Select(t => t.Replace(BackslashToEscape, "\\").Trim())
+                        .ToArray();
+                }
+ 
+                Operator = Regex.Match(value,EscapeNegPatternForOper).Value;
                 OperatorParsed = GetOperatorParsed(Operator);
                 OperatorIsCaseInsensitive = Operator.EndsWith("*");
                 OperatorIsNegated = OperatorParsed != FilterOperator.NotEquals && Operator.StartsWith("!");
