@@ -108,7 +108,9 @@ namespace SieveUnitTests
         [Theory]
         [InlineData(@"Author==\null", 100)]
         [InlineData(@"Author==*\null", 100)]
+        [InlineData(@"Author==*\NuLl", 100)]
         [InlineData(@"Author!=*\null", 0, 1, 2)]
+        [InlineData(@"Author!=*\NulL", 0, 1, 2)]
         [InlineData(@"Author!=\null", 0, 1, 2)]
         public void SingleFilter_Equals_NullStringEscaped(string filter, params int[] expectedIds)
         {
