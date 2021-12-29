@@ -68,6 +68,7 @@ namespace Sieve.Services
         where TSortTerm : ISortTerm, new()
     {
         private const string NullFilterValue = "null";
+        private const char EscapeChar = '\\';
         private readonly ISieveCustomSortMethods _customSortMethods;
         private readonly ISieveCustomFilterMethods _customFilterMethods;
         private readonly SievePropertyMapper _mapper = new SievePropertyMapper();
@@ -199,7 +200,7 @@ namespace Sieve.Services
                                 ? Expression.Constant(null, property.PropertyType)
                                 : ConvertStringValueToConstantExpression(filterTermValue, property, converter);
 
-                            if (filterTerm.OperatorIsCaseInsensitive)
+                            if (filterTerm.OperatorIsCaseInsensitive && !isFilterTermValueNull)
                             {
                                 propertyValue = Expression.Call(propertyValue,
                                     typeof(string).GetMethods()
@@ -311,6 +312,10 @@ namespace Sieve.Services
         private static Expression ConvertStringValueToConstantExpression(string value, PropertyInfo property,
             TypeConverter converter)
         {
+            // to allow user to distinguish between prop==null (as null) and prop==\null (as "null"-string)
+            value = value.Equals(EscapeChar + NullFilterValue, StringComparison.InvariantCultureIgnoreCase) 
+                ? value.TrimStart(EscapeChar) 
+                : value;
             dynamic constantVal = converter.CanConvertFrom(typeof(string))
                 ? converter.ConvertFrom(value)
                 : Convert.ChangeType(value, property.PropertyType);

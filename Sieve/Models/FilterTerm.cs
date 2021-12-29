@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -7,8 +8,11 @@ namespace Sieve.Models
     public class FilterTerm : IFilterTerm, IEquatable<FilterTerm>
     {
         private const string EscapedPipePattern = @"(?<!($|[^\\]|^)(\\\\)*?\\)\|";
-        private const string PipeToEscape = @"\|";
-        private const string BackslashToEscape = @"\\";
+        private static readonly HashSet<string> _escapedSequences = new HashSet<string>
+        {
+            @"\|",
+            @"\\"
+        };
         private const string OperatorsRegEx = @"(!@=\*|!_=\*|!=\*|!@=|!_=|==\*|@=\*|_=\*|==|!=|>=|<=|>|<|@=|_=)";
         private const string EscapeNegPatternForOper = @"(?<!\\)" + OperatorsRegEx;
         private const string EscapePosPatternForOper = @"(?<=\\)" + OperatorsRegEx;
@@ -30,8 +34,7 @@ namespace Sieve.Models
                     }
 
                     Values = Regex.Split(filterSplits[2], EscapedPipePattern)
-                        .Select(t => t.Replace(PipeToEscape, "|").Trim())
-                        .Select(t => t.Replace(BackslashToEscape, "\\").Trim())
+                        .Select(UnEscape)
                         .ToArray();
                 }
  
@@ -40,8 +43,11 @@ namespace Sieve.Models
                 OperatorIsCaseInsensitive = Operator.EndsWith("*");
                 OperatorIsNegated = OperatorParsed != FilterOperator.NotEquals && Operator.StartsWith("!");
             }
-
         }
+
+        private string UnEscape(string escapedTerm)
+            => _escapedSequences.Aggregate(escapedTerm,
+                (current, sequence) => Regex.Replace(current, $@"(\\)({sequence})", "$2"));
 
         public string[] Names { get; private set; }
 
