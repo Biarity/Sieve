@@ -38,7 +38,7 @@ namespace SieveUnitTests
                 {
                     Id = 2, 
                     DateCreated = DateTimeOffset.UtcNow, 
-                    Text = "Regular comment without n*ll.",
+                    Text = "Regular comment without n*ll",
                     Author = "Mouse",
                 },
                 new Comment
@@ -47,24 +47,28 @@ namespace SieveUnitTests
                     DateCreated = DateTimeOffset.UtcNow, 
                     Text = null,
                     Author = "null",
-                },
+                }
             }.AsQueryable();
         }
 
-        [Fact]
-        public void Filter_Equals_Null()
+        [Theory]
+        [InlineData("Text==null")]
+        [InlineData("Text==*null")]
+        public void Filter_Equals_Null(string filter)
         {
-            var model = new SieveModel {Filters = "Text==null"};
+            var model = new SieveModel {Filters = filter};
 
             var result = _processor.Apply(model, _comments);
 
             Assert.Equal(100, result.Single().Id);
         }
 
-        [Fact]
-        public void Filter_NotEquals_Null()
+        [Theory]
+        [InlineData("Text!=null")]
+        [InlineData("Text!=*null")]
+        public void Filter_NotEquals_Null(string filter)
         {
-            var model = new SieveModel {Filters = "Text!=null"};
+            var model = new SieveModel {Filters = filter};
 
             var result = _processor.Apply(model, _comments);
 
@@ -93,6 +97,22 @@ namespace SieveUnitTests
         [InlineData("Text|Author_=null", 1, 100)]
         [InlineData("Text|Author_=*null", 1, 100)]
         public void MultiFilter_Contains_NullString(string filter, params int[] expectedIds)
+        {
+            var model = new SieveModel {Filters = filter};
+
+            var result = _processor.Apply(model, _comments);
+
+            Assert.Equal(expectedIds, result.Select(p => p.Id));
+        }
+
+        [Theory]
+        [InlineData(@"Author==\null", 100)]
+        [InlineData(@"Author==*\null", 100)]
+        [InlineData(@"Author==*\NuLl", 100)]
+        [InlineData(@"Author!=*\null", 0, 1, 2)]
+        [InlineData(@"Author!=*\NulL", 0, 1, 2)]
+        [InlineData(@"Author!=\null", 0, 1, 2)]
+        public void SingleFilter_Equals_NullStringEscaped(string filter, params int[] expectedIds)
         {
             var model = new SieveModel {Filters = filter};
 
