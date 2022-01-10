@@ -159,7 +159,10 @@ More formally:
 * `pageSize` is the number of items returned per page 
 
 Notes:
-* You can use backslashes to escape commas and pipes within value fields
+* You can use backslashes to escape special characters and sequences:
+    * commas: `Title@=some\,title` makes a match with "some,title"
+    * pipes: `Title@=some\|title` makes a match with "some|title"
+    * null values: `Title@=\null` will search for items with title equal to "null" (not a missing value, but "null"-string literally)
 * You can have spaces anywhere except *within* `{Name}` or `{Operator}` fields
 * If you need to look at the data before applying pagination (eg. get total count), use the optional paramters on `Apply` to defer pagination (an [example](https://github.com/Biarity/Sieve/issues/34))
 * Here's a [good example on how to work with enumerables](https://github.com/Biarity/Sieve/issues/2)
