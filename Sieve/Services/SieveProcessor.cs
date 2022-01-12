@@ -173,7 +173,7 @@ namespace Sieve.Services
                 return result;
             }
 
-            var cultureInfoToUseForTypeConversion = new CultureInfo(_options.Value.CultureNameOfTypeConversion ?? "en");
+            var cultureInfoToUseForTypeConversion = new CultureInfo(Options.Value.CultureNameOfTypeConversion ?? "en");
 
             Expression outerExpression = null;
             var parameter = Expression.Parameter(typeof(TEntity), "e");
