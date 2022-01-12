@@ -13,10 +13,17 @@ namespace Sieve.Sample.Services
 
         protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
         {
+            // Option 1: Map all properties centrally
             mapper.Property<Post>(p => p.Title)
                 .CanSort()
                 .CanFilter()
                 .HasName("CustomTitleName");
+
+            // Option 2: Manually apply functionally grouped mapping configurations
+            //mapper.ApplyConfiguration<SieveConfigurationForPost>();
+            
+            // Option 3: Scan and apply all configurations
+            //mapper.ApplyConfigurationsFromAssembly(typeof(ApplicationSieveProcessor).Assembly);
 
             return mapper;
         }

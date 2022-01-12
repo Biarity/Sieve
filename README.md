@@ -263,12 +263,77 @@ public class ApplicationSieveProcessor : SieveProcessor
 }
 ```
 
+
+
 Now you should inject the new class instead:
 ```C#
 services.AddScoped<ISieveProcessor, ApplicationSieveProcessor>();
 ```
-
 Find More on Sieve's Fluent API [here](https://github.com/Biarity/Sieve/issues/4#issuecomment-364629048).
+
+### Modular Fluent API configuration
+Adding all fluent mappings directly in the processor can become unwieldy on larger projects.
+It can also clash with vertical architectures.
+To enable functional grouping of mappings the `ISieveConfiguration` interface was created together with extensions to the default mapper.
+```C#
+public class SieveConfigurationForPost : ISieveConfiguration
+{
+    protected override SievePropertyMapper Configure(SievePropertyMapper mapper)
+    {
+        mapper.Property<Post>(p => p.Title)
+            .CanFilter()
+            .HasName("a_different_query_name_here");
+
+        mapper.Property<Post>(p => p.CommentCount)
+            .CanSort();
+
+        mapper.Property<Post>(p => p.DateCreated)
+            .CanSort()
+            .CanFilter()
+            .HasName("created_on");
+
+        return mapper;
+    }
+}
+```
+With the processor simplified to:
+```C#
+public class ApplicationSieveProcessor : SieveProcessor
+{
+    public ApplicationSieveProcessor(
+        IOptions<SieveOptions> options, 
+        ISieveCustomSortMethods customSortMethods, 
+        ISieveCustomFilterMethods customFilterMethods) 
+        : base(options, customSortMethods, customFilterMethods)
+    {
+    }
+
+    protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
+    {
+        return mapper
+            .ApplyConfiguration<SieveConfigurationForPost>()
+            .ApplyConfiguration<SieveConfigurationForComment>();       
+    }
+}
+```
+There is also the option to scan and add all configurations for a given assembly
+```C#
+public class ApplicationSieveProcessor : SieveProcessor
+{
+    public ApplicationSieveProcessor(
+        IOptions<SieveOptions> options, 
+        ISieveCustomSortMethods customSortMethods, 
+        ISieveCustomFilterMethods customFilterMethods) 
+        : base(options, customSortMethods, customFilterMethods)
+    {
+    }
+
+    protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
+    {
+        return mapper.ApplyConfigurationForAssembly(typeof(ApplicationSieveProcessor).Assembly);            
+    }
+}
+```
 
 ## Upgrading to v2.2.0
 
