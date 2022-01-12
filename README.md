@@ -2,7 +2,8 @@
 ⚗️ Sieve is a simple, clean, and extensible framework for .NET Core that **adds sorting, filtering, and pagination functionality out of the box**. 
 Most common use case would be for serving ASP.NET Core GET queries.
 
-[![NuGet Release](https://img.shields.io/nuget/v/Sieve.svg?style=flat-square)](https://www.nuget.org/packages/Sieve)
+[![NuGet Release](https://img.shields.io/nuget/v/Sieve?style=for-the-badge)](https://www.nuget.org/packages/Sieve)
+[![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Sieve?style=for-the-badge)](https://www.nuget.org/packages/Sieve)
 
 [Get Sieve on nuget](https://www.nuget.org/packages/Sieve/)
 
@@ -74,7 +75,7 @@ Where `SieveCustomSortMethodsOfPosts` for example is:
 ```C#
 public class SieveCustomSortMethods : ISieveCustomSortMethods
 {
-    public IQueryable<Post> Popularity(IQueryable<Post> source, bool useThenBy, bool desc) // The method is given an indicator of weather to use ThenBy(), and if the query is descending 
+    public IQueryable<Post> Popularity(IQueryable<Post> source, bool useThenBy, bool desc) // The method is given an indicator of whether to use ThenBy(), and if the query is descending 
     {
         var result = useThenBy ?
             ((IOrderedQueryable<Post>)source).ThenBy(p => p.LikeCount) : // ThenBy only works on IOrderedQueryable<TEntity>
@@ -127,7 +128,8 @@ Then you can add the configuration:
         "CaseSensitive": "boolean: should property names be case-sensitive? Defaults to false",
         "DefaultPageSize": "int number: optional number to fallback to when no page argument is given. Set <=0 to disable paging if no pageSize is specified (default).",
         "MaxPageSize": "int number: maximum allowed page size. Set <=0 to make infinite (default)",
-        "ThrowExceptions": "boolean: should Sieve throw exceptions instead of silently failing? Defaults to false"
+        "ThrowExceptions": "boolean: should Sieve throw exceptions instead of silently failing? Defaults to false",
+        "IgnoreNullsOnNotEqual": "boolean: ignore null values when filtering using is not equal operator? Default to true"
     }
 }
 ```
@@ -157,7 +159,10 @@ More formally:
 * `pageSize` is the number of items returned per page 
 
 Notes:
-* You can use backslashes to escape commas and pipes within value fields
+* You can use backslashes to escape special characters and sequences:
+    * commas: `Title@=some\,title` makes a match with "some,title"
+    * pipes: `Title@=some\|title` makes a match with "some|title"
+    * null values: `Title@=\null` will search for items with title equal to "null" (not a missing value, but "null"-string literally)
 * You can have spaces anywhere except *within* `{Name}` or `{Operator}` fields
 * If you need to look at the data before applying pagination (eg. get total count), use the optional paramters on `Apply` to defer pagination (an [example](https://github.com/Biarity/Sieve/issues/34))
 * Here's a [good example on how to work with enumerables](https://github.com/Biarity/Sieve/issues/2)
@@ -258,12 +263,77 @@ public class ApplicationSieveProcessor : SieveProcessor
 }
 ```
 
+
+
 Now you should inject the new class instead:
 ```C#
 services.AddScoped<ISieveProcessor, ApplicationSieveProcessor>();
 ```
-
 Find More on Sieve's Fluent API [here](https://github.com/Biarity/Sieve/issues/4#issuecomment-364629048).
+
+### Modular Fluent API configuration
+Adding all fluent mappings directly in the processor can become unwieldy on larger projects.
+It can also clash with vertical architectures.
+To enable functional grouping of mappings the `ISieveConfiguration` interface was created together with extensions to the default mapper.
+```C#
+public class SieveConfigurationForPost : ISieveConfiguration
+{
+    protected override SievePropertyMapper Configure(SievePropertyMapper mapper)
+    {
+        mapper.Property<Post>(p => p.Title)
+            .CanFilter()
+            .HasName("a_different_query_name_here");
+
+        mapper.Property<Post>(p => p.CommentCount)
+            .CanSort();
+
+        mapper.Property<Post>(p => p.DateCreated)
+            .CanSort()
+            .CanFilter()
+            .HasName("created_on");
+
+        return mapper;
+    }
+}
+```
+With the processor simplified to:
+```C#
+public class ApplicationSieveProcessor : SieveProcessor
+{
+    public ApplicationSieveProcessor(
+        IOptions<SieveOptions> options, 
+        ISieveCustomSortMethods customSortMethods, 
+        ISieveCustomFilterMethods customFilterMethods) 
+        : base(options, customSortMethods, customFilterMethods)
+    {
+    }
+
+    protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
+    {
+        return mapper
+            .ApplyConfiguration<SieveConfigurationForPost>()
+            .ApplyConfiguration<SieveConfigurationForComment>();       
+    }
+}
+```
+There is also the option to scan and add all configurations for a given assembly
+```C#
+public class ApplicationSieveProcessor : SieveProcessor
+{
+    public ApplicationSieveProcessor(
+        IOptions<SieveOptions> options, 
+        ISieveCustomSortMethods customSortMethods, 
+        ISieveCustomFilterMethods customFilterMethods) 
+        : base(options, customSortMethods, customFilterMethods)
+    {
+    }
+
+    protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
+    {
+        return mapper.ApplyConfigurationForAssembly(typeof(ApplicationSieveProcessor).Assembly);            
+    }
+}
+```
 
 ## Upgrading to v2.2.0
 

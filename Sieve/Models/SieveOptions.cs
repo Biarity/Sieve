@@ -1,4 +1,4 @@
-﻿namespace Sieve.Models
+namespace Sieve.Models
 {
     public class SieveOptions
     {
@@ -9,6 +9,8 @@
         public int MaxPageSize { get; set; } = 0;
 
         public bool ThrowExceptions { get; set; } = false;
+
+        public bool IgnoreNullsOnNotEqual { get; set; } = true;
 
         public string CultureNameOfTypeConversion { get; set; } = "en";
     }

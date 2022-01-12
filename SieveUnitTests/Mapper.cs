@@ -1,40 +1,38 @@
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sieve.Exceptions;
 using Sieve.Models;
+using Sieve.Services;
 using SieveUnitTests.Entities;
 using SieveUnitTests.Services;
+using Xunit;
 
 namespace SieveUnitTests
 {
-    [TestClass]
     public class Mapper
     {
-        private readonly ApplicationSieveProcessor _processor;
         private readonly IQueryable<Post> _posts;
 
         public Mapper()
         {
-            _processor = new ApplicationSieveProcessor(new SieveOptionsAccessor(),
-                new SieveCustomSortMethods(),
-                new SieveCustomFilterMethods());
-
             _posts = new List<Post>
             {
-                new Post() {
+                new Post
+                {
                     Id = 1,
                     ThisHasNoAttributeButIsAccessible = "A",
                     ThisHasNoAttribute = "A",
                     OnlySortableViaFluentApi = 100
                 },
-                new Post() {
+                new Post
+                {
                     Id = 2,
                     ThisHasNoAttributeButIsAccessible = "B",
                     ThisHasNoAttribute = "B",
                     OnlySortableViaFluentApi = 50
                 },
-                new Post() {
+                new Post
+                {
                     Id = 3,
                     ThisHasNoAttributeButIsAccessible = "C",
                     ThisHasNoAttribute = "C",
@@ -43,43 +41,63 @@ namespace SieveUnitTests
             }.AsQueryable();
         }
 
-        [TestMethod]
-        public void MapperWorks()
+        /// <summary>
+        /// Processors with the same mappings but configured via a different method.
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<object[]> GetProcessors()
         {
-            var model = new SieveModel()
+            yield return new object[] { 
+                new ApplicationSieveProcessor(
+                    new SieveOptionsAccessor(),
+                    new SieveCustomSortMethods(),
+                    new SieveCustomFilterMethods())};
+            yield return new object[] { 
+                new ModularConfigurationSieveProcessor(
+                    new SieveOptionsAccessor(),
+                    new SieveCustomSortMethods(),
+                    new SieveCustomFilterMethods())};
+            yield return new object[] { 
+                new ModularConfigurationWithScanSieveProcessor(
+                    new SieveOptionsAccessor(),
+                    new SieveCustomSortMethods(),
+                    new SieveCustomFilterMethods())};
+        }
+        
+        
+        [Theory]
+        [MemberData(nameof(GetProcessors))]
+        public void MapperWorks(ISieveProcessor processor)
+        {
+            var model = new SieveModel
             {
                 Filters = "shortname@=A",
             };
 
-            var result = _processor.Apply(model, _posts);
+            var result = processor.Apply(model, _posts);
 
-            Assert.AreEqual(result.First().ThisHasNoAttributeButIsAccessible, "A");
+            Assert.Equal("A", result.First().ThisHasNoAttributeButIsAccessible);
 
-            Assert.IsTrue(result.Count() == 1);
+            Assert.True(result.Count() == 1);
         }
 
-        [TestMethod]
-        public void MapperSortOnlyWorks()
+        [Theory]
+        [MemberData(nameof(GetProcessors))]
+        public void MapperSortOnlyWorks(ISieveProcessor processor)
         {
-            var model = new SieveModel()
+            var model = new SieveModel
             {
                 Filters = "OnlySortableViaFluentApi@=50",
                 Sorts = "OnlySortableViaFluentApi"
             };
 
-            var result = _processor.Apply(model, _posts, applyFiltering: false, applyPagination: false);
+            var result = processor.Apply(model, _posts, applyFiltering: false, applyPagination: false);
 
-            Assert.ThrowsException<SieveMethodNotFoundException>(() => _processor.Apply(model, _posts));
+            Assert.Throws<SieveMethodNotFoundException>(() => processor.Apply(model, _posts));
 
-            Assert.AreEqual(result.First().Id, 3);
+            Assert.Equal(3, result.First().Id);
 
-            Assert.IsTrue(result.Count() == 3);
+            Assert.True(result.Count() == 3);
         }
     }
 }
-
-//
-//Sorts = "LikeCount",
-//Page = 1,
-//PageSize = 10
-//

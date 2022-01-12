@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -6,44 +7,48 @@ namespace Sieve.Models
 {
     public class FilterTerm : IFilterTerm, IEquatable<FilterTerm>
     {
-        public FilterTerm() { }
+        private const string EscapedPipePattern = @"(?<!($|[^\\]|^)(\\\\)*?\\)\|";
+        private const string OperatorsRegEx = @"(!@=\*|!_=\*|!=\*|!@=|!_=|==\*|@=\*|_=\*|==|!=|>=|<=|>|<|@=|_=)";
+        private const string EscapeNegPatternForOper = @"(?<!\\)" + OperatorsRegEx;
+        private const string EscapePosPatternForOper = @"(?<=\\)" + OperatorsRegEx;
 
-        private const string EscapedPipePattern = @"(?<!($|[^\\])(\\\\)*?\\)\|";
-
-        private static readonly string[] Operators = new string[] {
-                    "!@=*",
-                    "!_=*",
-                    "!=*",
-                    "!@=",
-                    "!_=",
-                    "==*",
-                    "@=*",
-                    "_=*",
-                    "==",
-                    "!=",
-                    ">=",
-                    "<=",
-                    ">",
-                    "<",
-                    "@=",
-                    "_="
+        private static readonly HashSet<string> _escapedSequences = new HashSet<string>
+        {
+            @"\|",
+            @"\\"
         };
 
         public string Filter
         {
             set
             {
-                var filterSplits = value.Split(Operators, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(t => t.Trim()).ToArray();
+                var filterSplits = Regex.Split(value,EscapeNegPatternForOper).Select(t => t.Trim()).ToArray();
+                
                 Names = Regex.Split(filterSplits[0], EscapedPipePattern).Select(t => t.Trim()).ToArray();
-                Values = filterSplits.Length > 1 ? Regex.Split(filterSplits[1], EscapedPipePattern).Select(t => t.Trim()).ToArray() : null;
-                Operator = Array.Find(Operators, o => value.Contains(o)) ?? "==";
+
+                if (filterSplits.Length > 2)
+                {
+                    foreach (var match in Regex.Matches(filterSplits[2],EscapePosPatternForOper))
+                    {
+                        var matchStr = match.ToString();
+                        filterSplits[2] = filterSplits[2].Replace('\\' + matchStr, matchStr);
+                    }
+
+                    Values = Regex.Split(filterSplits[2], EscapedPipePattern)
+                        .Select(UnEscape)
+                        .ToArray();
+                }
+ 
+                Operator = Regex.Match(value,EscapeNegPatternForOper).Value;
                 OperatorParsed = GetOperatorParsed(Operator);
                 OperatorIsCaseInsensitive = Operator.EndsWith("*");
                 OperatorIsNegated = OperatorParsed != FilterOperator.NotEquals && Operator.StartsWith("!");
             }
-
         }
+
+        private string UnEscape(string escapedTerm)
+            => _escapedSequences.Aggregate(escapedTerm,
+                (current, sequence) => Regex.Replace(current, $@"(\\)({sequence})", "$2"));
 
         public string[] Names { get; private set; }
 
@@ -90,6 +95,5 @@ namespace Sieve.Models
                 && Values.SequenceEqual(other.Values)
                 && Operator == other.Operator;
         }
-
     }
 }

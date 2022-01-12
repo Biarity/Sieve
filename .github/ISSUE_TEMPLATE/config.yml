@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature Request
+    url: https://github.com/biarity/sieve/discussions/new
+    about: Share your ideas on how to make Sieve better.
