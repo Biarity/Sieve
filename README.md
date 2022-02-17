@@ -129,7 +129,8 @@ Then you can add the configuration:
         "DefaultPageSize": "int number: optional number to fallback to when no page argument is given. Set <=0 to disable paging if no pageSize is specified (default).",
         "MaxPageSize": "int number: maximum allowed page size. Set <=0 to make infinite (default)",
         "ThrowExceptions": "boolean: should Sieve throw exceptions instead of silently failing? Defaults to false",
-        "IgnoreNullsOnNotEqual": "boolean: ignore null values when filtering using is not equal operator? Default to true"
+        "IgnoreNullsOnNotEqual": "boolean: ignore null values when filtering using is not equal operator? Defaults to true",
+        "DisableNullableTypeExpressionForSorting": "boolean: disable the creation of nullable type expression for sorting. Some databases do not handle it (yet). Defaults to false"
     }
 }
 ```
