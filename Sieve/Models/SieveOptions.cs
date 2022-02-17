@@ -12,6 +12,6 @@
 
         public bool IgnoreNullsOnNotEqual { get; set; } = true;
 
-        public bool DisableSortNullableTypeExpression { get; set; } = false;
+        public bool DisableNullableTypeExpressionForSorting { get; set; } = false;
     }
 }
