@@ -232,7 +232,7 @@ It is recommended that you write exception-handling middleware to globally handl
 You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
 
 ## Fluent API
-To use the Fluent API instead of attributes in marking properties, setup an alternative `SieveProcessor` that overrides `MapProperties`. For example:
+To use the Fluent API instead of attributes in marking properties, setup an alternative `SieveProcessor` that overrides `MapProperties`. For [example](https://github.com/Biarity/Sieve/blob/master/Sieve.Sample/Services/ApplicationSieveProcessor.cs):
 
 ```C#
 public class ApplicationSieveProcessor : SieveProcessor
@@ -279,7 +279,7 @@ To enable functional grouping of mappings the `ISieveConfiguration` interface wa
 ```C#
 public class SieveConfigurationForPost : ISieveConfiguration
 {
-    protected override SievePropertyMapper Configure(SievePropertyMapper mapper)
+    public void Configure(SievePropertyMapper mapper)
     {
         mapper.Property<Post>(p => p.Title)
             .CanFilter()
@@ -331,7 +331,7 @@ public class ApplicationSieveProcessor : SieveProcessor
 
     protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
     {
-        return mapper.ApplyConfigurationForAssembly(typeof(ApplicationSieveProcessor).Assembly);            
+        return mapper.ApplyConfigurationsFromAssembly(typeof(ApplicationSieveProcessor).Assembly);            
     }
 }
 ```
