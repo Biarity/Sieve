@@ -339,6 +339,9 @@ namespace Sieve.Services
                 FilterOperator.StartsWith => Expression.Call(propertyValue,
                     typeof(string).GetMethods().First(m => m.Name == "StartsWith" && m.GetParameters().Length == 1),
                     filterValue),
+                FilterOperator.EndsWith => Expression.Call(propertyValue,
+                typeof(string).GetMethods().First(m => m.Name == "EndsWith" && m.GetParameters().Length == 1),
+                filterValue),
                 _ => Expression.Equal(propertyValue, filterValue)
             };
         }

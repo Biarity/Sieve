@@ -31,7 +31,7 @@ namespace SieveUnitTests
                 {
                     Id = 1,
                     DateCreated = DateTimeOffset.UtcNow, 
-                    Text = "null is here in the text",
+                    Text = "null is here twice in the text ending by null",
                     Author = "Cat",
                 },
                 new Comment
@@ -137,6 +137,21 @@ namespace SieveUnitTests
         }
 
         [Theory]
+        [InlineData("Text_-=null")]
+        [InlineData("Text_-=*null")]
+        [InlineData("Text_-=*NULL")]
+        [InlineData("Text_-=*NulL")]
+        [InlineData("Text_-=*null|text")]
+        public void Filter_EndsWith_NullString(string filter)
+        {
+            var model = new SieveModel { Filters = filter };
+
+            var result = _processor.Apply(model, _comments);
+
+            Assert.Equal(new[] { 1 }, result.Select(p => p.Id));
+        }
+
+        [Theory]
         [InlineData("Text!@=null")]
         [InlineData("Text!@=*null")]
         [InlineData("Text!@=*NULL")]
@@ -163,6 +178,20 @@ namespace SieveUnitTests
             var result = _processor.Apply(model, _comments);
 
             Assert.Equal(new[] {0, 2}, result.Select(p => p.Id));
+        }
+
+        [Theory]
+        [InlineData("Text!_-=null")]
+        [InlineData("Text!_-=*null")]
+        [InlineData("Text!_-=*NULL")]
+        [InlineData("Text!_-=*NulL")]
+        public void Filter_DoesNotEndsWith_NullString(string filter)
+        {
+            var model = new SieveModel { Filters = filter };
+
+            var result = _processor.Apply(model, _comments);
+
+            Assert.Equal(new[] { 0, 2 }, result.Select(p => p.Id));
         }
     }
 }

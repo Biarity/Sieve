@@ -207,10 +207,13 @@ You can replace this DSL with your own (eg. use JSON instead) by implementing an
 | `<=`       | Less than or equal to    |
 | `@=`       | Contains                 |
 | `_=`       | Starts with              |
+| `_-=`      | Ends with                |
 | `!@=`      | Does not Contains        |
 | `!_=`      | Does not Starts with     |
+| `!_-=`     | Does not Ends with       |
 | `@=*`      | Case-insensitive string Contains |
 | `_=*`      | Case-insensitive string Starts with |
+| `_-=*`     | Case-insensitive string Ends with |
 | `==*`      | Case-insensitive string Equals |
 | `!=*`      | Case-insensitive string Not equals |
 | `!@=*`     | Case-insensitive string does not Contains |

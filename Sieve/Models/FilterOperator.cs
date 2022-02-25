@@ -10,5 +10,6 @@
         LessThanOrEqualTo,
         Contains,
         StartsWith,
+        EndsWith,
     }
 }
