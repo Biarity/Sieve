@@ -73,6 +73,16 @@ namespace SieveUnitTests
                     CategoryId = 2,
                     TopComment = new Comment { Id = 1, Text = "D1" },
                     FeaturedComment = new Comment { Id = 7, Text = "D2" }
+                },
+                new Post
+                {
+                    Id = 4,
+                    Title = "Yen",
+                    LikeCount = 5,
+                    IsDraft = true,
+                    CategoryId = 5,
+                    TopComment = new Comment { Id = 4, Text = "Yen3" },
+                    FeaturedComment = new Comment { Id = 8, Text = "Yen4" }
                 }
             }.AsQueryable();
 
@@ -124,7 +134,43 @@ namespace SieveUnitTests
             var result = _processor.Apply(model, _posts);
 
             Assert.Equal(1, result.First().Id);
-            Assert.True(result.Count() == 3);
+            Assert.True(result.Count() == 4);
+        }
+
+        [Fact]
+        public void EndsWithWorks()
+        {
+            var model = new SieveModel
+            {
+                Filters = "Title_-=n"
+            };
+
+            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Values.ToString());
+            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Operator);
+            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].OperatorParsed.ToString());
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.Equal(4, result.First().Id);
+            Assert.True(result.Count() == 1);
+        }
+
+        [Fact]
+        public void EndsWithCanBeCaseInsensitive()
+        {
+            var model = new SieveModel
+            {
+                Filters = "Title_-=*N"
+            };
+
+            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Values.ToString());
+            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Operator);
+            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].OperatorParsed.ToString());
+
+            var result = _processor.Apply(model, _posts);
+
+            Assert.Equal(4, result.First().Id);
+            Assert.True(result.Count() == 1);
         }
 
         [Fact]
@@ -150,7 +196,7 @@ namespace SieveUnitTests
 
             var result = _processor.Apply(model, _posts);
 
-            Assert.True(result.Count() == 3);
+            Assert.True(result.Count() == 4);
         }
 
         [Fact]
@@ -205,8 +251,8 @@ namespace SieveUnitTests
             var result = _processor.Apply(model, _posts);
             var nullableResult = _nullableProcessor.Apply(model, _posts);
 
-            Assert.True(result.Count() == 1);
-            Assert.True(nullableResult.Count() == 2);
+            Assert.True(result.Count() == 2);
+            Assert.True(nullableResult.Count() == 3);
         }
 
         [Theory]
@@ -255,7 +301,7 @@ namespace SieveUnitTests
             var result = _processor.Apply(model, _posts);
 
             Assert.False(result.Any(p => p.Id == 0));
-            Assert.True(result.Count() == 3);
+            Assert.True(result.Count() == 4);
         }
 
         [Fact]
@@ -474,11 +520,12 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
-            Assert.Equal(3, result.Count());
+            Assert.Equal(4, result.Count());
             var posts = result.ToList();
             Assert.Contains("B", posts[0].TopComment.Text);
             Assert.Contains("C", posts[1].TopComment.Text);
             Assert.Contains("D", posts[2].TopComment.Text);
+            Assert.Contains("Yen", posts[3].TopComment.Text);
         }
 
         [Fact]
@@ -490,12 +537,13 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
-            Assert.Equal(4, result.Count());
+            Assert.Equal(5, result.Count());
             var posts = result.ToList();
             Assert.Equal(0, posts[0].Id);
             Assert.Equal(3, posts[1].Id);
             Assert.Equal(2, posts[2].Id);
             Assert.Equal(1, posts[3].Id);
+            Assert.Equal(4, posts[4].Id);
         }
 
         [Fact]
@@ -630,13 +678,15 @@ namespace SieveUnitTests
             };
 
             var result = _processor.Apply(model, _posts);
-            Assert.Equal(4, result.Count());
+            Assert.Equal(5, result.Count());
 
             var posts = result.ToList();
-            Assert.Equal(3,posts[0].Id);
-            Assert.Equal(2,posts[1].Id);
-            Assert.Equal(1,posts[2].Id);
-            Assert.Equal(0,posts[3].Id);
+            Assert.Equal(4, posts[0].Id);
+            Assert.Equal(3,posts[1].Id);
+            Assert.Equal(2,posts[2].Id);
+            Assert.Equal(1,posts[3].Id);
+            Assert.Equal(0,posts[4].Id);
+
         }
 
         [Fact]
@@ -759,10 +809,13 @@ namespace SieveUnitTests
         [InlineData(@"Title@=\>= ")]
         [InlineData(@"Title@=\@= ")]
         [InlineData(@"Title@=\_= ")]
+        [InlineData(@"Title@=\_-= ")]
         [InlineData(@"Title@=!\@= ")]
         [InlineData(@"Title@=!\_= ")]
+        [InlineData(@"Title@=!\_-= ")]
         [InlineData(@"Title@=\@=* ")]
         [InlineData(@"Title@=\_=* ")]
+        [InlineData(@"Title@=\_-=* ")]
         [InlineData(@"Title@=\==* ")]
         [InlineData(@"Title@=\!=* ")]
         [InlineData(@"Title@=!\@=* ")]
@@ -773,7 +826,7 @@ namespace SieveUnitTests
                 new Post
                 {
                     Id = 1,
-                    Title = @"Operators: == != > < >= <= @= _= !@= !_= @=* _=* ==* !=* !@=* !_=* ",
+                    Title = @"Operators: == != > < >= <= @= _= _-= !@= !_= !_-= @=* _=* ==* !=* !@=* !_=* !_-=* ",
                     LikeCount = 1,
                     IsDraft = true,
                     CategoryId = 1,

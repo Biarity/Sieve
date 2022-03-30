@@ -8,7 +8,7 @@ namespace Sieve.Models
     public class FilterTerm : IFilterTerm, IEquatable<FilterTerm>
     {
         private const string EscapedPipePattern = @"(?<!($|[^\\]|^)(\\\\)*?\\)\|";
-        private const string OperatorsRegEx = @"(!@=\*|!_=\*|!=\*|!@=|!_=|==\*|@=\*|_=\*|==|!=|>=|<=|>|<|@=|_=)";
+        private const string OperatorsRegEx = @"(!@=\*|!_=\*|!_-=\*|!=\*|!@=|!_=|!_-=|==\*|@=\*|_=\*|_-=\*|==|!=|>=|<=|>|<|@=|_=|_-=)";
         private const string EscapeNegPatternForOper = @"(?<!\\)" + OperatorsRegEx;
         private const string EscapePosPatternForOper = @"(?<=\\)" + OperatorsRegEx;
 
@@ -22,13 +22,13 @@ namespace Sieve.Models
         {
             set
             {
-                var filterSplits = Regex.Split(value,EscapeNegPatternForOper).Select(t => t.Trim()).ToArray();
-                
+                var filterSplits = Regex.Split(value, EscapeNegPatternForOper).Select(t => t.Trim()).ToArray();
+
                 Names = Regex.Split(filterSplits[0], EscapedPipePattern).Select(t => t.Trim()).ToArray();
 
                 if (filterSplits.Length > 2)
                 {
-                    foreach (var match in Regex.Matches(filterSplits[2],EscapePosPatternForOper))
+                    foreach (var match in Regex.Matches(filterSplits[2], EscapePosPatternForOper))
                     {
                         var matchStr = match.ToString();
                         filterSplits[2] = filterSplits[2].Replace('\\' + matchStr, matchStr);
@@ -38,8 +38,8 @@ namespace Sieve.Models
                         .Select(UnEscape)
                         .ToArray();
                 }
- 
-                Operator = Regex.Match(value,EscapeNegPatternForOper).Value;
+
+                Operator = Regex.Match(value, EscapeNegPatternForOper).Value;
                 OperatorParsed = GetOperatorParsed(Operator);
                 OperatorIsCaseInsensitive = Operator.EndsWith("*");
                 OperatorIsNegated = OperatorParsed != FilterOperator.NotEquals && Operator.StartsWith("!");
@@ -80,6 +80,9 @@ namespace Sieve.Models
                 case "_=":
                 case "!_=":
                     return FilterOperator.StartsWith;
+                case "_-=":
+                case "!_-=":
+                    return FilterOperator.EndsWith;
                 default:
                     return FilterOperator.Equals;
             }
