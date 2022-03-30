@@ -11,5 +11,7 @@
         public bool ThrowExceptions { get; set; } = false;
 
         public bool IgnoreNullsOnNotEqual { get; set; } = true;
+
+        public bool DisableNullableTypeExpressionForSorting { get; set; } = false;
     }
 }

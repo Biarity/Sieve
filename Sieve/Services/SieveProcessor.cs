@@ -365,7 +365,7 @@ namespace Sieve.Services
 
                 if (property != null)
                 {
-                    result = result.OrderByDynamic(fullName, property, sortTerm.Descending, useThenBy);
+                    result = result.OrderByDynamic(fullName, property, sortTerm.Descending, useThenBy, Options.Value.DisableNullableTypeExpressionForSorting);
                 }
                 else
                 {
