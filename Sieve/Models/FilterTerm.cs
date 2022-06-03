@@ -22,19 +22,20 @@ namespace Sieve.Models
         {
             set
             {
-                var filterSplits = Regex.Split(value, EscapeNegPatternForOper).Select(t => t.Trim()).ToArray();
+                var filterSplits = Regex.Split(value, EscapeNegPatternForOper);
 
-                Names = Regex.Split(filterSplits[0], EscapedPipePattern).Select(t => t.Trim()).ToArray();
+                Names = Regex.Split(filterSplits[0].Trim(), EscapedPipePattern).Select(t => t.Trim()).ToArray();
 
                 if (filterSplits.Length > 2)
                 {
-                    foreach (var match in Regex.Matches(filterSplits[2], EscapePosPatternForOper))
+                    var filterValue = string.Join("", filterSplits.Skip(2)).Trim();
+                    foreach (var match in Regex.Matches(filterValue, EscapePosPatternForOper))
                     {
                         var matchStr = match.ToString();
-                        filterSplits[2] = filterSplits[2].Replace('\\' + matchStr, matchStr);
+                        filterValue = filterValue.Replace('\\' + matchStr, matchStr);
                     }
 
-                    Values = Regex.Split(filterSplits[2], EscapedPipePattern)
+                    Values = Regex.Split(filterValue, EscapedPipePattern)
                         .Select(UnEscape)
                         .ToArray();
                 }
