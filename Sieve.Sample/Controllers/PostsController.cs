@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Sieve.Extensions;
 using Sieve.Models;
 using Sieve.Sample.Entities;
 using Sieve.Services;
@@ -23,9 +24,10 @@ namespace Sieve.Sample.Controllers
         [HttpGet]
         public JsonResult GetAllWithSieve(SieveModel sieveModel)
         {
-            var result = _dbContext.Posts.AsNoTracking();
-
-            result = _sieveProcessor.Apply(sieveModel, result);
+            var result = _dbContext.Posts
+                .AsNoTracking()
+                // alternative: result = _sieveProcessor.Apply(sieveModel, result);
+                .Sieve(_sieveProcessor, sieveModel);
 
             return Json(result.ToList());
         }

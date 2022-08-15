@@ -58,6 +58,19 @@ public JsonResult GetPosts(SieveModel sieveModel)
 ```
 You can also explicitly specify if only filtering, sorting, and/or pagination should be applied via optional arguments.
 
+#### Sieve extension method for IQueryable
+
+```C#
+[HttpGet]
+public JsonResult GetPosts(SieveModel sieveModel) 
+{
+    var result = _dbContext.Posts
+                    .AsNoTracking(); // Makes read-only queries faster
+                    .Sieve(_sieveProcessor, sieveModel); // Returns `result` after applying the sort/filter/page query in `SieveModel` to it
+    return Json(result.ToList());
+}
+```
+
 ### 4. Send a request
 
 [Send a request](#send-a-request)
