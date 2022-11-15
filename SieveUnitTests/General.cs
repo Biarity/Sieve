@@ -39,7 +39,7 @@ namespace SieveUnitTests
                 {
                     Id = 0,
                     Title = "A",
-                    LikeCount = 100,
+                    LikeCount = 500,
                     IsDraft = true,
                     CategoryId = null,
                     TopComment = new Comment { Id = 0, Text = "A1" },
@@ -253,6 +253,108 @@ namespace SieveUnitTests
 
             Assert.True(result.Count() == 2);
             Assert.True(nullableResult.Count() == 3);
+        }
+        
+        [Theory]
+        [InlineData(5)]
+        [InlineData(0)]
+        public void CanFilterIntsUsingContainsOperator(int likeCount)
+        {
+            var model = new SieveModel
+            {
+                Filters = $"LikeCount@={likeCount}"
+            };
+        
+            var result = _processor.Apply(model, _posts);
+        
+            Assert.True(result.Count() == 3);
+        }
+        
+        [Theory]
+        [InlineData(5)]
+        [InlineData(0)]
+        public void CanFilterIntsUsingCaseInsensitiveContainsOperator(int likeCount)
+        {
+            var model = new SieveModel
+            {
+                Filters = $"LikeCount@=*{likeCount}"
+            };
+        
+            var result = _processor.Apply(model, _posts);
+        
+            Assert.True(result.Count() == 3);
+        }
+        
+        [Theory]
+        [InlineData(5)]
+        [InlineData(0)]
+        public void CanFilterIntsUsingDoesNotContainsOperator(int likeCount)
+        {
+            var model = new SieveModel
+            {
+                Filters = $"LikeCount!@={likeCount}"
+            };
+        
+            var result = _processor.Apply(model, _posts);
+        
+            Assert.True(result.Count() == 2);
+        }
+        
+        [Theory]
+        [InlineData(5)]
+        [InlineData(0)]
+        public void CanFilterIntsUsingCaseInsensitiveDoesNotContainsOperator(int likeCount)
+        {
+            var model = new SieveModel
+            {
+                Filters = $"LikeCount!@=*{likeCount}"
+            };
+        
+            var result = _processor.Apply(model, _posts);
+        
+            Assert.True(result.Count() == 2);
+        }
+        
+        [Theory]
+        [InlineData(5)]
+        public void CanFilterIntsUsingCaseInsensitiveDoesNotStartsWithOperator(int likeCount)
+        {
+            var model = new SieveModel
+            {
+                Filters = $"LikeCount!_=*{likeCount}"
+            };
+        
+            var result = _processor.Apply(model, _posts);
+        
+            Assert.True(result.Count() == 2);
+        }
+        
+        [Theory]
+        [InlineData(5)]
+        public void CanFilterIntsUsingStartsWithOperator(int likeCount)
+        {
+            var model = new SieveModel
+            {
+                Filters = $"LikeCount_={likeCount}"
+            };
+        
+            var result = _processor.Apply(model, _posts);
+        
+            Assert.True(result.Count() == 3);
+        }
+        
+        [Theory]
+        [InlineData(0)]
+        public void CanFilterIntsUsingEndsWithOperator(int likeCount)
+        {
+            var model = new SieveModel
+            {
+                Filters = $"LikeCount_-={likeCount}"
+            };
+        
+            var result = _processor.Apply(model, _posts);
+        
+            Assert.True(result.Count() == 3);
         }
 
         [Theory]
