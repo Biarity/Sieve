@@ -202,13 +202,8 @@ namespace Sieve.Services
 
                             if (filterTerm.OperatorIsCaseInsensitive && !isFilterTermValueNull)
                             {
-                                propertyValue = Expression.Call(propertyValue,
-                                    typeof(string).GetMethods()
-                                        .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
-
-                                filterValue = Expression.Call(filterValue,
-                                    typeof(string).GetMethods()
-                                        .First(m => m.Name == "ToUpper" && m.GetParameters().Length == 0));
+                                propertyValue = GetStringMethodExpression(propertyValue, "ToUpper");
+                                filterValue = GetStringMethodExpression(filterValue, "ToUpper");
                             }
 
                             var expression = GetExpression(filterTerm, filterValue, propertyValue);
@@ -333,18 +328,29 @@ namespace Sieve.Services
                 FilterOperator.LessThan => Expression.LessThan(propertyValue, filterValue),
                 FilterOperator.GreaterThanOrEqualTo => Expression.GreaterThanOrEqual(propertyValue, filterValue),
                 FilterOperator.LessThanOrEqualTo => Expression.LessThanOrEqual(propertyValue, filterValue),
-                FilterOperator.Contains => Expression.Call(propertyValue,
-                    typeof(string).GetMethods().First(m => m.Name == "Contains" && m.GetParameters().Length == 1),
-                    filterValue),
-                FilterOperator.StartsWith => Expression.Call(propertyValue,
-                    typeof(string).GetMethods().First(m => m.Name == "StartsWith" && m.GetParameters().Length == 1),
-                    filterValue),
-                FilterOperator.EndsWith => Expression.Call(propertyValue,
-                typeof(string).GetMethods().First(m => m.Name == "EndsWith" && m.GetParameters().Length == 1),
-                filterValue),
+                FilterOperator.Contains => GetStringMethodExpression(filterValue, propertyValue, "Contains"),
+                FilterOperator.StartsWith => GetStringMethodExpression(filterValue, propertyValue, "StartsWith"),
+                FilterOperator.EndsWith => GetStringMethodExpression(filterValue, propertyValue, "EndsWith"),
                 _ => Expression.Equal(propertyValue, filterValue)
             };
         }
+
+        private static Expression GetStringMethodExpression(dynamic filterValue, dynamic propertyValue, string methodName) =>
+            propertyValue.Type == typeof(string) && filterValue.Type == typeof(string)
+                ? Expression.Call(propertyValue, GetStringMethod(methodName, 1), filterValue)
+                : Expression.Call(CallToString(propertyValue), GetStringMethod(methodName, 1), CallToString(filterValue));
+
+        private static Expression GetStringMethodExpression(dynamic propertyValue, string methodName) =>
+            propertyValue.Type == typeof(string)
+                ? Expression.Call(propertyValue, GetStringMethod(methodName, 0))
+                : Expression.Call(CallToString(propertyValue), GetStringMethod(methodName, 0));
+
+        private static Expression CallToString(dynamic value) =>
+            Expression.Call(value, typeof(object).GetMethod("ToString"));
+
+        private static MethodInfo GetStringMethod(string methodName, int paramCount) =>
+            typeof(string).GetMethods()
+                .First(m => m.Name == methodName && m.GetParameters().Length == paramCount);
 
         // Workaround to ensure that the filter value gets passed as a parameter in generated SQL from EF Core
         private static Expression GetClosureOverConstant<T>(T constant, Type targetType)
