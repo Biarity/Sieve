@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -122,6 +123,9 @@ namespace Sieve.Services
             object[] dataForCustomMethods = null, bool applyFiltering = true, bool applySorting = true,
             bool applyPagination = true)
         {
+            var currentCultureInfo = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = Options.Value.CultureInfo;
+            
             var result = source;
 
             if (model == null)
@@ -161,6 +165,10 @@ namespace Sieve.Services
                 }
 
                 throw new SieveException(ex.Message, ex);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = currentCultureInfo;
             }
         }
 

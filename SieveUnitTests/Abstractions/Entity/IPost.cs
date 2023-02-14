@@ -9,6 +9,8 @@ namespace SieveUnitTests.Abstractions.Entity
         string Title { get; set; }
         [Sieve(CanFilter = true, CanSort = true)]
         int LikeCount { get; set; }
+        [Sieve(CanFilter = true)]
+        float MeanRating { get; set; }
         [Sieve(CanFilter = true, CanSort = true)]
         int CommentCount { get; set; }
         [Sieve(CanFilter = true, CanSort = true)]

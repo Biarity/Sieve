@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Sieve.Exceptions;
 using Sieve.Models;
@@ -40,6 +41,7 @@ namespace SieveUnitTests
                     Id = 0,
                     Title = "A",
                     LikeCount = 100,
+                    MeanRating = 3.5f,
                     IsDraft = true,
                     CategoryId = null,
                     TopComment = new Comment { Id = 0, Text = "A1" },
@@ -50,6 +52,7 @@ namespace SieveUnitTests
                     Id = 1,
                     Title = "B",
                     LikeCount = 50,
+                    MeanRating = 3.5f,
                     IsDraft = false,
                     CategoryId = 1,
                     TopComment = new Comment { Id = 3, Text = "B1" },
@@ -60,6 +63,7 @@ namespace SieveUnitTests
                     Id = 2,
                     Title = "C",
                     LikeCount = 0,
+                    MeanRating = 3.5f,
                     CategoryId = 1,
                     TopComment = new Comment { Id = 2, Text = "C1" },
                     FeaturedComment = new Comment { Id = 6, Text = "C2" }
@@ -69,6 +73,7 @@ namespace SieveUnitTests
                     Id = 3,
                     Title = "D",
                     LikeCount = 3,
+                    MeanRating = 3.5f,
                     IsDraft = true,
                     CategoryId = 2,
                     TopComment = new Comment { Id = 1, Text = "D1" },
@@ -79,6 +84,7 @@ namespace SieveUnitTests
                     Id = 4,
                     Title = "Yen",
                     LikeCount = 5,
+                    MeanRating = 3.5f,
                     IsDraft = true,
                     CategoryId = 5,
                     TopComment = new Comment { Id = 4, Text = "Yen3" },
@@ -846,6 +852,78 @@ namespace SieveUnitTests
 
             Assert.NotNull(entry);
             Assert.Equal(1, resultCount);
+        }
+        
+        
+         [Theory]
+        [InlineData("en-US", "1.2")]
+        [InlineData("de-DE", @"1\,2")]
+        public void ParseFloatsWithChangedCultureInfo_Works(string culture, string value)
+        {
+            // ARRANGE
+            var posts = new List<Post>
+            {
+                new Post
+                {
+                    Id = 1,
+                    Title = "E\\",
+                    LikeCount = 4,
+                    MeanRating = 1.2f,
+                    IsDraft = true,
+                    CategoryId = 1,
+                    TopComment = new Comment { Id = 1, Text = "E1" },
+                    FeaturedComment = new Comment { Id = 7, Text = "E2" }
+                }
+            }.AsQueryable();
+
+            var optionsAccessor = new SieveOptionsAccessor();
+            optionsAccessor.Value.CultureInfo = new CultureInfo(culture, false);
+
+            var processor = new ApplicationSieveProcessor(optionsAccessor,
+                new SieveCustomSortMethods(),
+                new SieveCustomFilterMethods());
+
+            var model = new SieveModel() { Filters = $"MeanRating=={value}" };
+
+            // ACT
+            var result = processor.Apply(model, posts);
+            
+            // ASSERT
+            Assert.NotNull(result);
+        }
+
+        [Theory]
+        [InlineData("en-US", @"1\,2")]
+        [InlineData("de-DE", "1.2")]
+        public void ParseFloatsWithChangedCultureInfo_Fails(string culture, string value)
+        {
+            // ARRANGE
+            var posts = new List<Post>
+            {
+                new Post
+                {
+                    Id = 1,
+                    Title = "E\\",
+                    LikeCount = 4,
+                    MeanRating = 1.9f,
+                    IsDraft = true,
+                    CategoryId = 1,
+                    TopComment = new Comment { Id = 1, Text = "E1" },
+                    FeaturedComment = new Comment { Id = 7, Text = "E2" }
+                }
+            }.AsQueryable();
+
+            var optionsAccessor = new SieveOptionsAccessor();
+            optionsAccessor.Value.CultureInfo = new CultureInfo(culture, false);
+
+            var processor = new ApplicationSieveProcessor(optionsAccessor,
+                new SieveCustomSortMethods(),
+                new SieveCustomFilterMethods());
+
+            var model = new SieveModel() { Filters = $"MeanRating=={value}" };
+
+            // ACT, ASSERT
+            Assert.Throws<SieveException>(() => processor.Apply(model, posts));
         }
         
     }
