@@ -289,7 +289,7 @@ namespace Sieve.Services
             var names = fullPropertyName.Split('.');
             for (var i = 0; i < names.Length; i++)
             {
-                propertyValue = Expression.PropertyOrField(propertyValue, names[i]);
+                propertyValue = propertyValue.GeneratePropertyAccess(names[i]);
 
                 if (i != names.Length - 1 && propertyValue.Type.IsNullable())
                 {
@@ -368,7 +368,7 @@ namespace Sieve.Services
 
                 if (property != null)
                 {
-                    result = result.OrderByDynamic(fullName, property, sortTerm.Descending, useThenBy, Options.Value.DisableNullableTypeExpressionForSorting);
+                    result = result.OrderByDynamic(fullName, sortTerm.Descending, useThenBy, Options.Value.DisableNullableTypeExpressionForSorting);
                 }
                 else
                 {

@@ -10,5 +10,8 @@ namespace SieveUnitTests.Entities
 
         [Sieve(CanFilter = true, CanSort = true)]
         public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
+
+        public string DeletedBy { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }

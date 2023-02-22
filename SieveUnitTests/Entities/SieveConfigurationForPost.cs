@@ -4,8 +4,12 @@ namespace SieveUnitTests.Entities
 {
     public class SieveConfigurationForPost : ISieveConfiguration
     {
-        public void Configure(SievePropertyMapper mapper)
+        public static void ConfigureStatic(SievePropertyMapper mapper)
         {
+            mapper
+                .Property<Post>(p => p.Id)
+                .CanSort();
+
             mapper.Property<Post>(p => p.ThisHasNoAttributeButIsAccessible)
                 .CanSort()
                 .CanFilter()
@@ -32,6 +36,21 @@ namespace SieveUnitTests.Entities
                 .Property<Post>(p => p.DateCreated)
                 .CanSort()
                 .HasName("CreateDate");
+
+            mapper
+                .Property<Post>(post => post.DeletedBy)
+                .CanSort()
+                .HasName("DeletedBy");
+
+            mapper
+                .Property<Post>(post => post.UpdatedBy)
+                .CanFilter()
+                .HasName("UpdatedBy");
+        }
+
+        public void Configure(SievePropertyMapper mapper)
+        {
+            ConfigureStatic(mapper);
         }
     }
 }
