@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using GlobExpressions;
 using Nuke.Common;
 using Nuke.Common.CI;
