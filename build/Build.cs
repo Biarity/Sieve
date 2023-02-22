@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using GlobExpressions;
 using Nuke.Common;
 using Nuke.Common.CI;
@@ -13,7 +13,6 @@ using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
-[CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
 [GitHubActions("ci", GitHubActionsImage.UbuntuLatest,
     OnPullRequestBranches = new[] {"master", "releases/*"},
@@ -34,7 +33,7 @@ class Build : NukeBuild
 
     [GitRepository] readonly GitRepository GitRepository;
 
-    [GitVersion(Framework = "netcoreapp3.1")] readonly GitVersion GitVersion;
+    [GitVersion] readonly GitVersion GitVersion;
 
     [Solution] readonly Solution Solution;
 
@@ -102,8 +101,14 @@ class Build : NukeBuild
         .Requires(() => Configuration.Equals(Configuration.Release))
         .Executes(() =>
         {
-            Glob.Files(OutputDirectory, "*.nupkg")
-                .NotEmpty()
+            var files = Glob
+                .Files(OutputDirectory, "*.nupkg")
+                .NotNull()
+                .ToList();
+
+            Assert.NotEmpty(files);
+
+            files
                 .ForEach(x =>
                 {
                     DotNetNuGetPush(s => s

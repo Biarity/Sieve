@@ -1,9 +1,10 @@
 ﻿using Sieve.Attributes;
+using SieveUnitTests.Abstractions.Strategy;
 using SieveUnitTests.Entities;
 
 namespace SieveUnitTests.Abstractions.Entity
 {
-    public interface IPost: IBaseEntity
+    public interface IPost: IBaseEntity, IAudit
     {
         [Sieve(CanFilter = true, CanSort = true)]
         string Title { get; set; }

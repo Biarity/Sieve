@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Sieve.Exceptions;
 using Sieve.Models;
-using Sieve.Services;
 using SieveUnitTests.Entities;
 using SieveUnitTests.Services;
 using Xunit;
@@ -11,28 +10,14 @@ using Xunit.Abstractions;
 
 namespace SieveUnitTests
 {
-    public class General
+    public class General: TestBase
     {
-        private readonly ITestOutputHelper _testOutputHelper;
-        private readonly SieveProcessor _processor;
-        private readonly SieveProcessor _nullableProcessor;
         private readonly IQueryable<Post> _posts;
         private readonly IQueryable<Comment> _comments;
 
         public General(ITestOutputHelper testOutputHelper)
+        : base(testOutputHelper)
         {
-            var nullableAccessor = new SieveOptionsAccessor();
-            nullableAccessor.Value.IgnoreNullsOnNotEqual = false;
-
-            _testOutputHelper = testOutputHelper;
-            _processor = new ApplicationSieveProcessor(new SieveOptionsAccessor(),
-                new SieveCustomSortMethods(),
-                new SieveCustomFilterMethods());
-
-            _nullableProcessor = new ApplicationSieveProcessor(nullableAccessor,
-                new SieveCustomSortMethods(),
-                new SieveCustomFilterMethods());
-
             _posts = new List<Post>
             {
                 new Post
@@ -77,6 +62,16 @@ namespace SieveUnitTests
                 new Post
                 {
                     Id = 4,
+                    Title = "E",
+                    LikeCount = 5,
+                    IsDraft = false,
+                    CategoryId = null,
+                    TopComment = new Comment { Id = 4, Text = "E1" },
+                    UpdatedBy = "You"
+                },
+                new Post
+                {
+                    Id = 5,
                     Title = "Yen",
                     LikeCount = 5,
                     IsDraft = true,
@@ -117,12 +112,15 @@ namespace SieveUnitTests
                 Filters = "Title@=*a"
             };
 
-            var result = _processor.Apply(model, _posts);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
 
-            Assert.Equal(0, result.First().Id);
-            Assert.True(result.Count() == 1);
+                Assert.Equal(0, result.First().Id);
+                Assert.True(result.Count() == 1);
+            }
         }
-
+        
         [Fact]
         public void NotEqualsCanBeCaseInsensitive()
         {
@@ -131,10 +129,13 @@ namespace SieveUnitTests
                 Filters = "Title!=*a"
             };
 
-            var result = _processor.Apply(model, _posts);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
 
-            Assert.Equal(1, result.First().Id);
-            Assert.True(result.Count() == 4);
+                Assert.Equal(1, result.First().Id);
+                Assert.True(result.Count() == _posts.Count(post => !post.Title.Contains("a", StringComparison.OrdinalIgnoreCase)));
+            }
         }
 
         [Fact]
@@ -145,14 +146,17 @@ namespace SieveUnitTests
                 Filters = "Title_-=n"
             };
 
-            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Values.ToString());
-            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Operator);
-            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].OperatorParsed.ToString());
+            TestOutputHelper.WriteLine(model.GetFiltersParsed()[0].Values.ToString());
+            TestOutputHelper.WriteLine(model.GetFiltersParsed()[0].Operator);
+            TestOutputHelper.WriteLine(model.GetFiltersParsed()[0].OperatorParsed.ToString());
 
-            var result = _processor.Apply(model, _posts);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
 
-            Assert.Equal(4, result.First().Id);
-            Assert.True(result.Count() == 1);
+                Assert.Equal(_posts.First(post => post.Title.EndsWith("n")).Id, result.First().Id);
+                Assert.True(result.Count() == 1);
+            }
         }
 
         [Fact]
@@ -163,27 +167,30 @@ namespace SieveUnitTests
                 Filters = "Title_-=*N"
             };
 
-            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Values.ToString());
-            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Operator);
-            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].OperatorParsed.ToString());
+            TestOutputHelper.WriteLine(model.GetFiltersParsed()[0].Values.ToString());
+            TestOutputHelper.WriteLine(model.GetFiltersParsed()[0].Operator);
+            TestOutputHelper.WriteLine(model.GetFiltersParsed()[0].OperatorParsed.ToString());
 
-            var result = _processor.Apply(model, _posts);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
 
-            Assert.Equal(4, result.First().Id);
-            Assert.True(result.Count() == 1);
+                Assert.Equal(_posts.First(post => post.Title.EndsWith("N", StringComparison.OrdinalIgnoreCase)).Id, result.First().Id);
+                Assert.True(result.Count() == 1);
+            }
         }
 
         [Fact]
         public void ContainsIsCaseSensitive()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "Title@=a", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "Title@=a",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-
-            Assert.True(!result.Any());
+                Assert.True(!result.Any());
+            }
         }
 
         [Fact]
@@ -194,65 +201,70 @@ namespace SieveUnitTests
                 Filters = "Title!@=D",
             };
 
-            var result = _processor.Apply(model, _posts);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
 
-            Assert.True(result.Count() == 4);
+                Assert.True(result.Count() == _posts.Count(post => !post.Title.Contains("D")));
+            }
         }
 
         [Fact]
         public void CanFilterBools()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "IsDraft==false" };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "IsDraft==false"
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-
-            Assert.True(result.Count() == 2);
+                Assert.True(result.Count() == _posts.Count(post => !post.IsDraft));
+            }
         }
 
         [Fact]
         public void CanSortBools()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Sorts = "-IsDraft" };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Sorts = "-IsDraft"
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-
-            Assert.Equal(0, result.First().Id);
+                Assert.Equal(0, result.First().Id);
+            }
         }
 
         [Fact]
         public void CanFilterNullableInts()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "CategoryId==1" };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "CategoryId==1"
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-            var nullableResult = _nullableProcessor.Apply(model, _posts);
-
-            Assert.True(result.Count() == 2);
-            Assert.True(nullableResult.Count() == 2);
+                Assert.True(result.Count() == _posts.Count(post => post.CategoryId == 1));
+            }
         }
 
         [Fact]
         public void CanFilterNullableIntsWithNotEqual()
         {
-            var model = new SieveModel()
+            var model = new SieveModel() { Filters = "CategoryId!=1" };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "CategoryId!=1"
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-            var nullableResult = _nullableProcessor.Apply(model, _posts);
-
-            Assert.True(result.Count() == 2);
-            Assert.True(nullableResult.Count() == 3);
+                Assert.Equal
+                (
+                    (sieveProcessor as ApplicationSieveProcessor)?.ExposedOptions.IgnoreNullsOnNotEqual ?? true
+                        ? _posts.Count(post => post.CategoryId != null && post.CategoryId != 1)
+                        : _posts.Count(post => post.CategoryId != 1),
+                    result.Count()
+                );
+            }
         }
 
         [Theory]
@@ -267,97 +279,100 @@ namespace SieveUnitTests
                 Filters = filter
             };
 
-            var result = _processor.Apply(model, _comments);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _comments);
 
-            Assert.True(result.Count() == 1);
+                Assert.True(result.Count() == 1);
+            }
         }
 
         [Fact]
         public void EqualsDoesntFailWithNonStringTypes()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "LikeCount==50", };
+
+            TestOutputHelper.WriteLine(model.GetFiltersParsed()[0].Values.ToString());
+            TestOutputHelper.WriteLine(model.GetFiltersParsed()[0].Operator);
+            TestOutputHelper.WriteLine(model.GetFiltersParsed()[0].OperatorParsed.ToString());
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "LikeCount==50",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Values.ToString());
-            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].Operator);
-            _testOutputHelper.WriteLine(model.GetFiltersParsed()[0].OperatorParsed.ToString());
-
-            var result = _processor.Apply(model, _posts);
-
-            Assert.Equal(1, result.First().Id);
-            Assert.True(result.Count() == 1);
+                Assert.Equal(1, result.First().Id);
+                Assert.True(result.Count() == 1);
+            }
         }
 
         [Fact]
         public void CustomFiltersWork()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "Isnew", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "Isnew",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-
-            Assert.False(result.Any(p => p.Id == 0));
-            Assert.True(result.Count() == 4);
+                Assert.False(result.Any(p => p.Id == 0));
+                Assert.True(result.Count() == _posts.Count(SieveCustomFilterMethods.IsNewFilterForPost));
+            }
         }
 
         [Fact]
         public void CustomGenericFiltersWork()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "Latest", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "Latest",
-            };
+                var result = sieveProcessor.Apply(model, _comments);
 
-            var result = _processor.Apply(model, _comments);
-
-            Assert.False(result.Any(p => p.Id == 0));
-            Assert.True(result.Count() == 2);
+                Assert.False(result.Any(p => p.Id == 0));
+                Assert.True(result.Count() == 2);
+            }
         }
 
         [Fact]
         public void CustomFiltersWithOperatorsWork()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "HasInTitle==A", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "HasInTitle==A",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-
-            Assert.True(result.Any(p => p.Id == 0));
-            Assert.True(result.Count() == 1);
+                Assert.True(result.Any(p => p.Id == 0));
+                Assert.True(result.Count() == 1);
+            }
         }
 
         [Fact]
         public void CustomFiltersMixedWithUsualWork1()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "Isnew,CategoryId==2", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "Isnew,CategoryId==2",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-
-            Assert.True(result.Any(p => p.Id == 3));
-            Assert.True(result.Count() == 1);
+                Assert.True(result.Any(p => p.Id == 3));
+                Assert.True(result.Count() == 1);
+            }
         }
 
         [Fact]
         public void CustomFiltersMixedWithUsualWork2()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "CategoryId==2,Isnew", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "CategoryId==2,Isnew",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-
-            Assert.True(result.Any(p => p.Id == 3));
-            Assert.True(result.Count() == 1);
+                Assert.True(result.Any(p => p.Id == 3));
+                Assert.True(result.Count() == 1);
+            }
         }
 
         [Fact]
@@ -368,85 +383,91 @@ namespace SieveUnitTests
                 Filters = "CategoryId==2,Isnew",
             };
 
-            var postResult = _processor.Apply(postModel, _posts);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var postResult = sieveProcessor.Apply(postModel, _posts);
 
-            Assert.True(postResult.Any(p => p.Id == 3));
-            Assert.Equal(1, postResult.Count());
+                Assert.True(postResult.Any(p => p.Id == 3));
+                Assert.Equal(1, postResult.Count());
+            }
 
             var commentModel = new SieveModel
             {
                 Filters = "Isnew",
             };
 
-            var commentResult = _processor.Apply(commentModel, _comments);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var commentResult = sieveProcessor.Apply(commentModel, _comments);
 
-            Assert.True(commentResult.Any(c => c.Id == 2));
-            Assert.Equal(2, commentResult.Count());
+                Assert.True(commentResult.Any(c => c.Id == 2));
+                Assert.Equal(2, commentResult.Count());
+            }
         }
 
         [Fact]
         public void CustomSortsWork()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Sorts = "Popularity", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Sorts = "Popularity",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-
-            Assert.False(result.First().Id == 0);
+                Assert.False(result.First().Id == 0);
+            }
         }
 
         [Fact]
         public void CustomGenericSortsWork()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Sorts = "Oldest", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Sorts = "Oldest",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
 
-            var result = _processor.Apply(model, _posts);
-
-            Assert.True(result.Last().Id == 0);
+                Assert.True(result.Last().Id == 0);
+            }
         }
 
         [Fact]
         public void MethodNotFoundExceptionWork()
         {
-            var model = new SieveModel
-            {
-                Filters = "does not exist",
-            };
+            var model = new SieveModel { Filters = "does not exist", };
 
-            Assert.Throws<SieveMethodNotFoundException>(() => _processor.Apply(model, _posts));
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                Assert.Throws<SieveMethodNotFoundException>(() => sieveProcessor.Apply(model, _posts));
+            }
         }
 
         [Fact]
         public void IncompatibleMethodExceptionsWork()
         {
-            var model = new SieveModel
-            {
-                Filters = "TestComment",
-            };
+            var model = new SieveModel { Filters = "TestComment", };
 
-            Assert.Throws<SieveIncompatibleMethodException>(() => _processor.Apply(model, _posts));
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                Assert.Throws<SieveIncompatibleMethodException>(() => sieveProcessor.Apply(model, _posts));
+            }
         }
 
         [Fact]
         public void OrNameFilteringWorks()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "(Title|LikeCount)==3", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "(Title|LikeCount)==3",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
+                var entry = result.FirstOrDefault();
+                var resultCount = result.Count();
 
-            var result = _processor.Apply(model, _posts);
-            var entry = result.FirstOrDefault();
-            var resultCount = result.Count();
-
-            Assert.NotNull(entry);
-            Assert.Equal(1, resultCount);
-            Assert.Equal(3, entry.Id);
+                Assert.NotNull(entry);
+                Assert.Equal(1, resultCount);
+                Assert.Equal(3, entry.Id);
+            }
         }
 
         [Theory]
@@ -454,96 +475,105 @@ namespace SieveUnitTests
         [InlineData("(CategoryId|LikeCount)==50,CategoryId==1")]
         public void CombinedAndOrFilterIndependentOfOrder(string filter)
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = filter, };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = filter,
-            };
+                var result = sieveProcessor.Apply(model, _posts);
+                var entry = result.FirstOrDefault();
+                var resultCount = result.Count();
 
-            var result = _processor.Apply(model, _posts);
-            var entry = result.FirstOrDefault();
-            var resultCount = result.Count();
-
-            Assert.NotNull(entry);
-            Assert.Equal(1, resultCount);
+                Assert.NotNull(entry);
+                Assert.Equal(1, resultCount);
+            }
         }
 
         [Fact]
         public void CombinedAndOrWithSpaceFilteringWorks()
         {
-            var model = new SieveModel
+            var model = new SieveModel { Filters = "Title==D, (Title|LikeCount)==3", };
+
+            foreach (var sieveProcessor in GetProcessors())
             {
-                Filters = "Title==D, (Title|LikeCount)==3",
-            };
+                var result = sieveProcessor.Apply(model, _posts);
+                var entry = result.FirstOrDefault();
+                var resultCount = result.Count();
 
-            var result = _processor.Apply(model, _posts);
-            var entry = result.FirstOrDefault();
-            var resultCount = result.Count();
-
-            Assert.NotNull(entry);
-            Assert.Equal(1, resultCount);
-            Assert.Equal(3, entry.Id);
+                Assert.NotNull(entry);
+                Assert.Equal(1, resultCount);
+                Assert.Equal(3, entry.Id);
+            }
         }
 
         [Fact]
         public void OrValueFilteringWorks()
         {
-            var model = new SieveModel
-            {
-                Filters = "Title==C|D",
-            };
+            var model = new SieveModel { Filters = "Title==C|D", };
 
-            var result = _processor.Apply(model, _posts);
-            Assert.Equal(2, result.Count());
-            Assert.True(result.Any(p => p.Id == 2));
-            Assert.True(result.Any(p => p.Id == 3));
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
+                Assert.Equal(2, result.Count());
+                Assert.True(result.Any(p => p.Id == 2));
+                Assert.True(result.Any(p => p.Id == 3));
+            }
         }
 
         [Fact]
         public void OrValueFilteringWorks2()
         {
-            var model = new SieveModel
-            {
-                Filters = "Text@=(|)",
-            };
+            var model = new SieveModel { Filters = "Text@=(|)", };
 
-            var result = _processor.Apply(model, _comments);
-            Assert.Equal(1, result.Count());
-            Assert.Equal(2, result.FirstOrDefault()?.Id);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _comments);
+                Assert.Equal(1, result.Count());
+                Assert.Equal(2, result.FirstOrDefault()?.Id);
+            }
         }
 
         [Fact]
         public void NestedFilteringWorks()
         {
-            var model = new SieveModel
-            {
-                Filters = "TopComment.Text!@=A",
-            };
+            var model = new SieveModel { Filters = "TopComment.Text!@=A", };
 
-            var result = _processor.Apply(model, _posts);
-            Assert.Equal(4, result.Count());
-            var posts = result.ToList();
-            Assert.Contains("B", posts[0].TopComment.Text);
-            Assert.Contains("C", posts[1].TopComment.Text);
-            Assert.Contains("D", posts[2].TopComment.Text);
-            Assert.Contains("Yen", posts[3].TopComment.Text);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
+                Assert.Equal(_posts.Count(post => !post.TopComment.Text.Contains("A")), result.Count());
+                var posts = result.ToList();
+                Assert.Contains("B", posts[0].TopComment.Text);
+                Assert.Contains("C", posts[1].TopComment.Text);
+                Assert.Contains("D", posts[2].TopComment.Text);
+                Assert.Contains("E1", posts[3].TopComment.Text);
+                Assert.Contains("Yen", posts[4].TopComment.Text);
+            }
         }
 
         [Fact]
         public void NestedSortingWorks()
         {
-            var model = new SieveModel
-            {
-                Sorts = "TopComment.Id",
-            };
+            var model = new SieveModel { Sorts = "TopComment.Id", };
 
-            var result = _processor.Apply(model, _posts);
-            Assert.Equal(5, result.Count());
-            var posts = result.ToList();
-            Assert.Equal(0, posts[0].Id);
-            Assert.Equal(3, posts[1].Id);
-            Assert.Equal(2, posts[2].Id);
-            Assert.Equal(1, posts[3].Id);
-            Assert.Equal(4, posts[4].Id);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
+                Assert.Equal(_posts.Count(), result.Count());
+                var posts = result
+                    .Select(post => post.Id)
+                    .ToList();
+
+                Assert.True
+                (
+                    posts.SequenceEqual
+                    (
+                        _posts
+                            .AsEnumerable()
+                            .OrderBy(post => post.TopComment.Id)
+                            .Select(post => post.Id)
+                    )
+                );
+            }
         }
 
         [Fact]
@@ -554,16 +584,22 @@ namespace SieveUnitTests
                 Filters = "(topc|featc)@=*2",
             };
 
-            var result = _processor.Apply(model, _posts);
-            Assert.Equal(4, result.Count());
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
+                Assert.Equal(4, result.Count());
+            }
 
             model = new SieveModel
             {
                 Filters = "(topc|featc)@=*B",
             };
 
-            result = _processor.Apply(model, _posts);
-            Assert.Equal(1, result.Count());
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
+                Assert.Equal(1, result.Count());
+            }
         }
 
         [Fact]
@@ -583,13 +619,13 @@ namespace SieveUnitTests
                 },
             }.AsQueryable();
 
-            var model = new SieveModel
-            {
-                Filters = "FeaturedComment.Text!@=Some value",
-            };
+            var model = new SieveModel { Filters = "FeaturedComment.Text!@=Some value", };
 
-            var result = _processor.Apply(model, posts);
-            Assert.Equal(0, result.Count());
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, posts);
+                Assert.Equal(0, result.Count());
+            }
         }
 
         [Fact]
@@ -624,11 +660,14 @@ namespace SieveUnitTests
                 Sorts = "TopComment.Id",
             };
 
-            var result = _processor.Apply(model, posts);
-            Assert.Equal(2, result.Count());
-            var sortedPosts = result.ToList();
-            Assert.Equal(2, sortedPosts[0].Id);
-            Assert.Equal(1, sortedPosts[1].Id);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, posts);
+                Assert.Equal(2, result.Count());
+                var sortedPosts = result.ToList();
+                Assert.Equal(2, sortedPosts[0].Id);
+                Assert.Equal(1, sortedPosts[1].Id);
+            }
         }
 
         [Fact]
@@ -663,10 +702,13 @@ namespace SieveUnitTests
                 Filters = "FeaturedComment.Text==null",
             };
 
-            var result = _processor.Apply(model, posts);
-            Assert.Equal(1, result.Count());
-            var filteredPosts = result.ToList();
-            Assert.Equal(2, filteredPosts[0].Id);
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, posts);
+                Assert.Equal(1, result.Count());
+                var filteredPosts = result.ToList();
+                Assert.Equal(2, filteredPosts[0].Id);
+            }
         }
 
         [Fact]
@@ -677,16 +719,25 @@ namespace SieveUnitTests
                 Sorts = "-CreateDate"
             };
 
-            var result = _processor.Apply(model, _posts);
-            Assert.Equal(5, result.Count());
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
+                Assert.Equal(_posts.Count(), result.Count());
 
-            var posts = result.ToList();
-            Assert.Equal(4, posts[0].Id);
-            Assert.Equal(3,posts[1].Id);
-            Assert.Equal(2,posts[2].Id);
-            Assert.Equal(1,posts[3].Id);
-            Assert.Equal(0,posts[4].Id);
+                var posts = result
+                    .Select(post => post.Id)
+                    .ToList();
 
+                Assert.True
+                (
+                    posts.SequenceEqual
+                    (
+                        _posts
+                            .OrderByDescending(post => post.DateCreated)
+                            .Select(post => post.Id)
+                    )
+                );
+            }
         }
 
         [Fact]
@@ -713,8 +764,11 @@ namespace SieveUnitTests
                 Filters = "Text==Here is\\, another comment"
             };
 
-            var result = _processor.Apply(model, comments);
-            Assert.Equal(1, result.Count());
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, comments);
+                Assert.Equal(1, result.Count());
+            }
         }
 
         [Fact]
@@ -747,8 +801,11 @@ namespace SieveUnitTests
                 Filters = @"Text==Here is \| a comment|Here is \| another comment|Here is \\\| another comment(1)",
             };
 
-            var result = _processor.Apply(model, comments);
-            Assert.Equal(3, result.Count());
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, comments);
+                Assert.Equal(3, result.Count());
+            }
         }
         
         [Theory]
@@ -761,12 +818,15 @@ namespace SieveUnitTests
                 Filters = filter
             };
 
-            var result = _processor.Apply(model, _posts);
-            var entry = result.FirstOrDefault();
-            var resultCount = result.Count();
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, _posts);
+                var entry = result.FirstOrDefault();
+                var resultCount = result.Count();
 
-            Assert.NotNull(entry);
-            Assert.Equal(1, resultCount);
+                Assert.NotNull(entry);
+                Assert.Equal(1, resultCount);
+            }
         }
         
         [Theory]
@@ -792,12 +852,15 @@ namespace SieveUnitTests
                 Filters = filter
             };
 
-            var result = _processor.Apply(model, posts);
-            var entry = result.FirstOrDefault();
-            var resultCount = result.Count();
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, posts);
+                var entry = result.FirstOrDefault();
+                var resultCount = result.Count();
 
-            Assert.NotNull(entry);
-            Assert.Equal(1, resultCount);
+                Assert.NotNull(entry);
+                Assert.Equal(1, resultCount);
+            }
         }
         
         [Theory]
@@ -840,13 +903,15 @@ namespace SieveUnitTests
                 Filters = filter,
             };
 
-            var result = _processor.Apply(model, posts);
-            var entry = result.FirstOrDefault();
-            var resultCount = result.Count();
+            foreach (var sieveProcessor in GetProcessors())
+            {
+                var result = sieveProcessor.Apply(model, posts);
+                var entry = result.FirstOrDefault();
+                var resultCount = result.Count();
 
-            Assert.NotNull(entry);
-            Assert.Equal(1, resultCount);
+                Assert.NotNull(entry);
+                Assert.Equal(1, resultCount);
+            }
         }
-        
     }
 }

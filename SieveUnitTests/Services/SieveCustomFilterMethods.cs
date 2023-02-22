@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using Sieve.Services;
 using SieveUnitTests.Abstractions.Entity;
 using SieveUnitTests.Entities;
@@ -8,9 +9,14 @@ namespace SieveUnitTests.Services
 {
     public class SieveCustomFilterMethods : ISieveCustomFilterMethods
     {
+        internal static readonly Expression<Func<Post, bool>> IsNewFilterForPost = post => post.LikeCount < 100;
+        internal static readonly Expression<Func<IPost, bool>> IsNewFilterForIPost = post => post.LikeCount < 100;
+        internal static readonly Expression<Func<Comment, bool>> IsNewFilterForComment = comment => comment.DateCreated > DateTimeOffset.UtcNow.AddDays(-2);
+        internal static readonly Expression<Func<IComment, bool>> IsNewFilterForIComment = comment => comment.DateCreated > DateTimeOffset.UtcNow.AddDays(-2);
+
         public IQueryable<Post> IsNew(IQueryable<Post> source, string op, string[] values)
         {
-            var result = source.Where(p => p.LikeCount < 100);
+            var result = source.Where(IsNewFilterForPost);
 
             return result;
         }
@@ -24,7 +30,7 @@ namespace SieveUnitTests.Services
 
         public IQueryable<Comment> IsNew(IQueryable<Comment> source, string op, string[] values)
         {
-            var result = source.Where(c => c.DateCreated > DateTimeOffset.UtcNow.AddDays(-2));
+            var result = source.Where(IsNewFilterForComment);
 
             return result;
         }
@@ -42,7 +48,7 @@ namespace SieveUnitTests.Services
 
         public IQueryable<IPost> IsNew(IQueryable<IPost> source, string op, string[] values)
         {
-            var result = source.Where(p => p.LikeCount < 100);
+            var result = source.Where(IsNewFilterForIPost);
 
             return result;
         }
@@ -56,7 +62,7 @@ namespace SieveUnitTests.Services
 
         public IQueryable<IComment> IsNew(IQueryable<IComment> source, string op, string[] values)
         {
-            var result = source.Where(c => c.DateCreated > DateTimeOffset.UtcNow.AddDays(-2));
+            var result = source.Where(IsNewFilterForIComment);
 
             return result;
         }
