@@ -14,14 +14,14 @@ using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [ShutdownDotNetAfterServerBuild]
-[GitHubActions("ci", GitHubActionsImage.UbuntuLatest,
+[GitHubActions("ci", GitHubActionsImage.Ubuntu2004,
     FetchDepth = 0,
     OnPullRequestBranches = new[] {"master", "releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(Ci)},
     CacheKeyFiles = new string[0]
     )]
-[GitHubActions("ci_publish", GitHubActionsImage.UbuntuLatest,
+[GitHubActions("ci_publish", GitHubActionsImage.Ubuntu2004,
     FetchDepth = 0,
     OnPushBranches = new[] { "releases/*" },
     OnPushTags = new[] { "v*" },
@@ -36,7 +36,7 @@ class Build : NukeBuild
 
     [GitRepository] readonly GitRepository GitRepository;
 
-    [GitVersion] readonly GitVersion GitVersion;
+    [GitVersion(Framework = "netcoreapp3.1")] readonly GitVersion GitVersion;
 
     [Solution] readonly Solution Solution;
 
