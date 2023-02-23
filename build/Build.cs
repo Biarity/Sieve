@@ -18,7 +18,8 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     OnPullRequestBranches = new[] {"master", "releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(Ci)},
-    CacheKeyFiles = new string[0]
+    CacheKeyFiles = new string[0],
+    FetchDepth = 0
     )
 ]
 [GitHubActions("ci_publish", GitHubActionsImage.UbuntuLatest,
