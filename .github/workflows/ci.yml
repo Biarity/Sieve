@@ -23,9 +23,9 @@ on:
       - 'releases/*'
 
 jobs:
-  ubuntu-20_04:
-    name: ubuntu-20_04
-    runs-on: ubuntu-20.04
+  ubuntu-latest:
+    name: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:

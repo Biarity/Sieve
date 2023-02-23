@@ -14,7 +14,7 @@ using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [ShutdownDotNetAfterServerBuild]
-[GitHubActions("ci", GitHubActionsImage.Ubuntu2004,
+[GitHubActions("ci", GitHubActionsImage.UbuntuLatest,
     OnPullRequestBranches = new[] {"master", "releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(Ci)},
