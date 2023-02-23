@@ -15,14 +15,14 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [ShutdownDotNetAfterServerBuild]
 [GitHubActions("ci", GitHubActionsImage.UbuntuLatest,
+    FetchDepth = 0,
     OnPullRequestBranches = new[] {"master", "releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(Ci)},
-    CacheKeyFiles = new string[0],
-    FetchDepth = 0
-    )
-]
+    CacheKeyFiles = new string[0]
+    )]
 [GitHubActions("ci_publish", GitHubActionsImage.UbuntuLatest,
+    FetchDepth = 0,
     OnPushBranches = new[] { "releases/*" },
     OnPushTags = new[] { "v*" },
     AutoGenerate = true,
@@ -36,7 +36,7 @@ class Build : NukeBuild
 
     [GitRepository] readonly GitRepository GitRepository;
 
-    [GitVersion(Framework = "netcoreapp3.1")] readonly GitVersion GitVersion;
+    [GitVersion] readonly GitVersion GitVersion;
 
     [Solution] readonly Solution Solution;
 
