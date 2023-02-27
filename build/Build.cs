@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using GlobExpressions;
 using Nuke.Common;
 using Nuke.Common.CI;
@@ -13,14 +13,16 @@ using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
-[CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
-[GitHubActions("ci", GitHubActionsImage.UbuntuLatest,
+[GitHubActions("ci", GitHubActionsImage.Ubuntu2004,
+    FetchDepth = 0,
     OnPullRequestBranches = new[] {"master", "releases/*"},
     AutoGenerate = true,
     InvokedTargets = new[] {nameof(Ci)},
-    CacheKeyFiles = new string[0])]
-[GitHubActions("ci_publish", GitHubActionsImage.UbuntuLatest,
+    CacheKeyFiles = new string[0]
+    )]
+[GitHubActions("ci_publish", GitHubActionsImage.Ubuntu2004,
+    FetchDepth = 0,
     OnPushBranches = new[] { "releases/*" },
     OnPushTags = new[] { "v*" },
     AutoGenerate = true,
@@ -102,8 +104,14 @@ class Build : NukeBuild
         .Requires(() => Configuration.Equals(Configuration.Release))
         .Executes(() =>
         {
-            Glob.Files(OutputDirectory, "*.nupkg")
-                .NotEmpty()
+            var files = Glob
+                .Files(OutputDirectory, "*.nupkg")
+                .NotNull()
+                .ToList();
+
+            Assert.NotEmpty(files);
+
+            files
                 .ForEach(x =>
                 {
                     DotNetNuGetPush(s => s

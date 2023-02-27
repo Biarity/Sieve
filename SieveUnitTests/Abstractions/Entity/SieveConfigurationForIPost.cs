@@ -4,13 +4,17 @@ namespace SieveUnitTests.Abstractions.Entity
 {
     public class SieveConfigurationForIPost : ISieveConfiguration
     {
-        public void Configure(SievePropertyMapper mapper)
+        public static void ConfigureStatic(SievePropertyMapper mapper)
         {
+            mapper
+                .Property<IPost>(p => p.Id)
+                .CanSort();
+
             mapper.Property<IPost>(p => p.ThisHasNoAttributeButIsAccessible)
                 .CanSort()
                 .CanFilter()
                 .HasName("shortname");
-            
+
             mapper.Property<IPost>(p => p.TopComment.Text)
                 .CanFilter();
 
@@ -32,6 +36,21 @@ namespace SieveUnitTests.Abstractions.Entity
                 .Property<IPost>(p => p.DateCreated)
                 .CanSort()
                 .HasName("CreateDate");
+
+            mapper
+                .Property<IPost>(post => post.DeletedBy)
+                .CanSort()
+                .HasName("DeletedBy");
+
+            mapper
+                .Property<IPost>(post => post.UpdatedBy)
+                .CanFilter()
+                .HasName("UpdatedBy");
+        }
+
+        public void Configure(SievePropertyMapper mapper)
+        {
+            ConfigureStatic(mapper);
         }
     }
 }
