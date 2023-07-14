@@ -1,4 +1,4 @@
-﻿namespace Sieve.Models
+namespace Sieve.Models
 {
     public class SieveOptions
     {
@@ -13,5 +13,7 @@
         public bool IgnoreNullsOnNotEqual { get; set; } = true;
 
         public bool DisableNullableTypeExpressionForSorting { get; set; } = false;
+      
+        public string CultureNameOfTypeConversion { get; set; } = "en";
     }
 }

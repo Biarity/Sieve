@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -172,6 +173,8 @@ namespace Sieve.Services
                 return result;
             }
 
+            var cultureInfoToUseForTypeConversion = new CultureInfo(Options.Value.CultureNameOfTypeConversion ?? "en");
+
             Expression outerExpression = null;
             var parameter = Expression.Parameter(typeof(TEntity), "e");
             foreach (var filterTerm in model.GetFiltersParsed())
@@ -198,7 +201,7 @@ namespace Sieve.Services
 
                             var filterValue = isFilterTermValueNull
                                 ? Expression.Constant(null, property.PropertyType)
-                                : ConvertStringValueToConstantExpression(filterTermValue, property, converter);
+                                : ConvertStringValueToConstantExpression(filterTermValue, property, converter, cultureInfoToUseForTypeConversion);
 
                             if (filterTerm.OperatorIsCaseInsensitive && !isFilterTermValueNull)
                             {
@@ -309,15 +312,14 @@ namespace Sieve.Services
                     Expression.NotEqual(propertyValue, Expression.Default(propertyValue.Type)));
         }
 
-        private static Expression ConvertStringValueToConstantExpression(string value, PropertyInfo property,
-            TypeConverter converter)
+        private static Expression ConvertStringValueToConstantExpression(string value, PropertyInfo property, TypeConverter converter, CultureInfo cultureInfo)
         {
             // to allow user to distinguish between prop==null (as null) and prop==\null (as "null"-string)
             value = value.Equals(EscapeChar + NullFilterValue, StringComparison.InvariantCultureIgnoreCase) 
                 ? value.TrimStart(EscapeChar) 
                 : value;
             dynamic constantVal = converter.CanConvertFrom(typeof(string))
-                ? converter.ConvertFrom(value)
+                ? converter.ConvertFrom(null, cultureInfo, value)
                 : Convert.ChangeType(value, property.PropertyType);
 
             return GetClosureOverConstant(constantVal, property.PropertyType);
