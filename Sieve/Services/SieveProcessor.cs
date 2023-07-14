@@ -341,6 +341,9 @@ namespace Sieve.Services
                 FilterOperator.StartsWith => Expression.Call(propertyValue,
                     typeof(string).GetMethods().First(m => m.Name == "StartsWith" && m.GetParameters().Length == 1),
                     filterValue),
+                FilterOperator.EndsWith => Expression.Call(propertyValue,
+                typeof(string).GetMethods().First(m => m.Name == "EndsWith" && m.GetParameters().Length == 1),
+                filterValue),
                 _ => Expression.Equal(propertyValue, filterValue)
             };
         }
@@ -367,7 +370,7 @@ namespace Sieve.Services
 
                 if (property != null)
                 {
-                    result = result.OrderByDynamic(fullName, property, sortTerm.Descending, useThenBy);
+                    result = result.OrderByDynamic(fullName, property, sortTerm.Descending, useThenBy, Options.Value.DisableNullableTypeExpressionForSorting);
                 }
                 else
                 {

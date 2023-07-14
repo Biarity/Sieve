@@ -129,7 +129,8 @@ Then you can add the configuration:
         "DefaultPageSize": "int number: optional number to fallback to when no page argument is given. Set <=0 to disable paging if no pageSize is specified (default).",
         "MaxPageSize": "int number: maximum allowed page size. Set <=0 to make infinite (default)",
         "ThrowExceptions": "boolean: should Sieve throw exceptions instead of silently failing? Defaults to false",
-        "IgnoreNullsOnNotEqual": "boolean: ignore null values when filtering using is not equal operator? Default to true"
+        "IgnoreNullsOnNotEqual": "boolean: ignore null values when filtering using is not equal operator? Defaults to true",
+        "DisableNullableTypeExpressionForSorting": "boolean: disable the creation of nullable type expression for sorting. Some databases do not handle it (yet). Defaults to false"
     }
 }
 ```
@@ -207,10 +208,13 @@ You can replace this DSL with your own (eg. use JSON instead) by implementing an
 | `<=`       | Less than or equal to    |
 | `@=`       | Contains                 |
 | `_=`       | Starts with              |
+| `_-=`      | Ends with                |
 | `!@=`      | Does not Contains        |
 | `!_=`      | Does not Starts with     |
+| `!_-=`     | Does not Ends with       |
 | `@=*`      | Case-insensitive string Contains |
 | `_=*`      | Case-insensitive string Starts with |
+| `_-=*`     | Case-insensitive string Ends with |
 | `==*`      | Case-insensitive string Equals |
 | `!=*`      | Case-insensitive string Not equals |
 | `!@=*`     | Case-insensitive string does not Contains |
@@ -231,7 +235,7 @@ It is recommended that you write exception-handling middleware to globally handl
 You can find an example project incorporating most Sieve concepts in [SieveTests](https://github.com/Biarity/Sieve/tree/master/SieveTests).
 
 ## Fluent API
-To use the Fluent API instead of attributes in marking properties, setup an alternative `SieveProcessor` that overrides `MapProperties`. For example:
+To use the Fluent API instead of attributes in marking properties, setup an alternative `SieveProcessor` that overrides `MapProperties`. For [example](https://github.com/Biarity/Sieve/blob/master/Sieve.Sample/Services/ApplicationSieveProcessor.cs):
 
 ```C#
 public class ApplicationSieveProcessor : SieveProcessor
@@ -278,7 +282,7 @@ To enable functional grouping of mappings the `ISieveConfiguration` interface wa
 ```C#
 public class SieveConfigurationForPost : ISieveConfiguration
 {
-    protected override SievePropertyMapper Configure(SievePropertyMapper mapper)
+    public void Configure(SievePropertyMapper mapper)
     {
         mapper.Property<Post>(p => p.Title)
             .CanFilter()
@@ -330,7 +334,7 @@ public class ApplicationSieveProcessor : SieveProcessor
 
     protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
     {
-        return mapper.ApplyConfigurationForAssembly(typeof(ApplicationSieveProcessor).Assembly);            
+        return mapper.ApplyConfigurationsFromAssembly(typeof(ApplicationSieveProcessor).Assembly);            
     }
 }
 ```

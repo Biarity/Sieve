@@ -12,6 +12,8 @@ namespace Sieve.Models
 
         public bool IgnoreNullsOnNotEqual { get; set; } = true;
 
+        public bool DisableNullableTypeExpressionForSorting { get; set; } = false;
+      
         public string CultureNameOfTypeConversion { get; set; } = "en";
     }
 }

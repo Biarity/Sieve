@@ -12,9 +12,10 @@ namespace Sieve.Extensions
             string fullPropertyName,
             PropertyInfo propertyInfo,
             bool desc,
-            bool useThenBy)
+            bool useThenBy, 
+            bool disableNullableTypeExpression = false)
         {
-            var lambda = GenerateLambdaWithSafeMemberAccess<TEntity>(fullPropertyName, propertyInfo);
+            var lambda = GenerateLambdaWithSafeMemberAccess<TEntity>(fullPropertyName, propertyInfo, disableNullableTypeExpression);
 
             var command = desc
                 ? (useThenBy ? "ThenByDescending" : "OrderByDescending")
@@ -33,7 +34,8 @@ namespace Sieve.Extensions
         private static Expression<Func<TEntity, object>> GenerateLambdaWithSafeMemberAccess<TEntity>
         (
             string fullPropertyName,
-            PropertyInfo propertyInfo
+            PropertyInfo propertyInfo,
+            bool disableNullableTypeExpression
         )
         {
             var parameter = Expression.Parameter(typeof(TEntity), "e");
@@ -52,7 +54,7 @@ namespace Sieve.Extensions
                     propertyValue = Expression.MakeMemberAccess(propertyValue, propertyInfo);
                 }
 
-                if (propertyValue.Type.IsNullable())
+                if (propertyValue.Type.IsNullable() && !disableNullableTypeExpression)
                 {
                     nullCheck = GenerateOrderNullCheckExpression(propertyValue, nullCheck);
                 }
