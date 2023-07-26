@@ -123,9 +123,6 @@ namespace Sieve.Services
             object[] dataForCustomMethods = null, bool applyFiltering = true, bool applySorting = true,
             bool applyPagination = true)
         {
-            var currentCultureInfo = CultureInfo.CurrentCulture;
-            CultureInfo.CurrentCulture = Options.Value.CultureInfo;
-            
             var result = source;
 
             if (model == null)
@@ -166,10 +163,6 @@ namespace Sieve.Services
 
                 throw new SieveException(ex.Message, ex);
             }
-            finally
-            {
-                CultureInfo.CurrentCulture = currentCultureInfo;
-            }
         }
 
         protected virtual IQueryable<TEntity> ApplyFiltering<TEntity>(TSieveModel model, IQueryable<TEntity> result,
@@ -179,6 +172,8 @@ namespace Sieve.Services
             {
                 return result;
             }
+
+            var cultureInfoToUseForTypeConversion = new CultureInfo(Options.Value.CultureNameOfTypeConversion ?? "en");
 
             Expression outerExpression = null;
             var parameter = Expression.Parameter(typeof(TEntity), "e");
@@ -206,7 +201,7 @@ namespace Sieve.Services
 
                             var filterValue = isFilterTermValueNull
                                 ? Expression.Constant(null, property.PropertyType)
-                                : ConvertStringValueToConstantExpression(filterTermValue, property, converter);
+                                : ConvertStringValueToConstantExpression(filterTermValue, property, converter, cultureInfoToUseForTypeConversion);
 
                             if (filterTerm.OperatorIsCaseInsensitive && !isFilterTermValueNull)
                             {
@@ -317,15 +312,14 @@ namespace Sieve.Services
                     Expression.NotEqual(propertyValue, Expression.Default(propertyValue.Type)));
         }
 
-        private static Expression ConvertStringValueToConstantExpression(string value, PropertyInfo property,
-            TypeConverter converter)
+        private static Expression ConvertStringValueToConstantExpression(string value, PropertyInfo property, TypeConverter converter, CultureInfo cultureInfo)
         {
             // to allow user to distinguish between prop==null (as null) and prop==\null (as "null"-string)
             value = value.Equals(EscapeChar + NullFilterValue, StringComparison.InvariantCultureIgnoreCase) 
                 ? value.TrimStart(EscapeChar) 
                 : value;
             dynamic constantVal = converter.CanConvertFrom(typeof(string))
-                ? converter.ConvertFrom(value)
+                ? converter.ConvertFrom(null, cultureInfo, value)
                 : Convert.ChangeType(value, property.PropertyType);
 
             return GetClosureOverConstant(constantVal, property.PropertyType);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Sieve.Exceptions;
 using Sieve.Models;
@@ -854,8 +853,7 @@ namespace SieveUnitTests
             Assert.Equal(1, resultCount);
         }
         
-        
-         [Theory]
+        [Theory]
         [InlineData("en-US", "1.2")]
         [InlineData("de-DE", @"1\,2")]
         public void ParseFloatsWithChangedCultureInfo_Works(string culture, string value)
@@ -877,7 +875,7 @@ namespace SieveUnitTests
             }.AsQueryable();
 
             var optionsAccessor = new SieveOptionsAccessor();
-            optionsAccessor.Value.CultureInfo = new CultureInfo(culture, false);
+            optionsAccessor.Value.CultureNameOfTypeConversion = culture;
 
             var processor = new ApplicationSieveProcessor(optionsAccessor,
                 new SieveCustomSortMethods(),
@@ -893,8 +891,8 @@ namespace SieveUnitTests
         }
 
         [Theory]
-        [InlineData("en-US", @"1\,2")]
-        [InlineData("de-DE", "1.2")]
+        [InlineData("en", @"1\,2")]
+        [InlineData("de", "1.2")]
         public void ParseFloatsWithChangedCultureInfo_Fails(string culture, string value)
         {
             // ARRANGE
@@ -914,7 +912,7 @@ namespace SieveUnitTests
             }.AsQueryable();
 
             var optionsAccessor = new SieveOptionsAccessor();
-            optionsAccessor.Value.CultureInfo = new CultureInfo(culture, false);
+            optionsAccessor.Value.CultureNameOfTypeConversion = culture;
 
             var processor = new ApplicationSieveProcessor(optionsAccessor,
                 new SieveCustomSortMethods(),

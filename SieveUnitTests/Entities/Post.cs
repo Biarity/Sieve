@@ -14,7 +14,7 @@ namespace SieveUnitTests.Entities
         public int LikeCount { get; set; } = new Random().Next(0, 1000);
         
         [Sieve(CanFilter = true)]
-        public float MeanRating { get; set; } = 0.0f;
+        public float MeanRating { get; set; }
 
         [Sieve(CanFilter = true, CanSort = true)]
         public int CommentCount { get; set; } = new Random().Next(0, 1000);
