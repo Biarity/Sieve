@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using GlobExpressions;
 using Nuke.Common;
 using Nuke.Common.CI;
@@ -34,7 +34,7 @@ class Build : NukeBuild
 
     [GitRepository] readonly GitRepository GitRepository;
 
-    [GitVersion(Framework = "netcoreapp3.1")] readonly GitVersion GitVersion;
+    [GitVersion(Framework = "net6.0")] readonly GitVersion GitVersion;
 
     [Solution] readonly Solution Solution;
 
