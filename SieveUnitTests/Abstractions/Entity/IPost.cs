@@ -17,6 +17,7 @@ namespace SieveUnitTests.Abstractions.Entity
         bool IsDraft { get; set; }
         string ThisHasNoAttribute { get; set; }
         string ThisHasNoAttributeButIsAccessible { get; set; }
+        string ThisHasNoAttributeButIsAccessible2 { get; set; }
         int OnlySortableViaFluentApi { get; set; }
         Comment TopComment { get; set; }
         Comment FeaturedComment { get; set; }

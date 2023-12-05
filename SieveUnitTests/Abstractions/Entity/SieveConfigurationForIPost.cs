@@ -1,4 +1,5 @@
 ﻿using Sieve.Services;
+using SieveUnitTests.Entities;
 
 namespace SieveUnitTests.Abstractions.Entity
 {
@@ -10,7 +11,12 @@ namespace SieveUnitTests.Abstractions.Entity
                 .CanSort()
                 .CanFilter()
                 .HasName("shortname");
-            
+
+            mapper.Property<IPost>(typeof(IPost).GetProperty(nameof(IPost.ThisHasNoAttributeButIsAccessible2)))
+                .CanSort()
+                .CanFilter()
+                .HasName("shortname2");
+
             mapper.Property<IPost>(p => p.TopComment.Text)
                 .CanFilter();
 

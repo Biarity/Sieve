@@ -22,6 +22,16 @@ namespace Sieve.Services
             return new PropertyFluentApi<TEntity>(this, expression);
         }
 
+        public PropertyFluentApi<TEntity> Property<TEntity>(PropertyInfo propertyInfo)
+        {
+            if (!_map.ContainsKey(typeof(TEntity)))
+            {
+                _map.Add(typeof(TEntity), new List<KeyValuePair<PropertyInfo, ISievePropertyMetadata>>());
+            }
+
+            return new PropertyFluentApi<TEntity>(this, propertyInfo);
+        }
+
         public class PropertyFluentApi<TEntity>
         {
             private readonly SievePropertyMapper _sievePropertyMapper;
@@ -31,6 +41,15 @@ namespace Sieve.Services
             {
                 _sievePropertyMapper = sievePropertyMapper;
                 (_fullName, _property) = GetPropertyInfo(expression);
+                _name = _fullName;
+                _canFilter = false;
+                _canSort = false;
+            }
+
+            public PropertyFluentApi(SievePropertyMapper sievePropertyMapper, PropertyInfo propertyInfo)
+            {
+                _sievePropertyMapper = sievePropertyMapper;
+                (_fullName, _property) = (propertyInfo.Name, propertyInfo);
                 _name = _fullName;
                 _canFilter = false;
                 _canSort = false;
