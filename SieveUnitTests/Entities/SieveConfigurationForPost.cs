@@ -11,6 +11,11 @@ namespace SieveUnitTests.Entities
                 .CanFilter()
                 .HasName("shortname");
 
+            mapper.Property<Post>(typeof(Post).GetProperty(nameof(Post.ThisHasNoAttributeButIsAccessible2)))
+                .CanSort()
+                .CanFilter()
+                .HasName("shortname2");
+
             mapper.Property<Post>(p => p.TopComment.Text)
                 .CanFilter();
 

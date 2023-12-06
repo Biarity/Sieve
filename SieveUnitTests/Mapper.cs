@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Sieve.Exceptions;
 using Sieve.Models;
@@ -21,6 +21,7 @@ namespace SieveUnitTests
                 {
                     Id = 1,
                     ThisHasNoAttributeButIsAccessible = "A",
+                    ThisHasNoAttributeButIsAccessible2 = "A",
                     ThisHasNoAttribute = "A",
                     OnlySortableViaFluentApi = 100
                 },
@@ -28,6 +29,7 @@ namespace SieveUnitTests
                 {
                     Id = 2,
                     ThisHasNoAttributeButIsAccessible = "B",
+                    ThisHasNoAttributeButIsAccessible2 = "B",
                     ThisHasNoAttribute = "B",
                     OnlySortableViaFluentApi = 50
                 },
@@ -35,6 +37,7 @@ namespace SieveUnitTests
                 {
                     Id = 3,
                     ThisHasNoAttributeButIsAccessible = "C",
+                    ThisHasNoAttributeButIsAccessible2 = "C",
                     ThisHasNoAttribute = "C",
                     OnlySortableViaFluentApi = 0
                 },
@@ -77,6 +80,22 @@ namespace SieveUnitTests
             var result = processor.Apply(model, _posts);
 
             Assert.Equal("A", result.First().ThisHasNoAttributeButIsAccessible);
+
+            Assert.True(result.Count() == 1);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetProcessors))]
+        public void MapperWorksWithPropertyInfo(ISieveProcessor processor)
+        {
+            var model = new SieveModel
+            {
+                Filters = "shortname2@=A",
+            };
+
+            var result = processor.Apply(model, _posts);
+
+            Assert.Equal("A", result.First().ThisHasNoAttributeButIsAccessible2);
 
             Assert.True(result.Count() == 1);
         }

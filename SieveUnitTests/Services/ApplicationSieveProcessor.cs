@@ -23,6 +23,11 @@ namespace SieveUnitTests.Services
                 .CanFilter()
                 .HasName("shortname");
 
+            mapper.Property<Post>(typeof(Post).GetProperty(nameof(Post.ThisHasNoAttributeButIsAccessible2)))
+                .CanSort()
+                .CanFilter()
+                .HasName("shortname2");
+
             mapper.Property<Post>(p => p.TopComment.Text)
                 .CanFilter();
 
@@ -50,6 +55,11 @@ namespace SieveUnitTests.Services
                 .CanSort()
                 .CanFilter()
                 .HasName("shortname");
+
+            mapper.Property<IPost>(typeof(IPost).GetProperty(nameof(IPost.ThisHasNoAttributeButIsAccessible2)))
+                .CanSort()
+                .CanFilter()
+                .HasName("shortname2");
 
             mapper.Property<IPost>(p => p.TopComment.Text)
                 .CanFilter();
